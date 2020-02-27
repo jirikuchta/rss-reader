@@ -1,0 +1,9 @@
+version: "3"
+services:
+  rss-reader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/rss-reader/
+    command: python3 /rss-reader/src/app.py
