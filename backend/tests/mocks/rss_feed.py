@@ -3,6 +3,8 @@ from xml.etree import ElementTree as ET
 
 from parser.common import NS
 
+from tests.mocks.atom_feed import MockAtomLink
+
 
 class MockRSSFeed:
 
@@ -11,7 +13,7 @@ class MockRSSFeed:
             title: Optional[str],
             link: Optional[str],
             items: List["MockRSSFeedItem"] = None,
-            channel: bool = None) -> None:
+            channel: bool = True) -> None:
         self.title = title
         self.link = link
         self.channel = channel
@@ -53,7 +55,7 @@ class MockRSSFeedItem:
             dc_creator: Optional[str] = None,
             enclosures: List["MockRSSFeedItemEnclosure"] = None,
             categories: List[str] = None,
-            atom_links: List["MockAtomLink"] = None) -> None:
+            atom_links: List[MockAtomLink] = None) -> None:
         self.title = title
         self.link = link
         self.guid = guid
@@ -157,32 +159,3 @@ class MockRSSFeedItemGUID:
             node.text = self.value
 
         return node
-
-
-class MockAtomLink:
-    def __init__(self,
-                 href: Optional[str],
-                 rel: Optional[str] = None,
-                 type_attr: Optional[str] = None,
-                 length: Optional[int] = None) -> None:
-        self.href = href
-        self.rel = rel
-        self.type = type_attr
-        self.length = length
-
-    def build(self) -> ET.Element:
-        attrib = {}
-
-        if self.href is not None:
-            attrib["href"] = self.href
-
-        if self.rel is not None:
-            attrib["rel"] = self.rel
-
-        if self.type is not None:
-            attrib["type"] = self.type
-
-        if self.length is not None:
-            attrib["length"] = str(self.length)
-
-        return ET.Element(f"{{{ NS['atom'] }}}link", attrib=attrib)

@@ -2,7 +2,7 @@ from abc import ABC
 from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
-from typing import Optional, List, TypeVar, Generic
+from typing import Optional, List, TypeVar, Generic, NoReturn
 from xml.etree import ElementTree as ET
 
 
@@ -33,10 +33,6 @@ class FeedParser(ABC, Generic[TFeedItemParser]):
 
     @property
     def link(self) -> str:
-        pass
-
-    @property
-    def description(self) -> str:
         pass
 
     @property
@@ -162,3 +158,7 @@ def get_child_node_content(node: ET.Element, tag_name: str) -> Optional[str]:
 def get_child_node_text(node: ET.Element, tag_name: str) -> Optional[str]:
     child_node = find_child(node, tag_name)
     return get_node_text(child_node) if child_node is not None else None
+
+
+def raise_required_elm_missing_error(elm: str, parent: str) -> NoReturn:
+    raise ParserError(f"Missing required <{elm}> sub-element of <{parent}>.")

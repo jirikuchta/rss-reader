@@ -32,15 +32,16 @@ class TestRSSParser:
         assert RSSParser(feed.build()).link == "foo"
 
     def test_items(self) -> None:
-        item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))
-        feed = MockRSSFeed(title="", link="", items=[item])
-        parser = RSSParser(feed.build())
-        assert len(parser.items) == 1
-        assert type(parser.items[0]) is RSSItemParser
+        feed = MockRSSFeed(title="", link="")
+        assert len(RSSParser(feed.build()).items) == 0
 
-    def test_invalid_items_ignored(self) -> None:
-        invalid_item = MockRSSFeedItem(title=None, link=None, guid=None)
-        feed = MockRSSFeed(title="", link="", items=[invalid_item])
+        feed.items = [MockRSSFeedItem(title="", link="",
+                                      guid=MockRSSFeedItemGUID(""))]
+        assert len(RSSParser(feed.build()).items) == 1
+        assert type(RSSParser(feed.build()).items[0]) is RSSItemParser
+
+        # invalid item
+        feed.items = [MockRSSFeedItem(title=None, link=None, guid=None)]
         assert len(RSSParser(feed.build()).items) == 0
 
     def test_no_channel_error(self) -> None:
@@ -116,11 +117,6 @@ class TestRSSItemParser:
         item.link = None
         item.guid.isPermalink = False
         item.atom_links = [MockAtomLink(href="foo", rel="alternate")]
-        assert RSSItemParser(item.build()).link == "foo"
-
-        item.link = None
-        item.guid.isPermalink = False
-        item.atom_links = [MockAtomLink(href="foo", rel="standout")]
         assert RSSItemParser(item.build()).link == "foo"
 
         item.link = None

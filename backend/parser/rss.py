@@ -1,13 +1,9 @@
-from typing import Optional, List, NoReturn
+from typing import Optional, List
 from xml.etree import ElementTree as ET
 
 from .common import ParserError, FeedType, FeedParser, FeedItemParser, \
     Enclosure, get_child_node_text, get_child_node_content, find_children, \
-    get_node_text, find_child, get_node_attr
-
-
-def raise_required_elm_missing_error(elm: str, parent: str) -> NoReturn:
-    raise ParserError(f"Missing required <{elm}> sub-element of <{parent}>.")
+    get_node_text, find_child, get_node_attr, raise_required_elm_missing_error
 
 
 class RSSParser(FeedParser["RSSItemParser"]):
@@ -38,11 +34,11 @@ class RSSParser(FeedParser["RSSItemParser"]):
 
     @property
     def items(self) -> List["RSSItemParser"]:
-        item_nodes = self._node.findall("item")
+        nodes = self._node.findall("item")
         items = []  # type List["RSSItemParser"]
-        for item_node in item_nodes:
+        for node in nodes:
             try:
-                items.append(RSSItemParser(item_node))
+                items.append(RSSItemParser(node))
             except Exception:
                 pass  # TODO: log
         return items
@@ -143,7 +139,7 @@ class RSSItemParser(FeedItemParser):
             if href_attr is None:
                 continue
 
-            if rel_attr in (None, "alternate", "standout"):
+            if rel_attr in (None, "alternate"):
                 return href_attr
 
         raise ParserError("Cannot parse item link.")
