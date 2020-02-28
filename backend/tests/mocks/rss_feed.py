@@ -111,7 +111,7 @@ class MockRSSFeedItem:
             cat_node.text = category
 
         for atom_link in self.atom_links:
-            root.append(atom_link.build())
+            root.append(atom_link.build(use_prefix=True))
 
         return root
 

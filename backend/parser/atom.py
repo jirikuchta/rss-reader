@@ -2,8 +2,9 @@ from typing import List, Optional
 from xml.etree import ElementTree as ET
 
 from .common import FeedType, FeedParser, FeedItemParser, Enclosure, \
-    raise_required_elm_missing_error, find_children, get_node_attr, \
-    get_child_node_text
+    raise_required_elm_missing_error, find_children, get_child_node_text, \
+    get_child_node_content, format_author, get_link_href_attr, \
+    find_links_by_rel_attr, get_node_attr
 
 
 class AtomParser(FeedParser["AtomItemParser"]):
@@ -11,8 +12,15 @@ class AtomParser(FeedParser["AtomItemParser"]):
     def __init__(self, node: ET.Element) -> None:
         self._node = node
 
-        self._title = self._get_title()
-        self._link = self._get_link()
+        title = get_child_node_text(node, "title")
+        if title is None:
+            raise_required_elm_missing_error("title", "feed")
+        self._title = title
+
+        link = get_link_href_attr(self._node, [None, "alternate"])
+        if link is None:
+            raise_required_elm_missing_error("link", "entry")
+        self._link = link
 
     @property
     def title(self) -> str:
@@ -37,72 +45,89 @@ class AtomParser(FeedParser["AtomItemParser"]):
     def feed_type(self) -> FeedType:
         return FeedType.ATOM
 
-    def _get_title(self) -> str:
-        title = get_child_node_text(self._node, "title")
-
-        if title is None:
-            raise_required_elm_missing_error("title", "atom:feed")
-
-        return title
-
-    def _get_link(self) -> str:
-        link = None
-
-        for atom_link_node in find_children(self._node, "atom:link"):
-            href_attr = get_node_attr(atom_link_node, "href")
-            rel_attr = get_node_attr(atom_link_node, "rel")
-
-            if href_attr is None:
-                continue
-
-            if rel_attr in (None, "alternate"):
-                link = href_attr
-                break
-
-        if link is None:
-            raise_required_elm_missing_error("atom:link[rel=alternate]",
-                                             "atom:feed")
-
-        return link
-
 
 class AtomItemParser(FeedItemParser):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
 
+        item_id = get_child_node_text(node, "id")
+        if item_id is None:
+            raise_required_elm_missing_error("id", "entry")
+        self._id = item_id
+
+        title = get_child_node_text(node, "title")
+        if title is None:
+            raise_required_elm_missing_error("title", "entry")
+        self._title = title
+
+        link = get_link_href_attr(self._node, [None, "alternate"])
+        if link is None:
+            raise_required_elm_missing_error("link", "entry")
+        self._link = link
+
     @property
     def id(self) -> str:
-        return "id"
+        return self._id
 
     @property
     def title(self) -> str:
-        return "title"
+        return self._title
 
     @property
     def link(self) -> str:
-        return "link"
+        return self._link
 
     @property
-    def description(self) -> Optional[str]:
-        return None
+    def summary(self) -> Optional[str]:
+        summary = get_child_node_text(self._node, "summary")
+
+        if summary is None:
+            summary = get_child_node_text(self._node, "content")
+
+        return summary
 
     @property
     def content(self) -> Optional[str]:
-        return None
+        return get_child_node_content(self._node, "content")
 
     @property
     def comments_link(self) -> Optional[str]:
-        return None
+        comments_link = get_child_node_text(self._node, "comments")
+
+        if comments_link is None:
+            comments_link = get_link_href_attr(self._node, ["replies"])
+
+        return comments_link
 
     @property
     def author(self) -> Optional[str]:
-        return None
+        authors = []
+
+        for author_node in find_children(self._node, "author"):
+            name = get_child_node_text(author_node, "name")
+            email = get_child_node_text(author_node, "email")
+            author = format_author(name, email)
+
+            if author is not None:
+                authors.append(author)
+
+        return None if len(authors) == 0 else ", ".join(authors)
 
     @property
     def enclosures(self) -> List[Enclosure]:
-        return []
+        enclosures = []
+
+        for node in find_links_by_rel_attr(self._node, ["enclosure"]):
+            try:
+                enclosures.append(Enclosure(node))
+            except Exception:
+                pass  # TODO: log
+
+        return enclosures
 
     @property
     def categories(self) -> List[str]:
-        return []
+        nodes = find_children(self._node, "category")
+        values = [get_node_attr(node, "term") for node in nodes]
+        return [item for item in values if item is not None]

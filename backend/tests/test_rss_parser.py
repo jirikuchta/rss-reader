@@ -125,16 +125,16 @@ class TestRSSItemParser:
         with pytest.raises(ParserError):
             RSSItemParser(item.build())
 
-    def test_description(self) -> None:
+    def test_summary(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))
-        assert RSSItemParser(item.build()).description is None
+        assert RSSItemParser(item.build()).summary is None
 
         item.description = "<b>foo</b>"
-        assert RSSItemParser(item.build()).description == "foo"
+        assert RSSItemParser(item.build()).summary == "foo"
 
         item.description = None
         item.content_encoded = "<b>bar</b>"
-        assert RSSItemParser(item.build()).description == "bar"
+        assert RSSItemParser(item.build()).summary == "bar"
 
     def test_content(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))

@@ -1,8 +1,7 @@
 from abc import ABC
-from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
-from typing import Optional, List, TypeVar, Generic, NoReturn
+from typing import Optional, List, TypeVar, Generic, NoReturn, Union
 from xml.etree import ElementTree as ET
 
 
@@ -59,11 +58,7 @@ class FeedItemParser(ABC):
         pass
 
     @property
-    def date(self) -> Optional[datetime]:
-        pass
-
-    @property
-    def description(self) -> Optional[str]:
+    def summary(self) -> Optional[str]:
         pass
 
     @property
@@ -91,8 +86,18 @@ class Enclosure:
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
-        self._url = node.attrib["url"].strip()
-        self._type = node.attrib["type"].strip()
+
+        url = get_node_attr(node, "href")
+        if url is None:
+            url = get_node_attr(node, "url")
+        if url is None:
+            raise ParserError("Failed to parser enclosure url.")
+        self._url = url
+
+        enc_type = get_node_attr(node, "type")
+        if enc_type is None:
+            raise ParserError("Failed to parser enclosure type.")
+        self._type = enc_type
 
     @property
     def url(self) -> str:
@@ -124,12 +129,32 @@ class MLParser(HTMLParser):
         self.data.append(data)
 
 
-def find_children(node: ET.Element, tag_name: str) -> List[ET.Element]:
-    return node.findall(tag_name, NS)
+def format_author(name: Optional[str], email: Optional[str]) -> Optional[str]:
+    if name is not None and email is not None:
+        return f"{name} <{email}>"
+
+    if name is not None:
+        return name
+
+    if email is not None:
+        return email
+
+    return None
 
 
-def find_child(node: ET.Element, tag_name: str) -> Optional[ET.Element]:
-    return node.find(tag_name, NS)
+def find_children(parent: ET.Element, tag_name: str) -> List[ET.Element]:
+    return parent.findall(tag_name, NS)
+
+
+def find_child(parent: ET.Element, tag_name: str) -> Optional[ET.Element]:
+    return parent.find(tag_name, NS)
+
+
+def find_links_by_rel_attr(parent: ET.Element,
+                           rel_values: List[Union[None, str]],
+                           tag_name: Optional[str] = None) -> List[ET.Element]:
+    nodes = find_children(parent, "link" if tag_name is None else tag_name)
+    return list(filter(lambda x: get_node_attr(x, "rel") in rel_values, nodes))
 
 
 def get_node_text(node: ET.Element) -> Optional[str]:
@@ -149,15 +174,26 @@ def get_node_attr(node: ET.Element, attr: str,
     return value.strip()
 
 
-def get_child_node_content(node: ET.Element, tag_name: str) -> Optional[str]:
-    child_node = find_child(node, tag_name)
+def get_child_node_content(parent: ET.Element,
+                           child_tag_name: str) -> Optional[str]:
+    child_node = find_child(parent, child_tag_name)
     content = child_node.text if child_node is not None else None
     return content.strip() if content is not None else None
 
 
-def get_child_node_text(node: ET.Element, tag_name: str) -> Optional[str]:
-    child_node = find_child(node, tag_name)
+def get_child_node_text(parent: ET.Element,
+                        child_tag_name: str) -> Optional[str]:
+    child_node = find_child(parent, child_tag_name)
     return get_node_text(child_node) if child_node is not None else None
+
+
+def get_link_href_attr(parent: ET.Element,
+                       rel_values: List[Union[None, str]],
+                       tag_name: Optional[str] = None) -> Optional[str]:
+    nodes = find_links_by_rel_attr(parent, rel_values, tag_name=tag_name)
+    if len(nodes) > 0:
+        return get_node_attr(nodes[0], "href")
+    return None
 
 
 def raise_required_elm_missing_error(elm: str, parent: str) -> NoReturn:

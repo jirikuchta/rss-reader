@@ -1,9 +1,10 @@
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from .common import ParserError, FeedType, FeedParser, FeedItemParser, \
-    Enclosure, get_child_node_text, get_child_node_content, find_children, \
-    get_node_text, find_child, get_node_attr, raise_required_elm_missing_error
+from .common import NS, ParserError, FeedType, FeedParser, FeedItemParser, \
+    Enclosure, get_child_node_text, get_child_node_content, format_author, \
+    find_children, get_node_text, find_child, get_node_attr, \
+    get_link_href_attr, raise_required_elm_missing_error
 
 
 class RSSParser(FeedParser["RSSItemParser"]):
@@ -72,11 +73,11 @@ class RSSItemParser(FeedItemParser):
         return self._link
 
     @property
-    def description(self) -> Optional[str]:
-        description = get_child_node_text(self._node, "description")
-        if description is None:
-            description = get_child_node_text(self._node, "content:encoded")
-        return description
+    def summary(self) -> Optional[str]:
+        summary = get_child_node_text(self._node, "description")
+        if summary is None:
+            summary = get_child_node_text(self._node, "content:encoded")
+        return summary
 
     @property
     def content(self) -> Optional[str]:
@@ -93,12 +94,7 @@ class RSSItemParser(FeedItemParser):
     def author(self) -> Optional[str]:
         author = get_child_node_text(self._node, "author")
         dc_creator = get_child_node_text(self._node, "dc:creator")
-        if dc_creator is not None:
-            if author is not None:
-                author = f"{dc_creator} <{author}>"
-            else:
-                author = dc_creator
-        return author
+        return format_author(dc_creator, author)
 
     @property
     def enclosures(self) -> List[Enclosure]:
@@ -131,16 +127,10 @@ class RSSItemParser(FeedItemParser):
                 if link is not None:
                     return link
 
-        atom_link_nodes = find_children(self._node, "atom:link")
-        for atom_link_node in atom_link_nodes:
-            href_attr = get_node_attr(atom_link_node, "href")
-            rel_attr = get_node_attr(atom_link_node, "rel")
-
-            if href_attr is None:
-                continue
-
-            if rel_attr in (None, "alternate"):
-                return href_attr
+        link = get_link_href_attr(self._node, [None, "alternate"],
+                                  tag_name=f"{{{ NS['atom'] }}}link")
+        if link is not None:
+            return link
 
         raise ParserError("Cannot parse item link.")
 
