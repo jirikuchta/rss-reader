@@ -1,5 +1,4 @@
-async function init() {
+function init() {
 	console.log("init");
 }
-
 init()

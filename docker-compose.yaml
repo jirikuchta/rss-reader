@@ -1,9 +1,22 @@
 version: "3"
 services:
-  rss-reader:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker/backend/Dockerfile
     volumes:
       - ./backend:/rss-reader/
-    command: python3 /rss-reader/src/app.py
+    expose:
+      - 5000
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    environment:
+      - NODE_ENV=development
+      - SHELL=bash
+    volumes:
+        - ./frontend/src:/rss-reader/src
+    ports:
+      - 8080:8080

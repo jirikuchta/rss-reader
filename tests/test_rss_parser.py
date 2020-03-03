@@ -1,7 +1,7 @@
 import pytest
 
-from parser.common import ParserError, FeedType, Enclosure
-from parser.rss import RSSParser, RSSItemParser
+from backend.parser.common import ParserError, FeedType, Enclosure
+from backend.parser.rss import RSSParser, RSSItemParser
 
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
     MockRSSFeedItemEnclosure, MockRSSFeedItemGUID, MockAtomLink

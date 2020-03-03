@@ -1,7 +1,7 @@
 from typing import Optional, List, Union
 from xml.etree import ElementTree as ET
 
-from parser.common import NS
+from backend.parser.common import NS
 
 
 class MockAtomFeed:
