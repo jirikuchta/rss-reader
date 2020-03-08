@@ -18,5 +18,8 @@ services:
       - SHELL=bash
     volumes:
         - ./frontend/src:/rss-reader/src
+        - ./frontend/public:/rss-reader/public
     ports:
       - 8080:8080
+    command: >
+      bash -c "npm run build && npm run watch"

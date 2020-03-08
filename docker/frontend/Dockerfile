@@ -6,4 +6,4 @@ WORKDIR /rss-reader
 
 RUN npm install
 
-CMD ["npm", "run", "watch"]
+CMD ["npm", "run", "build"]
