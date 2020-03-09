@@ -1,6 +1,7 @@
-import { Feed } from "./types";
+import { Feed } from "data/types";
 
 let feeds: Feed[] = [];
+let selected: string | null = null;
 
 export async function init() {
 	type Data = {feeds:Feed[]};
@@ -10,3 +11,8 @@ export async function init() {
 }
 
 export function list() { return feeds; }
+
+export function getSelected() {
+	if (!selected) { return null; }
+	return feeds.filter(f => f.link == selected)[0] || null;
+}

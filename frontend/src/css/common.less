@@ -26,26 +26,32 @@ main {
 	flex: 0 0 280px;
 	overflow: auto;
 	padding: 8px 0;
-	border-right: 1px solid #e2e2e2;
-	background-color: #f8f8f8;
+	border-right: 1px solid @border;
+	background-color: @bg;
 
 	article {
 		padding: 8px;
 		cursor: pointer;
-		&:hover { background-color: #ffefd6; }
+		border-top: 1px solid @bg;
+		border-bottom: 1px solid @bg;
+
+		&:hover {
+			border-color: @border;
+			background-color: @active;
+		}
 	}
 }
 
 #items {
 	flex: 0 0 560px;
 	overflow: auto;
-	border-right: 1px solid #e2e2e2;
+	border-right: 1px solid @border;
 
 	article {
 		padding: 16px;
 		cursor: pointer;
-		border-bottom: 1px solid #e2e2e2;
-		&:hover { background-color: #ffefd6; }
+		border-bottom: 1px solid @border;
+		&:hover { background-color: @active; }
 	}
 }
 

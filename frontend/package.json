@@ -1,8 +1,8 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
-  "description": "",
-  "dependencies": {
+    "name": "frontend",
+    "version": "1.0.0",
+    "description": "",
+    "dependencies": {
         "http-server": "^0.12.1"
     },
     "devDependencies": {
