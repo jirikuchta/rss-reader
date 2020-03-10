@@ -15,11 +15,11 @@ services:
       dockerfile: ./docker/frontend/Dockerfile
     environment:
       - NODE_ENV=development
-      - SHELL=bash
+      - SHELL=ash
     volumes:
         - ./frontend/src:/rss-reader/src
         - ./frontend/public:/rss-reader/public
     ports:
       - 8080:8080
     command: >
-      bash -c "npm run build && npm run watch"
+      ash -c "npm run build && npm run watch"

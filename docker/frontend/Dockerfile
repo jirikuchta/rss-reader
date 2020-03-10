@@ -1,9 +1,9 @@
-FROM node:13.8.0
+FROM node:12-alpine
 
 COPY ./frontend /rss-reader
 
 WORKDIR /rss-reader
 
-RUN npm install
+RUN npm install --loglevel=error
 
 CMD ["npm", "run", "build"]
