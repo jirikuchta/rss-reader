@@ -3,7 +3,7 @@ import * as items from "data/items";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-let node = document.querySelector("#items");
+let node = document.querySelector("#items") as HTMLElement;
 
 export function init() {
 	build();

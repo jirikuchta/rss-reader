@@ -2,7 +2,7 @@ import { Feed } from "data/types";
 import * as feeds from "data/feeds";
 import * as html from "util/html";
 
-let node = document.querySelector("#feeds");
+let node = document.querySelector("#feeds") as HTMLElement;
 
 export function init() {
 	html.clear(node);

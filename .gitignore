@@ -1,4 +1,5 @@
 __pycache__/
 node_modules/
+frontend/src/js/.build/
 frontend/public/css/
 frontend/public/js/

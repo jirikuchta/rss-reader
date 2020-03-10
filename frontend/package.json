@@ -6,21 +6,20 @@
         "http-server": "^0.12.1"
     },
     "devDependencies": {
-        "@rollup/plugin-typescript": "^3.0.0",
         "chokidar": "^3.3.1",
         "chokidar-cli": "^2.1.0",
         "concurrently": "^5.1.0",
         "less": "^3.11.1",
-        "rollup": "^2.0.2",
-        "tslib": "^1.11.1",
+        "rollup": "^2.0.3",
+        "rollup-plugin-includepaths": "^0.2.3",
         "typescript": "^3.8.3"
     },
     "scripts": {
         "build": "npm run build-js && npm run build-css",
-        "build-js": "rollup --config",
+        "build-js": "tsc && rollup --config",
         "build-css": "lessc src/css/app.less public/css/app.css",
         "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\" \"npm run serve\"",
-        "watch-js": "rollup --config -w",
+        "watch-js": "chokidar \"src/js/**/*.ts\" -c \"npm run build-js\"",
         "watch-css": "chokidar \"src/css/**/*.less\" -c \"npm run build-css\"",
         "serve": "http-server --proxy http://backend:5000"
     }
