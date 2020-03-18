@@ -1,25 +1,46 @@
 version: "3"
 services:
+  # db:
+  #   image: mysql:8.0.19
+  #   command: --default-authentication-plugin=mysql_native_password
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_USER: rss-reader
+  #     MYSQL_PASSWORD: rss-reader
+  #     MYSQL_DATABASE: rss-reader
+  #   expose:
+  #     - 3306
+
   backend:
     build:
       context: .
       dockerfile: ./docker/backend/Dockerfile
     volumes:
-      - ./backend:/rss-reader/
+      - ./backend:/backend/
     expose:
       - 5000
+    environment:
+      FLASK_APP: .
+      FLASK_ENV: development
+      DATABASE_URI: sqlite:////tmp/rss-reader.db
+      # DATABASE_URI: mysql+pymysql://rss-reader:rss-reader@db:3306/rss-reader?charset=utf8mb4
+    # depends_on:
+    #   - db
+    command: >
+      sh -c "flask run --host=0.0.0.0"
 
   frontend:
     build:
       context: .
       dockerfile: ./docker/frontend/Dockerfile
     environment:
-      - NODE_ENV=development
-      - SHELL=ash
+      NODE_ENV: development
     volumes:
         - ./frontend/src:/rss-reader/src
         - ./frontend/public:/rss-reader/public
     ports:
       - 8080:8080
+    depends_on:
+      - backend
     command: >
-      ash -c "npm run build && npm run watch"
+      sh -c "npm run build && npm run watch"

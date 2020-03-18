@@ -38,6 +38,7 @@ class AtomParser(FeedParser["AtomItemParser"]):
             try:
                 items.append(AtomItemParser(node))
             except Exception:
+
                 pass  # TODO: log
         return items
 
