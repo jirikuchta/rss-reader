@@ -1,5 +1,4 @@
 import urllib.request
-from typing import Dict, Any
 from xml.etree import ElementTree as ET
 
 from rss_reader.parser.common import FeedParser

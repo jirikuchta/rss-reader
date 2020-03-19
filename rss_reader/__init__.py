@@ -4,8 +4,7 @@ from flask import Flask, render_template
 from flask.cli import with_appcontext
 
 from rss_reader.parser import parse
-from rss_reader.model import db
-from rss_reader.model.feed import Feed, Entry
+from rss_reader.lib.model import db, User, Feed, Entry, UserEntry
 
 
 def create_app():
@@ -19,7 +18,7 @@ def create_app():
     db.init_app(app)
     app.cli.add_command(init_db_command)
 
-    from rss_reader.api.feeds import bp as api_bp
+    from rss_reader.lib.api import bp as api_bp
     app.register_blueprint(api_bp)
 
     app.add_url_rule("/", view_func=lambda: render_template("index.html"))
@@ -33,21 +32,35 @@ def init_db_command():
     db.drop_all()
     db.create_all()
 
+    user = User(username="admin", password="admin")
+    db.session.add(user)
+    db.session.flush()
+
     TEST_FEEDS = (
         "https://historje.tumblr.com/rss",
         "http://feeds.feedburner.com/CssTricks")
 
     for feed_uri in TEST_FEEDS:
         parser = parse(feed_uri)
-        db.session.add(Feed(
+
+        feed = Feed(
+            user=user,
             uri=parser.link,
-            title=parser.title,
-            entries=[Entry(
-                title=item.title,
-                uri=item.link,
-                summary=item.summary,
-                content=item.content,
-                comments_uri=item.comments_link,
-                author=item.author) for item in parser.items]))
+            title=parser.title)
+
+        entries = [Entry(
+            guid=item.id,
+            title=item.title,
+            uri=item.link,
+            summary=item.summary,
+            content=item.content,
+            comments_uri=item.comments_link,
+            author=item.author) for item in parser.items]
+
+        for entry in entries:
+            feed.entries.append(entry)
+            db.session.add(UserEntry(user=user, entry=entry))
+
+        db.session.add(feed)
 
     db.session.commit()

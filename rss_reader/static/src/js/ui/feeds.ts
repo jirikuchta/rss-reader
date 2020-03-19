@@ -4,9 +4,10 @@ import * as html from "util/html";
 
 let node = document.querySelector("#feeds") as HTMLElement;
 
-export function init() {
+export async function init() {
 	html.clear(node);
-	feeds.list().forEach(feed => node.appendChild(buildItem(feed)));
+	let items = await feeds.list();
+	items.forEach(feed => node.appendChild(buildItem(feed)));
 }
 
 function buildItem(feed: Feed) {

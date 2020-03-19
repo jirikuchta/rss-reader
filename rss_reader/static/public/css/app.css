@@ -43,16 +43,16 @@ main {
   border-color: #e2e2e2;
   background-color: #ffefd6;
 }
-#items {
+#entries {
   flex: 0 0 560px;
   overflow: auto;
   border-right: 1px solid #e2e2e2;
 }
-#items article {
+#entries article {
   padding: 16px;
   cursor: pointer;
   border-bottom: 1px solid #e2e2e2;
 }
-#items article:hover {
+#entries article:hover {
   background-color: #ffefd6;
 }

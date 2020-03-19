@@ -1,20 +1,18 @@
 export interface Feed {
-	feed_type: "RSS" | "ATOM";
+	id: number;
 	title: string;
-	link: string;
-	items: FeedItem[];
+	uri: string;
+	entries?: Entry[];
 }
 
-export interface FeedItem {
+export interface Entry {
 	id: string;
 	title: string;
-	link: string;
+	uri: string;
 	summary?: string;
 	content?: string;
 	comments_link?: string;
 	author?: string;
-	enclosures: Enclosure[];
-	categories: string[];
 }
 
 export interface Enclosure {

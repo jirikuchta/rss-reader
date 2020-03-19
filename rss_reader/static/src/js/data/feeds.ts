@@ -2,23 +2,22 @@ import { Feed } from "data/types";
 import * as pubsub from "util/pubsub";
 
 let feeds: Feed[] = [];
-let selected: string | null = null;
+let selected_feed_id: number | null = null;
 
 export async function init() {
-	type Data = {feeds:Feed[]};
-	let res = await fetch("/feeds");
-	let data:Data = await res.json();
-	feeds = data.feeds;
+	let res = await fetch("/api/feeds/");
+	feeds = await res.json();
 }
 
 export function list() { return feeds; }
 
 export function getSelected() {
-	if (!selected) { return null; }
-	return feeds.filter(f => f.link == selected)[0] || null;
+	if (selected_feed_id == null) { return null; }
+	let feed = feeds.filter(feed => feed.id == selected_feed_id)[0];
+	return feed ? feed : null;
 }
 
 export function select(feed: Feed) {
-	selected = feed.link;
+	selected_feed_id = feed.id;
 	pubsub.publish("selected-feed-change");
 }

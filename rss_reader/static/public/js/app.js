@@ -15,21 +15,21 @@ function subscribe(message, subscriber) {
 }
 
 let feeds = [];
-let selected = null;
+let selected_feed_id = null;
 async function init() {
-    let res = await fetch("/feeds");
-    let data = await res.json();
-    feeds = data.feeds;
+    let res = await fetch("/api/feeds/");
+    feeds = await res.json();
 }
 function list() { return feeds; }
 function getSelected() {
-    if (!selected) {
+    if (selected_feed_id == null) {
         return null;
     }
-    return feeds.filter(f => f.link == selected)[0] || null;
+    let feed = feeds.filter(feed => feed.id == selected_feed_id)[0];
+    return feed ? feed : null;
 }
 function select(feed) {
-    selected = feed.link;
+    selected_feed_id = feed.id;
     publish("selected-feed-change");
 }
 
@@ -56,9 +56,10 @@ function text(txt, parent) {
 }
 
 let node$1 = document.querySelector("#feeds");
-function init$1() {
+async function init$1() {
     clear(node$1);
-    list().forEach(feed => node$1.appendChild(buildItem(feed)));
+    let items = await list();
+    items.forEach(feed => node$1.appendChild(buildItem(feed)));
 }
 function buildItem(feed) {
     let node$1 = node("article", {}, feed.title);
@@ -66,32 +67,35 @@ function buildItem(feed) {
     return node$1;
 }
 
-function list$1() {
-    let selected_feed = getSelected();
-    return selected_feed ? selected_feed.items : [];
+async function list$1(feed) {
+    let res = await fetch(`/api/entries/${feed ? feed.id + "/" : ""}`);
+    let entries = await res.json();
+    return entries;
 }
 
-let node$2 = document.querySelector("#items");
+let node$2 = document.querySelector("#entries");
 function init$2() {
     build();
     subscribe("selected-feed-change", build);
 }
-function build() {
+async function build() {
     clear(node$2);
-    list$1().forEach(item => node$2.appendChild(buildItem$1(item)));
+    let selected_feed = getSelected();
+    let items = await list$1(selected_feed || undefined);
+    items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
 }
-function buildItem$1(item) {
+function buildItem$1(entry) {
     let node$1 = node("article");
-    node$1.appendChild(node("h3", {}, item.title));
-    if (item.summary) {
-        node$1.appendChild(node("p", {}, item.summary));
+    node$1.appendChild(node("h3", {}, entry.title));
+    if (entry.summary) {
+        node$1.appendChild(node("p", {}, entry.summary));
     }
     return node$1;
 }
 
 async function init$3() {
     await init();
-    init$1();
+    await init$1();
     init$2();
 }
 init$3();
