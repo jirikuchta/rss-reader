@@ -56,3 +56,7 @@ main {
 #entries article:hover {
   background-color: #ffefd6;
 }
+#detail {
+  overflow: auto;
+  padding: 16px;
+}

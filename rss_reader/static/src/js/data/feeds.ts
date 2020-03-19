@@ -2,7 +2,8 @@ import { Feed } from "data/types";
 import * as pubsub from "util/pubsub";
 
 let feeds: Feed[] = [];
-let selected_feed_id: number | null = null;
+
+export let selected: Feed | null = null;
 
 export async function init() {
 	let res = await fetch("/api/feeds/");
@@ -11,13 +12,7 @@ export async function init() {
 
 export function list() { return feeds; }
 
-export function getSelected() {
-	if (selected_feed_id == null) { return null; }
-	let feed = feeds.filter(feed => feed.id == selected_feed_id)[0];
-	return feed ? feed : null;
-}
-
 export function select(feed: Feed) {
-	selected_feed_id = feed.id;
-	pubsub.publish("selected-feed-change");
+	selected = feed;
+	pubsub.publish("feed-selected");
 }
