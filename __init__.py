@@ -1,23 +1,28 @@
 import os
 import click
-from flask import Flask
+from flask import Flask, render_template
 from flask.cli import with_appcontext
 
-from backend.parser import parse
-from backend.model import db
-from backend.model.feed import Feed, Entry
+from rss_reader.parser import parse
+from rss_reader.model import db
+from rss_reader.model.feed import Feed, Entry
 
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__,
+                static_folder="static/public",
+                static_url_path="/static")
+
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
     app.cli.add_command(init_db_command)
 
-    from . import api
-    app.register_blueprint(api.bp)
+    from rss_reader.api.feeds import bp as api_bp
+    app.register_blueprint(api_bp)
+
+    app.add_url_rule("/", view_func=lambda: render_template("index.html"))
 
     return app
 

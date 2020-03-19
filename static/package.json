@@ -1,10 +1,4 @@
 {
-    "name": "frontend",
-    "version": "1.0.0",
-    "description": "",
-    "dependencies": {
-        "http-server": "^0.12.1"
-    },
     "devDependencies": {
         "chokidar": "^3.3.1",
         "chokidar-cli": "^2.1.0",
@@ -18,9 +12,8 @@
         "build": "npm run build-js && npm run build-css",
         "build-js": "tsc && rollup --config",
         "build-css": "lessc src/css/app.less public/css/app.css",
-        "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\" \"npm run serve\"",
+        "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\"",
         "watch-js": "chokidar \"src/js/**/*.ts\" -c \"npm run build-js\"",
-        "watch-css": "chokidar \"src/css/**/*.less\" -c \"npm run build-css\"",
-        "serve": "http-server --proxy http://backend:5000"
+        "watch-css": "chokidar \"src/css/**/*.less\" -c \"npm run build-css\""
     }
 }

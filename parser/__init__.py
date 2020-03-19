@@ -2,9 +2,9 @@ import urllib.request
 from typing import Dict, Any
 from xml.etree import ElementTree as ET
 
-from backend.parser.common import FeedParser
-from backend.parser.atom import AtomParser
-from backend.parser.rss import RSSParser
+from rss_reader.parser.common import FeedParser
+from rss_reader.parser.atom import AtomParser
+from rss_reader.parser.rss import RSSParser
 
 
 def parse(uri: str) -> FeedParser:

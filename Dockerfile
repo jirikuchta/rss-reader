@@ -1,8 +1,8 @@
 FROM python:3.7-alpine
 
-COPY ./backend /backend
+COPY ./ /rss_reader
 
-WORKDIR /backend
+WORKDIR /rss_reader
 
 RUN pip install -r requirements.txt
 

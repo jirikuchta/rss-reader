@@ -1,4 +1,4 @@
-from backend.model import db
+from rss_reader.model import db
 
 
 class Feed(db.Model):
