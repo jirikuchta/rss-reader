@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./:/rss_reader/
+      - ./rss_reader:/rss_reader/
     ports:
       - 5000:5000
     environment:
@@ -20,7 +20,8 @@ services:
       context: .
       dockerfile: Dockerfile.static_files
     volumes:
-      - ./static:/rss_reader
+      - ./rss_reader/static/src:/rss_reader/src
+      - ./rss_reader/static/public:/rss_reader/public
     environment:
       SHELL: sh
     depends_on:

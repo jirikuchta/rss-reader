@@ -1,7 +1,7 @@
 import pytest
 from xml.etree import ElementTree as ET
 
-from backend.parser.common import NS
+from rss_reader.parser.common import NS
 
 
 def pytest_runtestloop(session: pytest.Session) -> None:

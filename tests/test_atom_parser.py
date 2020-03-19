@@ -1,7 +1,7 @@
 import pytest
 
-from backend.parser.common import ParserError, FeedType, Enclosure
-from backend.parser.atom import AtomParser, AtomItemParser
+from rss_reader.parser.common import ParserError, FeedType, Enclosure
+from rss_reader.parser.atom import AtomParser, AtomItemParser
 
 from tests.mocks.atom_feed import MockAtomFeed, MockAtomFeedItem, \
     MockAtomLink, MockAtomAuthor

@@ -1,6 +1,6 @@
 FROM python:3.7-alpine
 
-COPY ./ /rss_reader
+COPY ./rss_reader /rss_reader
 
 WORKDIR /rss_reader
 
