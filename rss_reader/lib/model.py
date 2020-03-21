@@ -1,10 +1,11 @@
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 
 
 db = SQLAlchemy()
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -16,7 +17,7 @@ class User(db.Model):
         cascade="save-update, merge, delete, delete-orphan")
 
     entries = db.relationship(
-        "UserEntry", back_populates="user",
+        "Entry", back_populates="user",
         cascade="save-update, merge, delete, delete-orphan")
 
 
@@ -49,6 +50,9 @@ class Entry(db.Model):
     __table_args__ = (db.UniqueConstraint("feed_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("user.id", ondelete="CASCADE"),
+                        nullable=False)
     feed_id = db.Column(db.Integer,
                         db.ForeignKey("feed.id", ondelete="CASCADE"),
                         nullable=False)
@@ -60,6 +64,7 @@ class Entry(db.Model):
     comments_uri = db.Column(db.String(255))
     author = db.Column(db.String(255))
 
+    user = db.relationship("User", back_populates="entries")
     feed = db.relationship("Feed", back_populates="entries")
 
     def to_json(self):
@@ -72,17 +77,3 @@ class Entry(db.Model):
             "content": self.content,
             "comments_uri": self.comments_uri,
             "author": self.author}
-
-
-class UserEntry(db.Model):
-    __tablename__ = "user_entry"
-
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("user.id", ondelete="CASCADE"),
-                        primary_key=True)
-    entry_id = db.Column(db.Integer,
-                         db.ForeignKey("entry.id", ondelete="CASCADE"),
-                         primary_key=True)
-
-    user = db.relationship("User", back_populates="entries")
-    entry = db.relationship("Entry")

@@ -62,7 +62,7 @@ function buildItem(feed) {
 
 let selected$1 = null;
 async function list$1(feed) {
-    let res = await fetch(`/api/entries/${feed ? feed.id + "/" : ""}`);
+    let res = await fetch(`/api/feeds/${feed ? feed.id + "/" : ""}entries/`);
     let entries = await res.json();
     return entries;
 }
@@ -96,7 +96,16 @@ function init$3() {
 }
 async function build$1() {
     clear(node$3);
-    selected$1 && (node$3.innerHTML = selected$1.content || "");
+    let entry = selected$1;
+    if (!entry) {
+        return;
+    }
+    let header = node("header");
+    header.appendChild(node("h3", {}, entry.title));
+    let body = node("div", { "id": "entry-content" });
+    body.innerHTML = entry.content || "";
+    node$3.appendChild(header);
+    node$3.appendChild(body);
 }
 
 async function init$4() {

@@ -52,10 +52,30 @@ main {
 		cursor: pointer;
 		border-bottom: 1px solid @border;
 		&:hover { background-color: @active; }
+
+		h3, p {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
 	}
 }
 
 #detail {
+	flex-grow: 1;
 	overflow: auto;
+
+	header {
+		padding: 16px;
+		border-bottom: 1px solid @border;
+		background-color: @bg;
+	}
+}
+
+#entry-content {
 	padding: 16px;
+
+	h1, h2, h3, h4, h5, h6, p {
+		padding-bottom: 16px;
+	}
 }

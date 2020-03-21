@@ -56,7 +56,30 @@ main {
 #entries article:hover {
   background-color: #ffefd6;
 }
+#entries article h3,
+#entries article p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 #detail {
+  flex-grow: 1;
   overflow: auto;
+}
+#detail header {
   padding: 16px;
+  border-bottom: 1px solid #e2e2e2;
+  background-color: #f8f8f8;
+}
+#entry-content {
+  padding: 16px;
+}
+#entry-content h1,
+#entry-content h2,
+#entry-content h3,
+#entry-content h4,
+#entry-content h5,
+#entry-content h6,
+#entry-content p {
+  padding-bottom: 16px;
 }

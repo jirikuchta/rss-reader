@@ -4,7 +4,7 @@ import * as pubsub from "util/pubsub";
 export let selected: Entry | null = null
 
 export async function list(feed?: Feed) {
-	let res = await fetch(`/api/entries/${feed ? feed.id + "/": ""}`);
+	let res = await fetch(`/api/feeds/${feed ? feed.id + "/": ""}entries/`);
 	let entries: Entry[] = await res.json();
 	return entries
 }
