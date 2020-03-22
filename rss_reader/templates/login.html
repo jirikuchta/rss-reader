@@ -7,9 +7,20 @@
     <body>
         <main>
             <form action="/login/" method="POST">
-                <label>username<input name="username" /></label>
-                <label>password<input name="password" type="password" /></label>
-                <label>remember<input type="checkbox" name="remember" /></label>
+                <div>
+                    <label for="username">Login</label>
+                    <span><input name="username" /></span>
+                </div>
+                <div>
+                    <label for="passoword">Password</label>
+                    <span><input name="password" type="password" /></span>
+                </div>
+                <div>
+                    <label>
+                        <input type="checkbox" name="remember" />
+                        Remember me
+                    </label>
+                </div>
                 <button>Log in</button>
             </form>
         </main>

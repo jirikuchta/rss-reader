@@ -33,6 +33,9 @@ main {
   border-right: 1px solid #e2e2e2;
   background-color: #f8f8f8;
 }
+#feeds header {
+  padding: 8px;
+}
 #feeds article {
   padding: 8px;
   cursor: pointer;

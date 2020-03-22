@@ -17,7 +17,10 @@ export async function build() {
 	if (!entry) { return; }
 
 	let header = html.node("header");
-	header.appendChild(html.node("h3", {}, entry.title));
+
+	let title = html.node("h3");
+	title.appendChild(html.node("a", {href: entry.uri, target: "_blank"}, entry.title));
+	header.appendChild(title);
 
 	let body = html.node("div", {"id": "entry-content"});
 	body.innerHTML = entry.content || "";

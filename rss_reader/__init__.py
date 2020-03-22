@@ -2,16 +2,10 @@ import os
 import click
 from flask import Flask
 from flask.cli import with_appcontext
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 
-
-from rss_reader.parser import parse
-from rss_reader.lib.model import db, User, Feed, Entry
-
-
-class LoginUser(UserMixin):
-    pass
+from rss_reader.lib.model import db, User
 
 
 def create_app():
@@ -52,26 +46,6 @@ def init_db_command():
 
     user = User(username="admin",
                 password=generate_password_hash("admin", method="sha256"))
-
-    TEST_FEEDS = (
-        "https://historje.tumblr.com/rss",
-        "http://feeds.feedburner.com/CssTricks")
-
-    for feed_uri in TEST_FEEDS:
-        parser = parse(feed_uri)
-        feed = Feed(
-            uri=parser.link,
-            title=parser.title,
-            entries=[Entry(
-                user=user,
-                guid=item.id,
-                title=item.title,
-                uri=item.link,
-                summary=item.summary,
-                content=item.content,
-                comments_uri=item.comments_link,
-                author=item.author) for item in parser.items])
-        user.feeds.append(feed)
 
     db.session.add(user)
     db.session.commit()

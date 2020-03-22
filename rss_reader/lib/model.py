@@ -73,6 +73,7 @@ class Entry(db.Model):
             "guid": self.guid,
             "feed_id": self.feed_id,
             "title": self.title,
+            "uri": self.uri,
             "summary": self.summary,
             "content": self.content,
             "comments_uri": self.comments_uri,
