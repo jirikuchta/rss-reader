@@ -1,3 +1,16 @@
+async function api(uri, init) {
+    try {
+        let res = await fetch(uri, init);
+        if (!res.ok) {
+            throw Error(`${res.status} ${res.statusText}`);
+        }
+        return await res.json();
+    }
+    catch (e) {
+        alert(e);
+    }
+}
+
 const storage = Object.create(null);
 function publish(message, publisher, data) {
     let subscribers = storage[message] || [];
@@ -17,8 +30,10 @@ function subscribe(message, subscriber) {
 let feeds = [];
 let selected = null;
 async function init() {
-    let res = await fetch("/api/feeds/");
-    feeds = await res.json();
+    let res = await api("/api/feeds/");
+    if (res && res.status == "ok") {
+        feeds = res.data;
+    }
 }
 function list() { return feeds; }
 function select(feed) {
@@ -26,22 +41,24 @@ function select(feed) {
     publish("feed-selected");
 }
 async function add(uri) {
-    let data = new FormData();
-    data.append("uri", uri);
-    let res = await fetch("/api/feeds/", { method: "POST", body: data });
-    if (!res.ok) {
-        return;
+    let body = new FormData();
+    body.append("uri", uri);
+    let res = await api("/api/feeds/", { method: "POST", body: body });
+    if (!res || res.status != "ok") {
+        return false;
     }
-    feeds.push(await res.json());
+    feeds.push(res.data);
     publish("feeds-changed");
+    return true;
 }
 async function remove(feed) {
-    let res = await fetch(`/api/feeds/${feed.id}/`, { method: "DELETE" });
-    if (!res.ok) {
-        return;
+    let res = await api(`/api/feeds/${feed.id}/`, { method: "DELETE" });
+    if (!res || res.status != "ok") {
+        return false;
     }
     feeds = feeds.filter(item => item.id != feed.id);
     publish("feeds-changed");
+    return true;
 }
 
 function node(name, attrs, content, parent) {
@@ -105,9 +122,11 @@ async function removeItem(feed) {
 
 let selected$1 = null;
 async function list$1(feed) {
-    let res = await fetch(`/api/feeds/${feed ? feed.id + "/" : ""}entries/`);
-    let entries = await res.json();
-    return entries;
+    let res = await api(`/api/feeds/${feed ? feed.id + "/" : ""}entries/`);
+    if (!res || res.status != "ok") {
+        return false;
+    }
+    return res.data;
 }
 function select$1(entry) {
     selected$1 = entry;
@@ -122,7 +141,7 @@ function init$2() {
 async function build$1() {
     clear(node$2);
     let items = await list$1(selected || undefined);
-    items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
+    items && items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
 }
 function buildItem$1(entry) {
     let node$1 = node("article");

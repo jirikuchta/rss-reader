@@ -16,7 +16,7 @@ export function init() {
 export async function build() {
 	html.clear(node);
 	let items = await entries.list(feeds.selected || undefined);
-	items.forEach(entry => node.appendChild(buildItem(entry)));
+	items && items.forEach(entry => node.appendChild(buildItem(entry)));
 }
 
 function buildItem(entry: Entry) {

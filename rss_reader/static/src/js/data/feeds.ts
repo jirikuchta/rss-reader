@@ -1,4 +1,5 @@
 import { Feed } from "data/types";
+import { api } from "util/api";
 import * as pubsub from "util/pubsub";
 
 let feeds: Feed[] = [];
@@ -6,8 +7,9 @@ let feeds: Feed[] = [];
 export let selected: Feed | null = null;
 
 export async function init() {
-	let res = await fetch("/api/feeds/");
-	feeds = await res.json();
+	type Res = {data:Feed[], status: string};
+	let res:Res = await api("/api/feeds/");
+	if (res && res.status == "ok") { feeds = res.data; }
 }
 
 export function list() { return feeds; }
@@ -18,17 +20,26 @@ export function select(feed: Feed) {
 }
 
 export async function add(uri: string) {
-	let data = new FormData();
-	data.append("uri", uri);
-	let res = await fetch("/api/feeds/", {method: "POST", body: data});
-	if (!res.ok) { return; }
-	feeds.push(await res.json());
+	let body = new FormData();
+	body.append("uri", uri);
+
+	type Res = {data:Feed, status: string};
+	let res:Res = await api("/api/feeds/", {method: "POST", body: body});
+	if (!res || res.status != "ok") { return false; }
+
+	feeds.push(res.data);
 	pubsub.publish("feeds-changed");
+
+	return true;
 }
 
 export async function remove(feed: Feed) {
-	let res = await fetch(`/api/feeds/${feed.id}/`, {method: "DELETE"});
-	if (!res.ok) { return; }
+	type Res = {data:null, status:string};
+	let res:Res = await api(`/api/feeds/${feed.id}/`, {method: "DELETE"});
+	if (!res || res.status != "ok") { return false; }
+
 	feeds = feeds.filter(item => item.id != feed.id);
 	pubsub.publish("feeds-changed");
+
+	return true;
 }

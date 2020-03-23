@@ -5,16 +5,16 @@ from werkzeug.security import check_password_hash
 from .model import User
 
 
-bp = Blueprint("views", __name__)
+views = Blueprint("views", __name__)
 
 
-@bp.route("/")
+@views.route("/")
 @login_required
 def index():
     return render_template("index.html")
 
 
-@bp.route("/login/", methods=["GET", "POST"])
+@views.route("/login/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form.get("username")
@@ -33,7 +33,7 @@ def login():
         return render_template("login.html")
 
 
-@bp.route("/logout/")
+@views.route("/logout/")
 def logout():
     logout_user()
     return redirect(url_for("views.login"))

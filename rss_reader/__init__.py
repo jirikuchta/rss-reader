@@ -27,11 +27,11 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from rss_reader.lib.views import bp as views_bp
-    app.register_blueprint(views_bp)
+    from rss_reader.lib.views import views
+    app.register_blueprint(views)
 
-    from rss_reader.lib.api import bp as api_bp
-    app.register_blueprint(api_bp)
+    from rss_reader.lib.api import api
+    app.register_blueprint(api)
 
     app.cli.add_command(init_db_command)
 
