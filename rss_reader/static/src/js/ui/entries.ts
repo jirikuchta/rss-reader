@@ -6,15 +6,16 @@ import * as entries from "data/entries";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-let node = document.querySelector("#entries") as HTMLElement;
+let node:HTMLElement;
 
 export function init() {
 	build();
 	pubsub.subscribe("feed-selected", build);
+	return node;
 }
 
-export async function build() {
-	html.clear(node);
+async function build() {
+	node ? html.clear(node) : node = html.node("div", {"id": "entries"});
 	let items = await entries.list(feeds.selected || undefined);
 	items && items.forEach(entry => node.appendChild(buildItem(entry)));
 }

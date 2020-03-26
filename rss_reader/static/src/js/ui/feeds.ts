@@ -3,15 +3,16 @@ import * as feeds from "data/feeds";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-let node = document.querySelector("#feeds") as HTMLElement;
+let node:HTMLElement;
 
 export function init() {
 	build();
 	pubsub.subscribe("feeds-changed", build);
+	return node;
 }
 
 async function build() {
-	html.clear(node);
+	node ? html.clear(node) : node = html.node("div", {"id": "feeds"});
 	node.appendChild(buildHeader());
 
 	let items = await feeds.list();

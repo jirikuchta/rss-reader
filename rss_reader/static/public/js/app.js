@@ -83,13 +83,14 @@ function text(txt, parent) {
     return n;
 }
 
-let node$1 = document.querySelector("#feeds");
+let node$1;
 function init$1() {
     build();
     subscribe("feeds-changed", build);
+    return node$1;
 }
 async function build() {
-    clear(node$1);
+    node$1 ? clear(node$1) : node$1 = node("div", { "id": "feeds" });
     node$1.appendChild(buildHeader());
     let items = await list();
     items.forEach(feed => node$1.appendChild(buildItem(feed)));
@@ -133,13 +134,14 @@ function select$1(entry) {
     publish("entry-selected");
 }
 
-let node$2 = document.querySelector("#entries");
+let node$2;
 function init$2() {
     build$1();
     subscribe("feed-selected", build$1);
+    return node$2;
 }
 async function build$1() {
-    clear(node$2);
+    node$2 ? clear(node$2) : node$2 = node("div", { "id": "entries" });
     let items = await list$1(selected || undefined);
     items && items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
 }
@@ -151,13 +153,14 @@ function buildItem$1(entry) {
     return node$1;
 }
 
-let node$3 = document.querySelector("#detail");
+let node$3;
 function init$3() {
     build$2();
     subscribe("entry-selected", build$2);
+    return node$3;
 }
 async function build$2() {
-    clear(node$3);
+    node$3 ? clear(node$3) : node$3 = node("div", { "id": "detail" });
     let entry = selected$1;
     if (!entry) {
         return;
@@ -172,10 +175,69 @@ async function build$2() {
     node$3.appendChild(body);
 }
 
-async function init$4() {
-    await init();
-    init$1();
-    init$2();
-    init$3();
+let node$4 = document.querySelector("main");
+function init$4() {
+    let sidebarNode = node("div", { id: "layout-sidebar" });
+    let entriesNode = node("div", { id: "layout-entries" });
+    let detailNode = node("div", { id: "layout-detail" });
+    sidebarNode.appendChild(init$1());
+    entriesNode.appendChild(init$2());
+    detailNode.appendChild(init$3());
+    node$4.appendChild(sidebarNode);
+    node$4.appendChild(entriesNode);
+    node$4.appendChild(detailNode);
+    node$4.insertBefore((new Resizer(sidebarNode, entriesNode)).node, entriesNode);
+    node$4.insertBefore((new Resizer(entriesNode, detailNode)).node, detailNode);
 }
-init$4();
+class Resizer {
+    constructor(leftNode, rightNode) {
+        this._ln = leftNode;
+        this._rn = rightNode;
+        this._lnMinWidth = parseInt(getComputedStyle(leftNode).minWidth) || 0;
+        this._rnMinWidth = parseInt(getComputedStyle(rightNode).minWidth) || 0;
+        this.node = node("div", { className: "layout-resizer" });
+        this.node.addEventListener("mousedown", this);
+        this._load();
+    }
+    handleEvent(ev) {
+        switch (ev.type) {
+            case "mousedown":
+                document.addEventListener("mousemove", this);
+                document.addEventListener("mouseup", this);
+                break;
+            case "mouseup":
+                document.removeEventListener("mousemove", this);
+                document.removeEventListener("mouseup", this);
+                this._save();
+                break;
+            case "mousemove":
+                this._resize(ev.clientX);
+                break;
+        }
+    }
+    _resize(pos) {
+        let totalWidth = this._ln.offsetWidth + this._rn.offsetWidth;
+        let lnWidth = Math.max(this._lnMinWidth, pos - this._ln.offsetLeft);
+        if (pos > this.node.offsetLeft) {
+            lnWidth = Math.min(lnWidth, totalWidth - this._rnMinWidth);
+        }
+        this._ln.style.flexBasis = `${lnWidth}px`;
+        this._rn.style.flexBasis = `${totalWidth - lnWidth}px`;
+    }
+    _save() {
+        localStorage.setItem(`${this._ln.id}-width`, `${this._ln.offsetWidth}`);
+        localStorage.setItem(`${this._rn.id}-width`, `${this._rn.offsetWidth}`);
+    }
+    _load() {
+        let lnWidth = localStorage.getItem(`${this._ln.id}-width`);
+        let rnWidth = localStorage.getItem(`${this._rn.id}-width`);
+        lnWidth && (this._ln.style.flexBasis = `${lnWidth}px`);
+        rnWidth && (this._rn.style.flexBasis = `${rnWidth}px`);
+    }
+}
+
+async function init$5() {
+    await init();
+    init$4();
+}
+init$5();

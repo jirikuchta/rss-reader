@@ -3,15 +3,16 @@ import * as entries from "data/entries";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-let node = document.querySelector("#detail") as HTMLElement;
+let node:HTMLElement;
 
 export function init() {
 	build();
 	pubsub.subscribe("entry-selected", build);
+	return node;
 }
 
-export async function build() {
-	html.clear(node);
+async function build() {
+	node ? html.clear(node) : node = html.node("div", {"id": "detail"});
 
 	let entry = entries.selected;
 	if (!entry) { return; }

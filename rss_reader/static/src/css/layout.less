@@ -1,0 +1,40 @@
+main {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+	position: relative;
+}
+
+#layout-sidebar {
+	flex: 0 0 280px;
+	min-width: 200px;
+	overflow: auto;
+	border-right: 1px solid var(--color-border);
+	background-color: var(--color-background);
+}
+
+#layout-entries {
+	flex: 0 0 560px;
+	min-width: 320px;
+	overflow: auto;
+	border-right: 1px solid var(--color-border);
+}
+
+#layout-detail {
+	flex-grow: 1;
+	min-width: 480px;
+	overflow: auto;
+}
+
+.layout-resizer {
+	flex: 0 0 auto;
+	position: relative;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 0px; bottom: 0px;
+		width: 5px; left: -2px;
+		cursor: ew-resize;
+	}
+}
