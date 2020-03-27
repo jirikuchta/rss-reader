@@ -3,38 +3,45 @@ main {
 	height: 100vh;
 	overflow: hidden;
 	position: relative;
+
+	--layout-sidebar-width: 15%;
+	--layout-sidebar-min-width: 200px;
+	--layout-entries-width: 30%;
+	--layout-entries-min-width: 320px;
+	--layout-detail-min-width: 480px;
 }
 
 #layout-sidebar {
-	flex: 0 0 280px;
-	min-width: 200px;
+	flex: 0 0 var(--layout-sidebar-width);
+	min-width: var(--layout-sidebar-min-width);
+	max-width: calc(100% - 800px);
 	overflow: auto;
 	border-right: 1px solid var(--color-border);
 	background-color: var(--color-background);
 }
 
 #layout-entries {
-	flex: 0 0 560px;
-	min-width: 320px;
+	flex: 0 1 var(--layout-entries-width);
+	min-width: var(--layout-entries-min-width);
+	max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-detail-min-width));
 	overflow: auto;
 	border-right: 1px solid var(--color-border);
 }
 
 #layout-detail {
 	flex-grow: 1;
-	min-width: 480px;
+	min-width: var(--layout-detail-min-width);
+	max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-entries-min-width));
 	overflow: auto;
 }
 
-.layout-resizer {
-	flex: 0 0 auto;
+.with-resizer {
 	position: relative;
+}
 
-	&::before {
-		content: "";
-		position: absolute;
-		top: 0px; bottom: 0px;
-		width: 5px; left: -2px;
-		cursor: ew-resize;
-	}
+.resizer {
+	width: 4px;
+	position: absolute;
+	top: 0px; bottom: 0px; right: 0px;
+	cursor: ew-resize;
 }

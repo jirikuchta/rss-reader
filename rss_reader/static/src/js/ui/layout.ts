@@ -20,26 +20,27 @@ export function init() {
 	node.appendChild(entriesNode);
 	node.appendChild(detailNode);
 
-	node.insertBefore((new Resizer(sidebarNode, entriesNode)).node, entriesNode);
-	node.insertBefore((new Resizer(entriesNode, detailNode)).node, detailNode);
+	new Resizer(sidebarNode, "sidebar-width");
+	new Resizer(entriesNode, "entries-width");
 }
 
 
 class Resizer {
-	node: HTMLElement;
-	_ln: HTMLElement;
-	_rn: HTMLElement;
-	_lnMinWidth: number;
-	_rnMinWidth: number;
+	_node: HTMLElement;
+	_storageId?: string;
 
-	constructor(leftNode: HTMLElement, rightNode: HTMLElement) {
-		this._ln = leftNode;
-		this._rn = rightNode;
-		this._lnMinWidth = parseInt(getComputedStyle(leftNode).minWidth) || 0;
-		this._rnMinWidth = parseInt(getComputedStyle(rightNode).minWidth) || 0;
+	constructor(node: HTMLElement, storageId?: string) {
+		this._node = node;
+		this._storageId = storageId;
+		this._build();
+	}
 
-		this.node = html.node("div", {className: "layout-resizer"});
-		this.node.addEventListener("mousedown", this);
+	_build() {
+		let node = html.node("div", {className: "resizer"});
+		node.addEventListener("mousedown", this);
+
+		this._node.classList.add("with-resizer");
+		this._node.appendChild(node);
 
 		this._load();
 	}
@@ -62,26 +63,18 @@ class Resizer {
 	}
 
 	_resize(pos: number) {
-		let totalWidth = this._ln.offsetWidth + this._rn.offsetWidth;
-		let lnWidth = Math.max(this._lnMinWidth, pos - this._ln.offsetLeft);
-
-		if (pos > this.node.offsetLeft) {
-			lnWidth = Math.min(lnWidth, totalWidth - this._rnMinWidth);
-		}
-
-		this._ln.style.flexBasis = `${lnWidth}px`;
-		this._rn.style.flexBasis = `${totalWidth - lnWidth}px`;;
+		let widthPx = pos - this._node.offsetLeft;
+		let widthPerc = (widthPx / document.body.offsetWidth) * 100;
+		this._node.style.flexBasis = `${widthPerc}%`;
 	}
 
 	_save() {
-		localStorage.setItem(`${this._ln.id}-width`, `${this._ln.offsetWidth}`);
-		localStorage.setItem(`${this._rn.id}-width`, `${this._rn.offsetWidth}`);
+		let widthPerc = (this._node.offsetWidth / document.body.offsetWidth) * 100;
+		this._storageId && localStorage.setItem(this._storageId, `${widthPerc}`);
 	}
 
 	_load() {
-		let lnWidth = localStorage.getItem(`${this._ln.id}-width`);
-		let rnWidth = localStorage.getItem(`${this._rn.id}-width`);
-		lnWidth && (this._ln.style.flexBasis = `${lnWidth}px`);
-		rnWidth && (this._rn.style.flexBasis = `${rnWidth}px`);
+		let widthPerc = this._storageId && localStorage.getItem(this._storageId);
+		widthPerc && (this._node.style.flexBasis = `${widthPerc}%`);
 	}
 }
