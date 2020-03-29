@@ -3,25 +3,25 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: ./docker/app/Dockerfile
     volumes:
       - ./rss_reader:/rss_reader/
     ports:
       - 5000:5000
     environment:
-      FLASK_APP: .
-      FLASK_ENV: development
-      DATABASE_URI: sqlite:////tmp/rss_reader.db
+      FLASK_APP: ${FLASK_APP}
+      FLASK_ENV: ${FLASK_ENV}
+      DATABASE_URI: ${DATABASE_URI}
     command: >
-      sh -c "flask run --host=0.0.0.0"
+      sh -c "flask run --host=${HOST}"
 
-  static_files:
+  static_builder:
     build:
       context: .
-      dockerfile: Dockerfile.static_files
+      dockerfile: ./docker/static_builder/Dockerfile
     volumes:
       - ./rss_reader/static/src:/rss_reader/src
-      - ./rss_reader/static/public:/rss_reader/public
+      - ./rss_reader/static/dist:/rss_reader/dist
     environment:
       SHELL: sh
     depends_on:

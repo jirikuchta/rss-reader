@@ -1,6 +1,6 @@
 FROM node:12-alpine
 
-COPY ./rss_reader/static /rss_reader
+COPY /rss_reader/static /rss_reader
 
 WORKDIR /rss_reader
 
