@@ -11,7 +11,7 @@
     "scripts": {
         "build": "npm run build-js && npm run build-css",
         "build-js": "tsc && rollup --config",
-        "build-css": "lessc src/css/app.less public/css/app.css",
+        "build-css": "lessc src/css/app.less dist/css/app.css",
         "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\"",
         "watch-js": "chokidar \"src/js/**/*.ts\" -c \"npm run build-js\"",
         "watch-css": "chokidar \"src/css/**/*.less\" -c \"npm run build-css\""

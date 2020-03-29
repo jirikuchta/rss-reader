@@ -10,7 +10,7 @@ from rss_reader.lib.model import db, User
 
 def create_app():
     app = Flask(__name__,
-                static_folder="static/public",
+                static_folder="static/dist",
                 static_url_path="/static")
 
     app.config["SECRET_KEY"] = b'secret_key'  # FIXME
