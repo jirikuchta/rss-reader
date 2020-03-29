@@ -1,0 +1,31 @@
+button {
+	margin: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+
+	cursor: pointer;
+	border: none;
+	background-color: transparent;
+	padding: 0;
+
+	&:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+
+	&[type=submit], &[type=button] {
+		height: 32px;
+		border: 1px solid var(--color-border);
+		border-radius: 4px;
+	}
+
+	&[type=submit] {
+		background-color: var(--color-active);
+		font-weight: bold;
+	}
+
+	&[type=button] {
+		background-color: #fff;
+	}
+}

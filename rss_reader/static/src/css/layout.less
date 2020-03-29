@@ -35,13 +35,14 @@ main {
 	overflow: auto;
 }
 
-.with-resizer {
-	position: relative;
-}
-
 .resizer {
-	width: 4px;
-	position: absolute;
-	top: 0px; bottom: 0px; right: 0px;
-	cursor: ew-resize;
+	position: relative;
+
+	&::before {
+		content: "";
+		width: 5px;
+		position: absolute;
+		top: 0px; bottom: 0px; left: -2px;
+		cursor: ew-resize;
+	}
 }
