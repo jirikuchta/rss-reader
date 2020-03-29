@@ -2,7 +2,8 @@ from flask import Blueprint, jsonify, abort, request
 from flask_login import current_user
 from functools import wraps
 
-from rss_reader.lib.model import db, Feed, Entry
+from rss_reader.lib.model import db, Feed, FeedEntry, Subscription, \
+    SubscriptionEntry
 from rss_reader.parser import parse
 
 
@@ -21,79 +22,93 @@ def api_response(login_required: bool = True):
     return decorator
 
 
-@api.route("/feeds/", methods=["GET"])
+@api.route("/subscriptions/", methods=["GET"])
 @api_response(login_required=False)
-def list_feeds():
-    feeds = Feed.query.filter(Feed.user_id == current_user.id).all()
-    return ([feed.to_json() for feed in feeds], "ok")
+def list_subscriptions():
+    subscriptions = Subscription.query.filter(
+        Subscription.user_id == current_user.id).all()
+    return ([subscription.to_json() for subscription in subscriptions], "ok")
 
 
-@api.route("/feeds/", methods=["POST"])
+@api.route("/subscriptions/", methods=["POST"])
 @api_response(login_required=True)
-def add_feed():
-    try:
-        parser = parse(request.form.get("uri"))
-    except Exception:
-        return (None, "parser_error")
+def subscribe():
+    feed = Feed.query.filter(Feed.uri == request.form.get("uri")).first()
 
-    feed = Feed(
+    if feed is None:
+        try:
+            parser = parse(request.form.get("uri"))
+        except Exception:
+            return (None, "parser_error")
+
+        feed = Feed(
+            uri=parser.link,
+            title=parser.title,
+            entries=[FeedEntry(
+                guid=item.id,
+                title=item.title,
+                uri=item.link,
+                summary=item.summary,
+                content=item.content,
+                comments_uri=item.comments_link,
+                author=item.author) for item in parser.items])
+
+    subscription = Subscription(
         user_id=current_user.id,
-        uri=parser.link,
-        title=parser.title,
-        entries=[Entry(
-            user_id=current_user.id,
-            guid=item.id,
-            title=item.title,
-            uri=item.link,
-            summary=item.summary,
-            content=item.content,
-            comments_uri=item.comments_link,
-            author=item.author) for item in parser.items])
+        feed=feed,
+        entries=feed.entries)
 
-    db.session.add(feed)
-    db.session.flush()
+    db.session.add(user_feed)
     db.session.commit()
 
     return (feed.to_json(), "ok")
 
 
-@api.route("/feeds/<int:feed_id>/", methods=["GET"])
+@api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
 @api_response(login_required=True)
-def get_feed(feed_id: int):
-    feed = Feed.query.get(feed_id)
-    if not feed:
+def get_subscription(feed_id: int):
+    subscription = Subscription.query.filter(
+        Subscription.user_id == current_user.id,
+        Subscription.feed_id == feed_id)
+
+    if not subscription:
         return (None, "not_found")
-    if feed.user_id != current_user.id:
-        return (None, "permission_denied")
-    return (feed.to_json(), "ok")
+
+    return (subscription.to_json(), "ok")
 
 
-@api.route("/feeds/<int:feed_id>/", methods=["DELETE"])
+@api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
 @api_response(login_required=True)
-def delete_feed(feed_id: int):
-    feed = Feed.query.get(feed_id)
-    if not feed:
+def unsubscribe(feed_id: int):
+    subscription = Subscription.query.filter(
+        Subscription.user_id == current_user.id,
+        Subscription.feed_id == feed_id)
+
+    if not subscription:
         return (None, "not_found")
-    if feed.user_id != current_user.id:
-        return (None, "permission_denied")
-    db.session.delete(feed)
+
+    db.session.delete(subscription)
     db.session.commit()
+
     return (None, "ok")
 
 
-@api.route("/feeds/<int:feed_id>/entries/", methods=["GET"])
+@api.route("/subscriptions/<int:feed_id>/entries/", methods=["GET"])
 @api_response(login_required=True)
-def list_feed_entries(feed_id: int):
-    feed = Feed.query.get(feed_id)
-    if not feed:
+def list_subscription_entries(feed_id: int):
+    subscription = Subscription.query.filter(
+        Subscription.user_id == current_user.id,
+        Subscription.feed_id == feed_id)
+
+    if not subscription:
         return (None, "not_found")
-    if feed.user_id != current_user.id:
-        return (None, "permission_denied")
-    return ([entry.to_json() for entry in feed.entries], "ok")
+
+    return ([entry.to_json() for entry in subscription.entries], "ok")
 
 
-@api.route("/feeds/entries/", methods=["GET"])
+@api.route("/subscriptions/entries/", methods=["GET"])
 @api_response(login_required=True)
 def list_all_entries():
-    entries = Entry.query.filter(Entry.user_id == current_user.id).all()
+    entries = SubscriptionEntry.query.filter(
+        SubscriptionEntry.user_id == current_user.id).all()
     return ([entry.to_json() for entry in entries], "ok")

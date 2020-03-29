@@ -54,11 +54,11 @@ function buildCategory(cat: string) {
 	catNode.appendChild(html.node("span", {className: "count"}, "50"));
 	catNode.appendChild(html.button({className: "plain menu-opener", icon: "dots-horizontal"}));
 
-	let feedsNode = html.node("ul");
-	feeds.filter(feed => feed.category == cat).forEach(feed => feedsNode.appendChild(buildFeed(feed.name)));
+	let items = html.node("ul");
+	feeds.filter(feed => feed.category == cat).forEach(feed => items.appendChild(buildFeed(feed.name)));
 
 	frag.appendChild(catNode);
-	frag.appendChild(feedsNode);
+	frag.appendChild(items);
 
 	return frag;
 }

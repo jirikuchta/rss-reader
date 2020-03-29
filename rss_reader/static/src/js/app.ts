@@ -1,8 +1,8 @@
-import * as feeds from "data/feeds";
+import * as subscriptions from "data/subscriptions";
 import * as layout from "ui/layout";
 
 async function init() {
-	await feeds.init();
+	await subscriptions.init();
 	layout.init();
 }
 

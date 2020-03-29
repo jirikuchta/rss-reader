@@ -27,11 +27,11 @@ function subscribe(message, subscriber) {
     storage[message].push(subscriber);
 }
 
-let feeds = [];
+let subscriptions = [];
 async function init() {
-    let res = await api("/api/feeds/");
+    let res = await api("/api/subscriptions/");
     if (res && res.status == "ok") {
-        feeds = res.data;
+        subscriptions = res.data;
     }
 }
 
@@ -102,7 +102,7 @@ function fragment() {
 
 let node$1;
 let categories = ["tech", "humor+art"];
-let feeds$1 = [
+let feeds = [
     { "name": "Changelog master feed", "category": "tech" },
     { "name": "CSS-Tricks", "category": "tech" },
     { "name": "David Walsch Blog", "category": "tech" },
@@ -141,10 +141,10 @@ function buildCategory(cat) {
     catNode.appendChild(node("span", { className: "title" }, cat));
     catNode.appendChild(node("span", { className: "count" }, "50"));
     catNode.appendChild(button({ className: "plain menu-opener", icon: "dots-horizontal" }));
-    let feedsNode = node("ul");
-    feeds$1.filter(feed => feed.category == cat).forEach(feed => feedsNode.appendChild(buildFeed(feed.name)));
+    let items = node("ul");
+    feeds.filter(feed => feed.category == cat).forEach(feed => items.appendChild(buildFeed(feed.name)));
     frag.appendChild(catNode);
-    frag.appendChild(feedsNode);
+    frag.appendChild(items);
     return frag;
 }
 function buildFeed(feed) {
@@ -156,8 +156,8 @@ function buildFeed(feed) {
 }
 
 let selected = null;
-async function list(feed) {
-    let res = await api(`/api/feeds/${feed ? feed.id + "/" : ""}entries/`);
+async function list(subscription) {
+    let res = await api(`/api/subscriptions/${subscription ? subscription.id + "/" : ""}entries/`);
     if (!res || res.status != "ok") {
         return false;
     }
@@ -171,7 +171,7 @@ function select(entry) {
 let node$2;
 function init$2() {
     build$1();
-    subscribe("feed-selected", build$1);
+    subscribe("subscription-selected", build$1);
     return node$2;
 }
 async function build$1() {

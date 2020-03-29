@@ -13,50 +13,36 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(255), nullable=False)
 
     feeds = db.relationship(
-        "Feed", back_populates="user",
-        cascade="save-update, merge, delete, delete-orphan")
-
-    entries = db.relationship(
-        "Entry", back_populates="user",
+        "Subscription", back_populates="user",
         cascade="save-update, merge, delete, delete-orphan")
 
 
 class Feed(db.Model):
     __tablename__ = "feed"
-    __table_args__ = (db.UniqueConstraint("user_id", "uri"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("user.id", ondelete="CASCADE"),
-                        nullable=False)
-    uri = db.Column(db.String(255), nullable=False)
+    uri = db.Column(db.String(255), nullable=False, unique=True)
     title = db.Column(db.Text, nullable=False)
 
-    user = db.relationship("User", back_populates="feeds")
-
     entries = db.relationship(
-        "Entry", back_populates="feed",
+        "FeedEntry", back_populates="feed",
         cascade="save-update, merge, delete, delete-orphan")
 
-    def to_json(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "uri": self.uri}
+    subscriptions = db.relationship(
+        "Subscription", back_populates="feed",
+        cascade="save-update, merge, delete, delete-orphan")
 
 
-class Entry(db.Model):
-    __tablename__ = "entry"
+class FeedEntry(db.Model):
+    __tablename__ = "feed_entry"
     __table_args__ = (db.UniqueConstraint("feed_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("user.id", ondelete="CASCADE"),
-                        nullable=False)
+
     feed_id = db.Column(db.Integer,
                         db.ForeignKey("feed.id", ondelete="CASCADE"),
                         nullable=False)
-    guid = db.Column(db.String(255), nullable=False)
+    guid = db.Column(db.String(255), nullable=False, index=True)
     title = db.Column(db.Text, nullable=False)
     uri = db.Column(db.String(255), nullable=False)
     summary = db.Column(db.Text)
@@ -64,17 +50,69 @@ class Entry(db.Model):
     comments_uri = db.Column(db.String(255))
     author = db.Column(db.String(255))
 
-    user = db.relationship("User", back_populates="entries")
     feed = db.relationship("Feed", back_populates="entries")
+
+    subscriptions = db.relationship(
+        "SubscriptionEntry", back_populates="feed_entry",
+        cascade="save-update, merge, delete, delete-orphan")
+
+
+class Subscription(db.Model):
+    __tablename__ = "subscription"
+    __table_args__ = (db.PrimaryKeyConstraint("user_id", "feed_id"),)
+
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("user.id", ondelete="CASCADE"),
+                        nullable=False)
+    feed_id = db.Column(db.Integer,
+                        db.ForeignKey("feed.id", ondelete="CASCADE"),
+                        nullable=False)
+    title = db.Column(db.Text, nullable=True)
+
+    user = db.relationship("User", back_populates="feeds")
+    feed = db.relationship("Feed", back_populates="subscriptions")
+
+    entries = db.relationship(
+        "SubscriptionEntry", back_populates="subscription",
+        cascade="save-update, merge, delete, delete-orphan")
 
     def to_json(self):
         return {
-            "id": self.id,
-            "guid": self.guid,
-            "feed_id": self.feed_id,
-            "title": self.title,
-            "uri": self.uri,
-            "summary": self.summary,
-            "content": self.content,
-            "comments_uri": self.comments_uri,
-            "author": self.author}
+            "id": self.feed.id,
+            "title": self.title if self.title is not None else self.feed.title,
+            "uri": self.feed.uri}
+
+
+class SubscriptionEntry(db.Model):
+    __tablename__ = "subscription_entry"
+    __table_args__ = (
+        db.PrimaryKeyConstraint("user_id", "entry_id"),
+        db.ForeignKeyConstraint(["feed_id", "user_id"],
+                                refcolumns=["subscription.feed_id",
+                                            "subscription.user_id"],
+                                ondelete="CASCADE"))
+
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("user.id", ondelete="CASCADE"),
+                        nullable=False)
+    entry_id = db.Column(db.Integer,
+                         db.ForeignKey("feed_entry.id", ondelete="CASCADE"),
+                         nullable=False)
+    feed_id = db.Column(db.Integer, nullable=False)
+    unread = db.Column(db.Boolean, nullable=False, default=True, index=True)
+    starred = db.Column(db.Boolean, nullable=False, default=False, index=True)
+
+    subscription = db.relationship("Subscription", back_populates="entries")
+    feed_entry = db.relationship("FeedEntry", back_populates="subscriptions")
+
+    def to_json(self):
+        return {
+            "id": self.feed_entry.id,
+            "title": self.feed_entry.title,
+            "uri": self.feed_entry.uri,
+            "summary": self.feed_entry.summary,
+            "content": self.feed_entry.content,
+            "comments_uri": self.feed_entry.comments_uri,
+            "author": self.feed_entry.author,
+            "unread": self.unread,
+            "starred": self.starred}

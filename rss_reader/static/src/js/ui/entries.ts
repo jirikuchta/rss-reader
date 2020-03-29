@@ -1,6 +1,6 @@
 import { Entry } from "data/types";
 
-import * as feeds from "data/feeds";
+import * as subscriptions from "data/subscriptions";
 import * as entries from "data/entries";
 
 import * as html from "util/html";
@@ -10,13 +10,13 @@ let node:HTMLElement;
 
 export function init() {
 	build();
-	pubsub.subscribe("feed-selected", build);
+	pubsub.subscribe("subscription-selected", build);
 	return node;
 }
 
 async function build() {
 	node ? html.clear(node) : node = html.node("div", {"id": "entries"});
-	let items = await entries.list(feeds.selected || undefined);
+	let items = await entries.list(subscriptions.selected || undefined);
 	items && items.forEach(entry => node.appendChild(buildItem(entry)));
 }
 
