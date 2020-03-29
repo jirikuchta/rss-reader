@@ -5,7 +5,7 @@ from flask.cli import with_appcontext
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 
-from rss_reader.lib.model import db, User
+from rss_reader.lib.models import db, User
 
 
 def create_app():
@@ -13,7 +13,9 @@ def create_app():
                 static_folder="static/dist",
                 static_url_path="/static")
 
-    app.config["SECRET_KEY"] = b'secret_key'  # FIXME
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+    app.config["TESTING"] = bool(os.environ.get("TESTING"))
+    app.config["DEBUG"] = bool(os.environ.get("DEBUG"))
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 

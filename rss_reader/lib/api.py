@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, abort, request
 from flask_login import current_user
 from functools import wraps
 
-from rss_reader.lib.model import db, Feed, FeedEntry, Subscription, \
+from rss_reader.lib.models import db, Feed, FeedEntry, Subscription, \
     SubscriptionEntry
 from rss_reader.parser import parse
 

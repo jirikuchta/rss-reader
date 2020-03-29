@@ -24,7 +24,5 @@ services:
       - ./rss_reader/static/dist:/rss_reader/dist
     environment:
       SHELL: sh
-    depends_on:
-      - app
     command: >
       sh -c "npm run build && npm run watch"
