@@ -1,27 +1,22 @@
 import * as html from "util/html";
 
 import * as nav from "ui/nav";
-import * as entries from "ui/entries";
+import * as list from "ui/list";
 import * as detail from "ui/detail";
 
 
 let node = document.querySelector("main") as HTMLElement;
 
 export function init() {
-	let sidebarNode = html.node("div", {id: "layout-sidebar"});
-	let entriesNode = html.node("div", {id: "layout-entries"});
-	let detailNode = html.node("div", {id: "layout-detail"});
+	let navNode = nav.init();
+	let listNode = list.init();
 
-	sidebarNode.appendChild(nav.init());
-	entriesNode.appendChild(entries.init());
-	detailNode.appendChild(detail.init());
+	node.appendChild(navNode);
+	node.appendChild(listNode);
+	node.appendChild(detail.init());
 
-	node.appendChild(sidebarNode);
-	node.appendChild(entriesNode);
-	node.appendChild(detailNode);
-
-	new Resizer(sidebarNode, "sidebar-width");
-	new Resizer(entriesNode, "entries-width");
+	new Resizer(navNode, "sidebar-width");
+	new Resizer(listNode, "entries-width");
 }
 
 

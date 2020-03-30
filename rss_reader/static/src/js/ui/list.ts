@@ -8,6 +8,7 @@ import * as pubsub from "util/pubsub";
 
 let node:HTMLElement;
 
+
 export function init() {
 	build();
 	pubsub.subscribe("subscription-selected", build);
@@ -15,7 +16,7 @@ export function init() {
 }
 
 async function build() {
-	node ? html.clear(node) : node = html.node("div", {"id": "entries"});
+	node ? html.clear(node) : node = html.node("section", {"id": "list"});
 	let items = await entries.list(subscriptions.selected || undefined);
 	items && items.forEach(entry => node.appendChild(buildItem(entry)));
 }

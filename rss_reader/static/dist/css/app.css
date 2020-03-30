@@ -52,7 +52,7 @@ main {
   --layout-entries-min-width: 320px;
   --layout-detail-min-width: 480px;
 }
-#layout-sidebar {
+main > nav {
   flex: 0 0 var(--layout-sidebar-width);
   min-width: var(--layout-sidebar-min-width);
   max-width: calc(100% - 800px);
@@ -60,14 +60,14 @@ main {
   border-right: 1px solid var(--color-border);
   background-color: var(--color-background);
 }
-#layout-entries {
+#list {
   flex: 0 1 var(--layout-entries-width);
   min-width: var(--layout-entries-min-width);
   max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-detail-min-width));
   overflow: auto;
   border-right: 1px solid var(--color-border);
 }
-#layout-detail {
+#detail {
   flex-grow: 1;
   min-width: var(--layout-detail-min-width);
   max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-entries-min-width));
@@ -112,7 +112,7 @@ button[type=submit] {
 button[type=button] {
   background-color: #fff;
 }
-.nav-item {
+nav li {
   display: flex;
   align-items: center;
   line-height: 3.2rem;
@@ -121,47 +121,61 @@ button[type=button] {
   border-left: 4px solid transparent;
   cursor: pointer;
 }
-.nav-item.category {
+nav li.category {
   padding-left: 1.4rem;
 }
-.nav-item.category .opener {
-  width: 2.4rem;
-  height: 2.4rem;
-  margin-right: 1rem;
-}
-.nav-item.category.collapsed .opener .icon {
+nav li.category.collapsed .icon-chevron-down {
   transform: rotate(-90deg);
 }
-.nav-item.category.collapsed + ul {
+nav li.category.collapsed ~ li {
   display: none;
 }
-.nav-item .title {
+nav li .title {
   flex-grow: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.nav-item .menu-opener {
-  width: 2.4rem;
-  height: 2.4rem;
-  font-size: 1.6rem;
-  display: none;
-}
-.nav-item .count {
+nav li .count {
   padding-right: 0.4rem;
   font-size: 1.1rem;
   color: var(--color-grey);
 }
-.nav-item.selected {
+nav li button {
+  width: 2.4rem;
+  height: 2.4rem;
+}
+nav li button.btn-chevron {
+  margin-right: 1rem;
+}
+nav li button.btn-dots {
+  font-size: 1.6rem;
+  display: none;
+}
+nav li.selected {
   border-left-color: var(--color-active);
   color: var(--color-active);
 }
-.nav-item:hover {
+nav li:hover {
   background-color: var(--color-hover);
 }
-.nav-item:hover .menu-opener {
+nav li:hover .btn-dots {
   display: inline;
 }
-.nav-item:hover .count {
+nav li:hover .count {
   display: none;
+}
+#list article {
+  padding: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-border);
+}
+#list article:hover {
+  background-color: var(--color-active);
+}
+#list article h3,
+#list article p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

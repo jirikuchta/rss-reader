@@ -44,29 +44,26 @@ async function build() {
 }
 
 function buildCategory(cat: string) {
-	let frag = html.fragment();
+	let node = html.node("ul");
 
-	let catNode = node.appendChild(html.node("div", {className: "nav-item category", tabIndex: "0"}));
-	let btn = html.button({icon: "chevron-down", className: "plain opener"});
-	btn.addEventListener("click", e => catNode.classList.toggle("collapsed"));
-	catNode.appendChild(btn);
-	catNode.appendChild(html.node("span", {className: "title"}, cat));
-	catNode.appendChild(html.node("span", {className: "count"}, "50"));
-	catNode.appendChild(html.button({className: "plain menu-opener", icon: "dots-horizontal"}));
+	node.appendChild(buildItem(cat, true));
+	feeds.filter(feed => feed.category == cat).forEach(feed => node.appendChild(buildItem(feed.name)));
 
-	let items = html.node("ul");
-	feeds.filter(feed => feed.category == cat).forEach(feed => items.appendChild(buildFeed(feed.name)));
-
-	frag.appendChild(catNode);
-	frag.appendChild(items);
-
-	return frag;
+	return node;
 }
 
-function buildFeed(feed: string) {
-	let node = html.node("li", {className: "nav-item", tabIndex: "0"});
-	node.appendChild(html.node("span", {className: "title"}, feed));
+function buildItem(name: string, isCategory: boolean = false) {
+	let node = html.node("li", {tabIndex: "0"});
+
+	if (isCategory) {
+		node.classList.add("category");
+		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
+		btn.addEventListener("click", e => node.classList.toggle("collapsed"));
+	}
+
+	node.appendChild(html.node("span", {className: "title"}, name));
 	node.appendChild(html.node("span", {className: "count"}, "50"));
-	html.button({className: "plain menu-opener", icon: "dots-horizontal"}, "", node);
+
+	html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
 	return node;
 }

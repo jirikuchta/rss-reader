@@ -96,9 +96,6 @@ function icon(type, title = "", parent) {
     parent && parent.appendChild(s);
     return s;
 }
-function fragment() {
-    return document.createDocumentFragment();
-}
 
 let node$1;
 let categories = ["tech", "humor+art"];
@@ -133,29 +130,24 @@ async function build() {
     categories.forEach(cat => node$1.appendChild(buildCategory(cat)));
 }
 function buildCategory(cat) {
-    let frag = fragment();
-    let catNode = node$1.appendChild(node("div", { className: "nav-item category", tabIndex: "0" }));
-    let btn = button({ icon: "chevron-down", className: "plain opener" });
-    btn.addEventListener("click", e => catNode.classList.toggle("collapsed"));
-    catNode.appendChild(btn);
-    catNode.appendChild(node("span", { className: "title" }, cat));
-    catNode.appendChild(node("span", { className: "count" }, "50"));
-    catNode.appendChild(button({ className: "plain menu-opener", icon: "dots-horizontal" }));
-    let items = node("ul");
-    feeds.filter(feed => feed.category == cat).forEach(feed => items.appendChild(buildFeed(feed.name)));
-    frag.appendChild(catNode);
-    frag.appendChild(items);
-    return frag;
+    let node$1 = node("ul");
+    node$1.appendChild(buildItem(cat, true));
+    feeds.filter(feed => feed.category == cat).forEach(feed => node$1.appendChild(buildItem(feed.name)));
+    return node$1;
 }
-function buildFeed(feed) {
-    let node$1 = node("li", { className: "nav-item", tabIndex: "0" });
-    node$1.appendChild(node("span", { className: "title" }, feed));
+function buildItem(name, isCategory = false) {
+    let node$1 = node("li", { tabIndex: "0" });
+    if (isCategory) {
+        node$1.classList.add("category");
+        let btn = button({ icon: "chevron-down", className: "plain btn-chevron" }, "", node$1);
+        btn.addEventListener("click", e => node$1.classList.toggle("collapsed"));
+    }
+    node$1.appendChild(node("span", { className: "title" }, name));
     node$1.appendChild(node("span", { className: "count" }, "50"));
-    button({ className: "plain menu-opener", icon: "dots-horizontal" }, "", node$1);
+    button({ className: "plain btn-dots", icon: "dots-horizontal" }, "", node$1);
     return node$1;
 }
 
-let selected = null;
 async function list(subscription) {
     let res = await api(`/api/subscriptions/${subscription ? subscription.id + "/" : ""}entries/`);
     if (!res || res.status != "ok") {
@@ -164,7 +156,6 @@ async function list(subscription) {
     return res.data;
 }
 function select(entry) {
-    selected = entry;
     publish("entry-selected");
 }
 
@@ -175,53 +166,36 @@ function init$2() {
     return node$2;
 }
 async function build$1() {
-    node$2 ? clear(node$2) : node$2 = node("div", { "id": "entries" });
+    node$2 ? clear(node$2) : node$2 = node("section", { "id": "list" });
     let items = await list( undefined);
-    items && items.forEach(entry => node$2.appendChild(buildItem(entry)));
+    items && items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
 }
-function buildItem(entry) {
+function buildItem$1(entry) {
     let node$1 = node("article");
     node$1.appendChild(node("h3", {}, entry.title));
     entry.summary && node$1.appendChild(node("p", {}, entry.summary));
-    node$1.addEventListener("click", e => select(entry));
+    node$1.addEventListener("click", e => select());
     return node$1;
 }
 
 let node$3;
 function init$3() {
     build$2();
-    subscribe("entry-selected", build$2);
     return node$3;
 }
 async function build$2() {
-    node$3 ? clear(node$3) : node$3 = node("div", { "id": "detail" });
-    let entry = selected;
-    if (!entry) {
-        return;
-    }
-    let header = node("header");
-    let title = node("h3");
-    title.appendChild(node("a", { href: entry.uri, target: "_blank" }, entry.title));
-    header.appendChild(title);
-    let body = node("div", { "id": "entry-content" });
-    body.innerHTML = entry.content || "";
-    node$3.appendChild(header);
-    node$3.appendChild(body);
+    node$3 ? clear(node$3) : node$3 = node("section", { "id": "detail" });
 }
 
 let node$4 = document.querySelector("main");
 function init$4() {
-    let sidebarNode = node("div", { id: "layout-sidebar" });
-    let entriesNode = node("div", { id: "layout-entries" });
-    let detailNode = node("div", { id: "layout-detail" });
-    sidebarNode.appendChild(init$1());
-    entriesNode.appendChild(init$2());
-    detailNode.appendChild(init$3());
-    node$4.appendChild(sidebarNode);
-    node$4.appendChild(entriesNode);
-    node$4.appendChild(detailNode);
-    new Resizer(sidebarNode, "sidebar-width");
-    new Resizer(entriesNode, "entries-width");
+    let navNode = init$1();
+    let listNode = init$2();
+    node$4.appendChild(navNode);
+    node$4.appendChild(listNode);
+    node$4.appendChild(init$3());
+    new Resizer(navNode, "sidebar-width");
+    new Resizer(listNode, "entries-width");
 }
 class Resizer {
     constructor(node, storageId) {

@@ -13,7 +13,7 @@ def create_app():
                 static_folder="static/dist",
                 static_url_path="/static")
 
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY")
+    app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
     app.config["TESTING"] = bool(os.environ.get("TESTING"))
     app.config["DEBUG"] = bool(os.environ.get("DEBUG"))
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")

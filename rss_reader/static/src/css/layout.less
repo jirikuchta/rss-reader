@@ -11,7 +11,7 @@ main {
 	--layout-detail-min-width: 480px;
 }
 
-#layout-sidebar {
+main > nav {
 	flex: 0 0 var(--layout-sidebar-width);
 	min-width: var(--layout-sidebar-min-width);
 	max-width: calc(100% - 800px);
@@ -20,7 +20,7 @@ main {
 	background-color: var(--color-background);
 }
 
-#layout-entries {
+#list {
 	flex: 0 1 var(--layout-entries-width);
 	min-width: var(--layout-entries-min-width);
 	max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-detail-min-width));
@@ -28,7 +28,7 @@ main {
 	border-right: 1px solid var(--color-border);
 }
 
-#layout-detail {
+#detail {
 	flex-grow: 1;
 	min-width: var(--layout-detail-min-width);
 	max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-entries-min-width));

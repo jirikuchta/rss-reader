@@ -8,10 +8,9 @@ services:
       - ./rss_reader:/rss_reader/
     ports:
       - 5000:5000
-    environment:
-      FLASK_APP: ${FLASK_APP}
-      FLASK_ENV: ${FLASK_ENV}
-      DATABASE_URI: ${DATABASE_URI}
+    env_file:
+      - .env-dist
+      - .env
     command: >
       sh -c "flask run --host=${HOST}"
 
