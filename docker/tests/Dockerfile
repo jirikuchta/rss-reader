@@ -4,6 +4,6 @@ COPY ./rss_reader /rss_reader
 COPY ./tests /tests
 
 RUN pip install -r rss_reader/requirements.txt
-RUN pip install pytest
+RUN pip install pytest requests
 
 CMD ["pytest", "-v", "tests"]

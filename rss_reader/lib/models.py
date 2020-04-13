@@ -1,8 +1,18 @@
+import enum
+
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash
+
+# generate_password_hash("admin", method="sha256")
 
 
 db = SQLAlchemy()
+
+
+class UserRoles(enum.Enum):
+    admin = "admin"
+    user = "user"
 
 
 class User(UserMixin, db.Model):
@@ -11,10 +21,22 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.Enum(UserRoles),
+                     nullable=False, default=UserRoles.user)
 
-    feeds = db.relationship(
+    subscriptions = db.relationship(
         "Subscription", back_populates="user",
         cascade="save-update, merge, delete, delete-orphan")
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        self.password = generate_password_hash(self.password, method="sha256")
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "role": self.role.value}
 
 
 class Feed(db.Model):
@@ -69,7 +91,7 @@ class Subscription(db.Model):
                         nullable=False)
     title = db.Column(db.Text, nullable=True)
 
-    user = db.relationship("User", back_populates="feeds")
+    user = db.relationship("User", back_populates="subscriptions")
     feed = db.relationship("Feed", back_populates="subscriptions")
 
     entries = db.relationship(

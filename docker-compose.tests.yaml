@@ -7,7 +7,8 @@ services:
     volumes:
       - ./rss_reader:/rss_reader
       - ./tests:/tests
+    ports:
+      - 5000:5000
     environment:
-      TESTING: "True"
-      DEBUG: "True"
+      SECRET_KEY: "secret"
       DATABASE_URI: "sqlite:///:memory:"

@@ -7,7 +7,7 @@ from tests.mocks.atom_feed import MockAtomFeed, MockAtomFeedItem, \
     MockAtomLink, MockAtomAuthor
 
 
-class TestAtomParser:
+class TestParserAtom:
 
     def test_feed_type(self) -> None:
         feed = MockAtomFeed(title="", link=MockAtomLink(href=""))
@@ -52,7 +52,7 @@ class TestAtomParser:
         assert len(AtomParser(feed.build()).items) == 0
 
 
-class TestAtomItemParser:
+class TestParserAtomItem:
     pass
 
     def test_id(self) -> None:

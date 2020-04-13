@@ -7,7 +7,7 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
     MockRSSFeedItemEnclosure, MockRSSFeedItemGUID, MockAtomLink
 
 
-class TestRSSParser:
+class TestParserRSS:
 
     def test_feed_type(self) -> None:
         feed = MockRSSFeed(title="", link="")
@@ -50,7 +50,7 @@ class TestRSSParser:
             RSSParser(feed.build())
 
 
-class TestRSSItemParser:
+class TestParserRSSItem:
 
     def test_id(self) -> None:
         item = MockRSSFeedItem(title="", link=None, guid=None)
