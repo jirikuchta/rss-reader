@@ -15,8 +15,6 @@ def create_app():
 
     if os.environ.get("SECRET_KEY") is not None:
         app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
-    app.config["TESTING"] = bool(os.environ.get("TESTING", False))
-    app.config["DEBUG"] = bool(os.environ.get("DEBUG", False))
     app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -48,6 +46,4 @@ def init_db_cmd():
     db.create_all()
     db.session.add(User(username="admin", password="admin",
                         role=UserRoles.admin))
-    db.session.add(User(username="user", password="user",
-                        role=UserRoles.user))
     db.session.commit()

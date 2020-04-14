@@ -1,4 +1,3 @@
-import sqlalchemy
 from flask import Blueprint, jsonify, abort, request
 from flask_login import current_user
 from functools import wraps
@@ -100,12 +99,14 @@ def subscribe():
     subscription = Subscription(
         user_id=current_user.id,
         feed=feed,
-        entries=feed.entries)
+        entries=[SubscriptionEntry(
+            user_id=current_user.id,
+            feed_entry=entry) for entry in feed.entries])
 
-    db.session.add(user_feed)
+    db.session.add(subscription)
     db.session.commit()
 
-    return (feed.to_json(), "ok")
+    return (subscription.to_json(), "ok")
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
@@ -113,7 +114,7 @@ def subscribe():
 def get_subscription(feed_id: int):
     subscription = Subscription.query.filter(
         Subscription.user_id == current_user.id,
-        Subscription.feed_id == feed_id)
+        Subscription.feed_id == feed_id).first()
 
     if not subscription:
         return (None, "not_found")
