@@ -4,8 +4,6 @@ from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 
-# generate_password_hash("admin", method="sha256")
-
 
 db = SQLAlchemy()
 
@@ -54,6 +52,13 @@ class Feed(db.Model):
         "Subscription", back_populates="feed",
         cascade="save-update, merge, delete, delete-orphan")
 
+    @classmethod
+    def from_parser(cls, parser):
+        return cls(
+            uri=parser.link,
+            title=parser.title,
+            entries=[FeedEntry.from_parser(item) for item in parser.items])
+
 
 class FeedEntry(db.Model):
     __tablename__ = "feed_entry"
@@ -77,6 +82,17 @@ class FeedEntry(db.Model):
     subscriptions = db.relationship(
         "SubscriptionEntry", back_populates="feed_entry",
         cascade="save-update, merge, delete, delete-orphan")
+
+    @classmethod
+    def from_parser(cls, parser):
+        return cls(
+            guid=parser.id,
+            title=parser.title,
+            uri=parser.link,
+            summary=parser.summary,
+            content=parser.content,
+            comments_uri=parser.comments_link,
+            author=parser.author)
 
 
 class Subscription(db.Model):
@@ -102,7 +118,8 @@ class Subscription(db.Model):
         return {
             "id": self.feed.id,
             "title": self.title if self.title is not None else self.feed.title,
-            "uri": self.feed.uri}
+            "uri": self.feed.uri,
+            "items": [entry.to_json() for entry in self.entries]}
 
 
 class SubscriptionEntry(db.Model):

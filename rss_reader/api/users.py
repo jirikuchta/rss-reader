@@ -16,9 +16,12 @@ def list_users():
 @api.route("/users/", methods=["POST"])
 @admin_role_required
 def create_user():
-    username = request.form.get("username")
-    password = request.form.get("password")
-    role = request.form.get("role")
+    if request.json is None:
+        return res.bad_request()
+
+    username = request.json.get("username")
+    password = request.json.get("password")
+    role = request.json.get("role")
 
     if not username:
         return res.missing_field("username")

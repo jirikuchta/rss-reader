@@ -17,6 +17,10 @@ def no_content():
     return response(204)
 
 
+def bad_request():
+    return response(400)
+
+
 def unauthorized():
     return response(401)
 
@@ -30,17 +34,22 @@ def not_found():
 
 
 def missing_field(field: str):
-    return response(422, {"errors": [{
+    return response(422, {"error": {
         "code": "missing_field",
-        "field": field}]})
+        "field": field}})
 
 
 def invalid_field(field: str):
-    return response(422, {"errors": [{
+    return response(422, {"error": {
         "code": "invalid_field",
-        "field": field}]})
+        "field": field}})
 
 
 def already_exists():
-    return response(422, {"errors": [{
-        "code": "already_exists"}]})
+    return response(422, {"error": {
+        "code": "already_exists"}})
+
+
+def parser_error():
+    return response(424, {"error": {
+        "code": "parser_error"}})

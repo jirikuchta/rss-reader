@@ -20,32 +20,24 @@ def list_subscriptions():
 @api.route("/subscriptions/", methods=["POST"])
 @login_required
 def subscribe():
-    feed = Feed.query.filter(Feed.uri == request.form.get("uri")).first()
+    if request.json is None:
+        return res.bad_request()
+
+    uri = request.json.get("uri")
+    feed = Feed.query.filter(Feed.uri == uri).first()
 
     if feed is None:
         try:
-            parser = parse(request.form.get("uri"))
+            feed = Feed.from_parser(parse(uri))
         except Exception:
-            return (None, "parser_error")
-
-        feed = Feed(
-            uri=parser.link,
-            title=parser.title,
-            entries=[FeedEntry(
-                guid=item.id,
-                title=item.title,
-                uri=item.link,
-                summary=item.summary,
-                content=item.content,
-                comments_uri=item.comments_link,
-                author=item.author) for item in parser.items])
+            return res.parser_error()
 
     subscription = Subscription(
         user_id=current_user.id,
         feed=feed,
         entries=[SubscriptionEntry(
             user_id=current_user.id,
-            feed_entry=entry) for entry in feed.entries])
+            feed_entry=feed_entry) for feed_entry in feed.entries])
 
     db.session.add(subscription)
     db.session.commit()
