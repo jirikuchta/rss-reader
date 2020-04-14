@@ -11,6 +11,7 @@ class TestAPICreateUser:
         res = as_admin.post("/api/users/", json=data)
         assert res.status_code == 201, res
         assert res.json is not None
+        assert res.json["id"] is not None
         assert res.json["username"] == data["username"]
         assert res.json["role"] == data.get("role", "user")
         assert "password" not in res.json

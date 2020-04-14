@@ -13,7 +13,7 @@ from rss_reader.api import api, login_required
 @login_required
 def list_subscriptions():
     subscriptions = Subscription.query.filter(
-        Subscription.user_id == current_user.id).all()
+        Subscription.user == current_user).all()
     return res.ok([subscription.to_json() for subscription in subscriptions])
 
 
@@ -24,20 +24,33 @@ def subscribe():
         return res.bad_request()
 
     uri = request.json.get("uri")
+    if not uri:
+        return res.missing_field("uri")
+
+    try:
+        parser = parse(uri)
+        uri = parser.link
+    except Exception:
+        return res.parser_error()
+
     feed = Feed.query.filter(Feed.uri == uri).first()
 
+    if feed is not None:
+        already_subscribed = bool(Subscription.query.filter(
+            Subscription.user == current_user,
+            Subscription.feed == feed).first())
+
+        if already_subscribed:
+            return res.already_exists()
+
     if feed is None:
-        try:
-            feed = Feed.from_parser(parse(uri))
-        except Exception:
-            return res.parser_error()
+        feed = Feed.from_parser(parser)
 
     subscription = Subscription(
         user_id=current_user.id,
         feed=feed,
-        entries=[SubscriptionEntry(
-            user_id=current_user.id,
-            feed_entry=feed_entry) for feed_entry in feed.entries])
+        entries=[SubscriptionEntry(feed_entry=feed_entry)
+                 for feed_entry in feed.entries])
 
     db.session.add(subscription)
     db.session.commit()
