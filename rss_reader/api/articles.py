@@ -2,7 +2,6 @@ from flask import request
 from flask_login import current_user
 
 from rss_reader.lib.models import db, SubscriptionEntry
-from rss_reader.parser import parse
 
 import rss_reader.api.response as res
 from rss_reader.api import api, login_required

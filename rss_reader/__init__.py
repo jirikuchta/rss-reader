@@ -37,16 +37,24 @@ def create_app():
     import rss_reader.api.articles
     app.register_blueprint(api)
 
-    app.cli.add_command(init_db_cmd)
+    app.cli.add_command(create_db)
+    app.cli.add_command(drop_db)
 
     return app
 
 
-@click.command("init-db")
+@click.command("create-db")
 @with_appcontext
-def init_db_cmd():
-    db.drop_all()
+def create_db():
     db.create_all()
-    db.session.add(User(username="admin", password="admin",
-                        role=UserRoles.admin))
+    if User.query.filter(User.username == "admin").first() is None:
+        db.session.add(User(username="admin", password="admin",
+                            role=UserRoles.admin))
+    db.session.commit()
+
+
+@click.command("drop-db")
+@with_appcontext
+def drop_db():
+    db.drop_all()
     db.session.commit()

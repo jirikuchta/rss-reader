@@ -9,13 +9,12 @@ services:
     ports:
       - 5000:5000
     environment:
-      FLASK_APP: .
-      FLASK_ENV: development
-      SECRET_KEY: insecure
-      DATABASE_URI: sqlite:////tmp/rss_reader.db
-      HOST: 0.0.0.0
+      FLASK_APP: "."
+      FLASK_ENV: "development"
+      SECRET_KEY: "insecure"
+      DATABASE_URI: "sqlite:////tmp/rss_reader.db"
     command: >
-      sh -c "flask run --host=${HOST}"
+      sh -c "flask create-db && flask run --host=0.0.0.0"
 
   static_builder:
     build:

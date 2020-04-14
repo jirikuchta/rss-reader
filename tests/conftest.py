@@ -84,14 +84,17 @@ def create_db(app):
         db.session.add(User(**TestUsers["user"]))
 
         # fill some random data
-        hidden_user = User(username=generate_str(), password=generate_str())
-        feed = Feed.from_parser(RSSParser(generate_feed().build()))
-        subscription = Subscription(
-            user=hidden_user,
-            feed=feed,
-            entries=[SubscriptionEntry(
-                     feed_entry=feed_entry) for feed_entry in feed.entries])
-        db.session.add(subscription)
+        hidden_user_1 = User(username=generate_str(), password=generate_str())
+        hidden_user_2 = User(username=generate_str(), password=generate_str())
+        shared_feed = Feed.from_parser(RSSParser(generate_feed().build()))
+        db.session.add(Subscription(user=hidden_user_1, feed=shared_feed))
+        db.session.add(Subscription(user=hidden_user_2, feed=shared_feed))
+        db.session.add(Subscription(
+            user=hidden_user_1,
+            feed=Feed.from_parser(RSSParser(generate_feed().build()))))
+        db.session.add(Subscription(
+            user=hidden_user_2,
+            feed=Feed.from_parser(RSSParser(generate_feed().build()))))
 
         db.session.commit()
 

@@ -101,6 +101,12 @@ class Subscription(db.Model):
         "SubscriptionEntry", back_populates="subscription",
         cascade="save-update, merge, delete, delete-orphan")
 
+    def __init__(self, **kwargs):
+        super(Subscription, self).__init__(**kwargs)
+        if self.feed:
+            self.entries = [SubscriptionEntry(feed_entry=feed_entry)
+                            for feed_entry in self.feed.entries]
+
     def to_json(self):
         return {
             "id": self.feed.id,

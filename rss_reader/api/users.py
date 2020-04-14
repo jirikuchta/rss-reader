@@ -1,7 +1,6 @@
 from flask import request
 
 from rss_reader.lib.models import db, User, UserRoles
-from rss_reader.parser import parse
 
 import rss_reader.api.response as res
 from rss_reader.api import api, admin_role_required
@@ -13,7 +12,7 @@ def list_users():
     return res.ok([user.to_json() for user in User.query.all()])
 
 
-@api.route("/users/", methods=["POST"])
+@api.route("/users/", methods=["PUT"])
 @admin_role_required
 def create_user():
     if request.json is None:

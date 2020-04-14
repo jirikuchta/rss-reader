@@ -2,7 +2,7 @@ from flask import make_response, jsonify, abort
 
 
 def response(code, data=None):
-    return make_response(jsonify(data) if data else "", code)
+    return make_response("" if data is None else jsonify(data), code)
 
 
 def ok(data):
@@ -30,7 +30,8 @@ def forbidden():
 
 
 def not_found():
-    return response(404)
+    return response(404, {"error": {
+        "code": "not_found"}})
 
 
 def missing_field(field: str):
