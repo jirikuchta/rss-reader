@@ -31,7 +31,9 @@ def create_app():
     from rss_reader.lib.views import views
     app.register_blueprint(views)
 
-    from rss_reader.lib.api import api
+    from rss_reader.api import api
+    import rss_reader.api.users
+    import rss_reader.api.subscriptions
     app.register_blueprint(api)
 
     app.cli.add_command(init_db_cmd)

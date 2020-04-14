@@ -5,15 +5,13 @@ class TestAPIListUsers:
 
     def test_as_admin(self, as_admin):
         res = as_admin.get("/api/users/")
-        assert res.status_code == 200
-        assert res.json["status"] == "ok"
-        assert res.json["data"] is not None
+        assert res.status_code == 200, res
+        assert res.json is not None
 
     def test_as_user(self, as_user):
         res = as_user.get("/api/users/")
-        assert res.status_code == 200
-        assert res.json["status"] == "permission_denied"
-        assert res.json["data"] is None
+        assert res.status_code == 403, res
+        assert res.json is None
 
     def test_as_anonymous(sef, as_anonymous):
         res = as_anonymous.get("/api/users/")
@@ -21,6 +19,4 @@ class TestAPIListUsers:
 
     def test_passwords_not_exposed(self, as_admin):
         res = as_admin.get("/api/users/")
-        assert res.status_code == 200
-        assert res.json["status"] == "ok"
-        assert "password" not in res.json["data"][0]
+        assert "password" not in res.json[0]
