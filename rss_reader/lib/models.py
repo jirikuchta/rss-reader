@@ -1,7 +1,7 @@
 import enum
 
-from flask_login import UserMixin
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin  # type: ignore
+from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from werkzeug.security import generate_password_hash
 
 
@@ -13,7 +13,7 @@ class UserRole(enum.Enum):
     user = "user"
 
 
-class User(UserMixin, db.Model):
+class User(UserMixin, db.Model):  # type: ignore
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -36,7 +36,7 @@ class User(UserMixin, db.Model):
             "role": self.role.value}
 
 
-class Feed(db.Model):
+class Feed(db.Model):  # type: ignore
     __tablename__ = "feed"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -54,7 +54,7 @@ class Feed(db.Model):
             entries=[FeedEntry.from_parser(item) for item in parser.items])
 
 
-class FeedEntry(db.Model):
+class FeedEntry(db.Model):  # type: ignore
     __tablename__ = "feed_entry"
     __table_args__ = (db.UniqueConstraint("feed_id", "guid"),)
 
@@ -83,7 +83,7 @@ class FeedEntry(db.Model):
             author=parser.author)
 
 
-class Subscription(db.Model):
+class Subscription(db.Model):  # type: ignore
     __tablename__ = "subscription"
     __table_args__ = (db.PrimaryKeyConstraint("user_id", "feed_id"),)
 
@@ -114,7 +114,7 @@ class Subscription(db.Model):
             "uri": self.feed.uri}
 
 
-class SubscriptionEntry(db.Model):
+class SubscriptionEntry(db.Model):  # type: ignore
     __tablename__ = "subscription_entry"
     __table_args__ = (
         db.PrimaryKeyConstraint("user_id", "entry_id"),

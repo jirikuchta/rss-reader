@@ -19,4 +19,4 @@ class TestAPIGetSubscription:
             "/api/subscriptions/", json={"uri": feed_server.url}).json["id"]
         res = as_user.get(f"/api/subscriptions/{subscription_id}/")
         assert res.status_code == 404, res
-        assert res.json["error"]["code"] == "not_found"
+        assert res.json["errors"][0]["code"] == "not_found"

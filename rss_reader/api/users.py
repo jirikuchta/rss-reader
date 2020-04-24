@@ -1,5 +1,5 @@
 from flask import request, Response
-from flask_login import current_user
+from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, User, UserRole
 
@@ -35,7 +35,7 @@ def create_user() -> Response:
         except KeyError:
             return res.invalid_field("role")
 
-    if db.session.query(User).filter(User.username == username).first():
+    if User.query.filter_by(username=username).first():
         return res.already_exists()
 
     user = User(username=username, password=password, role=role)
@@ -49,7 +49,39 @@ def create_user() -> Response:
 @api.route("/users/<int:user_id>/", methods=["PATCH"])
 @login_required
 def update_user(user_id: int) -> Response:
-    pass
+    username = request.json.get("username")
+    password = request.json.get("password")
+    role = request.json.get("role")
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return res.not_found()
+
+    if username:
+        if User.query.filter_by(username=username).first():
+            return res.already_exists()
+        user.username = username
+
+    if password:
+        user.password = password
+
+    if role:
+        try:
+            role = UserRole[role]
+        except KeyError:
+            return res.invalid_field("role")
+
+        if user.role is UserRole.admin and role is not UserRole.admin:
+            last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
+            if last_admin:
+                return res.forbidden()  # TODO: reason
+
+        user.role = role
+
+    db.session.commit()
+
+    return res.ok(user.to_json())
 
 
 @api.route("/users/<int:user_id>/", methods=["DELETE"])
@@ -59,10 +91,15 @@ def delete_user(user_id: int) -> Response:
         if current_user.id != user_id:
             return res.forbidden()
 
-    user = db.session.query(User).get(user_id)
+    user = User.query.get(user_id)
 
     if not user:
         return res.not_found()
+
+    if user.role is UserRole.admin:
+        last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
+        if last_admin:
+            return res.forbidden()  # TODO: reason
 
     db.session.delete(user)
     db.session.commit()

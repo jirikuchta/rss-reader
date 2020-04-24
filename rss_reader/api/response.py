@@ -31,27 +31,27 @@ def forbidden() -> Response:
 
 
 def not_found() -> Response:
-    return response(404, {"error": {
-        "code": "not_found"}})
+    return response(404, {"errors": [{
+        "code": "not_found"}]})
 
 
 def missing_field(field: str) -> Response:
-    return response(422, {"error": {
+    return response(400, {"errors": [{
         "code": "missing_field",
-        "field": field}})
+        "field": field}]})
 
 
 def invalid_field(field: str) -> Response:
-    return response(422, {"error": {
+    return response(400, {"errors": [{
         "code": "invalid_field",
-        "field": field}})
+        "field": field}]})
 
 
 def already_exists() -> Response:
-    return response(422, {"error": {
-        "code": "already_exists"}})
+    return response(409, {"errors": [{
+        "code": "already_exists"}]})
 
 
 def parser_error() -> Response:
-    return response(424, {"error": {
-        "code": "parser_error"}})
+    return response(400, {"errors": [{
+        "code": "parser_error"}]})

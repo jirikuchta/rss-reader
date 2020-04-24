@@ -1,5 +1,5 @@
 from flask import Blueprint, request, redirect, url_for, render_template
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required  # type: ignore
 from typing import Union
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers import Response
@@ -68,7 +68,7 @@ def signup() -> Union[Response, str]:
                                    error="Password is required.",
                                    data=request.form)
 
-        if db.session.query(User).filter(User.username == username).first():
+        if User.query.filter_by(username=username).first():
             return render_template("signup.html",
                                    error="That username is taken.",
                                    data=request.form)

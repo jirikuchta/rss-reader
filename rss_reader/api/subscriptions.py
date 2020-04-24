@@ -1,5 +1,5 @@
 from flask import request, Response
-from flask_login import current_user
+from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, Feed, Subscription
 from rss_reader.parser import parse
@@ -32,12 +32,11 @@ def subscribe() -> Response:
     except Exception:
         return res.parser_error()
 
-    feed = Feed.query.filter(Feed.uri == uri).first()
+    feed = Feed.query.filter_by(uri=uri).first()
 
     if feed is not None:
-        already_subscribed = bool(Subscription.query.filter(
-            Subscription.user == current_user,
-            Subscription.feed == feed).first())
+        already_subscribed = bool(Subscription.query.filter_by(
+            user=current_user, feed=feed).first())
 
         if already_subscribed:
             return res.already_exists()
@@ -56,9 +55,8 @@ def subscribe() -> Response:
 @api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
 @login_required
 def get_subscription(feed_id: int) -> Response:
-    subscription = Subscription.query.filter(
-        Subscription.user == current_user,
-        Subscription.feed_id == feed_id).first()
+    subscription = Subscription.query.filter_by(
+        user=current_user, feed_id=feed_id).first()
 
     if not subscription:
         return res.not_found()
@@ -69,9 +67,8 @@ def get_subscription(feed_id: int) -> Response:
 @api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
 @login_required
 def unsubscribe(feed_id: int) -> Response:
-    subscription = Subscription.query.filter(
-        Subscription.user == current_user,
-        Subscription.feed_id == feed_id).first()
+    subscription = Subscription.query.filter_by(
+        user=current_user, feed_id=feed_id).first()
 
     if not subscription:
         return res.not_found()

@@ -1,5 +1,5 @@
 from flask import Blueprint, Response
-from flask_login import current_user
+from flask_login import current_user  # type: ignore
 from functools import wraps
 from typing import TypeVar, Callable, Union
 

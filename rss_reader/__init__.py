@@ -2,8 +2,7 @@ import os
 import click
 from flask import Flask
 from flask.cli import with_appcontext
-from flask_login import LoginManager
-from werkzeug.security import generate_password_hash
+from flask_login import LoginManager  # type: ignore
 
 from rss_reader.lib.models import db, User, UserRole
 
@@ -34,7 +33,7 @@ def create_app():
     from rss_reader.api import api
     import rss_reader.api.users
     import rss_reader.api.subscriptions
-    import rss_reader.api.articles
+    import rss_reader.api.articles  # noqa
     app.register_blueprint(api)
 
     app.cli.add_command(create_db)

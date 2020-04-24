@@ -1,4 +1,4 @@
-class TestAPIUnsubscribe:
+class TestAPIDeleteSubscription:
 
     def test_ok(self, as_user, feed_server):
         res = as_user.post(
@@ -15,4 +15,4 @@ class TestAPIUnsubscribe:
     def test_not_found(self, as_user, feed_server):
         res = as_user.delete(f"/api/subscriptions/1234/")
         assert res.status_code == 404, res
-        assert res.json["error"]["code"] == "not_found"
+        assert res.json["errors"][0]["code"] == "not_found"

@@ -1,4 +1,4 @@
-class TestAPIListSubscription:
+class TestAPIListSubscriptions:
 
     def test_ok(self, as_user, feed_server):
         res = as_user.get("/api/subscriptions/")

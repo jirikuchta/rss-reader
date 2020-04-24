@@ -14,9 +14,14 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
 
 
 TestUsers = {
-    "admin": {"username": "aaa", "password": "aaa", "role": UserRole.admin},
-    "user": {"username": "bbb", "password": "bbb", "role": UserRole.user}
-}
+    "admin": {
+        "username": "admin",
+        "password": "admin",
+        "role": UserRole.admin},
+    "user": {
+        "username": "user",
+        "password": "user",
+        "role": UserRole.user}}
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +73,31 @@ def feed_server(randomize_feed):
 @pytest.fixture(scope="session")
 def randomize_feed():
     return generate_feed
+
+
+@pytest.fixture(scope="session")
+def create_user(as_admin):
+    def wrapper(username=None, password=None):
+        res = as_admin.post("/api/users/", json={
+            "username": username if username else generate_str(),
+            "password": password if password else generate_str()})
+        assert res.status_code == 201, res
+        return res.json
+    return wrapper
+
+
+@pytest.fixture(scope="session")
+def admin_id(as_admin):
+    res = as_admin.get("api/users/current/")
+    assert res.status_code == 200, res
+    return res.json["id"]
+
+
+@pytest.fixture(scope="session")
+def user_id(as_user):
+    res = as_user.get("api/users/current/")
+    assert res.status_code == 200, res
+    return res.json["id"]
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
