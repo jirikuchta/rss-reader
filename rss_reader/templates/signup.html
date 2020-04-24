@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sign up &ndash; RSS reader{% endblock %}
+{% block body %}
+	{% if error %}<p>{{ error }}</p>{% endif %}
+	<form action="/signup/" method="POST">
+		<div>
+			<label for="username">Username</label>
+			<span><input name="username" value="{{ data.username }}" /></span>
+		</div>
+		<div>
+			<label for="password">Password</label>
+			<span><input name="password" type="password"  value="{{ data.password }}" /></span>
+		</div>
+		<button>Sign up</button>
+	</form>
+{% endblock %}

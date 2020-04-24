@@ -5,7 +5,7 @@ from flask.cli import with_appcontext
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 
-from rss_reader.lib.models import db, User, UserRoles
+from rss_reader.lib.models import db, User, UserRole
 
 
 def create_app():
@@ -49,7 +49,7 @@ def create_db():
     db.create_all()
     if User.query.filter(User.username == "admin").first() is None:
         db.session.add(User(username="admin", password="admin",
-                            role=UserRoles.admin))
+                            role=UserRole.admin))
     db.session.commit()
 
 

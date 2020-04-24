@@ -1,28 +1,23 @@
-<!doctype html>
-<html>
-    <head>
-        <title>RSS reader</title>
-        <link rel="stylesheet" type="text/css" href="/static/css/app.css" />
-    </head>
-    <body>
-        <main>
-            <form action="/login/" method="POST">
-                <div>
-                    <label for="username">Login</label>
-                    <span><input name="username" /></span>
-                </div>
-                <div>
-                    <label for="password">Password</label>
-                    <span><input name="password" type="password" /></span>
-                </div>
-                <div>
-                    <label>
-                        <input type="checkbox" name="remember" />
-                        Remember me
-                    </label>
-                </div>
-                <button>Log in</button>
-            </form>
-        </main>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %}Login &ndash; RSS reader{% endblock %}
+{% block body %}
+	{% if error %}<p>{{ error }}</p>{% endif %}
+	<form action="/login/" method="POST">
+		<div>
+			<label for="username">Username</label>
+			<span><input name="username" value="{{ data.username }}" /></span>
+		</div>
+		<div>
+			<label for="password">Password</label>
+			<span><input name="password" type="password" value="{{ data.password }}"/></span>
+		</div>
+		<div>
+			<label>
+				<input type="checkbox" name="remember" {% if data.remember %}checked{% endif%}/>
+				Remember me
+			</label>
+		</div>
+		<button>Log in</button>
+	</form>
+	<a href="{{ url_for('views.signup') }}">Sign up</a>
+{% endblock %}

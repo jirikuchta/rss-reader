@@ -1,56 +1,57 @@
-from flask import make_response, jsonify, abort
+from typing import Optional, Any
+from flask import make_response, jsonify, Response
 
 
-def response(code, data=None):
+def response(code: int, data: Optional[Any] = None) -> Response:
     return make_response("" if data is None else jsonify(data), code)
 
 
-def ok(data):
+def ok(data: Any) -> Response:
     return response(200, data)
 
 
-def created(data):
+def created(data: Any) -> Response:
     return response(201, data)
 
 
-def no_content():
+def no_content() -> Response:
     return response(204)
 
 
-def bad_request():
+def bad_request() -> Response:
     return response(400)
 
 
-def unauthorized():
+def unauthorized() -> Response:
     return response(401)
 
 
-def forbidden():
+def forbidden() -> Response:
     return response(403)
 
 
-def not_found():
+def not_found() -> Response:
     return response(404, {"error": {
         "code": "not_found"}})
 
 
-def missing_field(field: str):
+def missing_field(field: str) -> Response:
     return response(422, {"error": {
         "code": "missing_field",
         "field": field}})
 
 
-def invalid_field(field: str):
+def invalid_field(field: str) -> Response:
     return response(422, {"error": {
         "code": "invalid_field",
         "field": field}})
 
 
-def already_exists():
+def already_exists() -> Response:
     return response(422, {"error": {
         "code": "already_exists"}})
 
 
-def parser_error():
+def parser_error() -> Response:
     return response(424, {"error": {
         "code": "parser_error"}})

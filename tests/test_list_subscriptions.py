@@ -1,6 +1,3 @@
-from tests.mocks.rss_feed import MockRSSFeed
-
-
 class TestAPIListSubscription:
 
     def test_ok(self, as_user, feed_server):
@@ -8,7 +5,7 @@ class TestAPIListSubscription:
         assert res.status_code == 200
         assert len(res.json) == 0
 
-        res = as_user.put("/api/subscriptions/", json={"uri": feed_server.url})
+        res = as_user.post("/api/subscriptions/", json={"uri": feed_server.url})
         assert res.status_code == 201
 
         res = as_user.get("/api/subscriptions/")

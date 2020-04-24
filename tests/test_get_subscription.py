@@ -1,10 +1,7 @@
-from tests.mocks.rss_feed import MockRSSFeed
-
-
 class TestAPIGetSubscription:
 
     def test_ok(self, as_user, feed_server):
-        subscription = as_user.put(
+        subscription = as_user.post(
             "/api/subscriptions/", json={"uri": feed_server.url}).json
         res = as_user.get(f"/api/subscriptions/{subscription['id']}/")
         assert res.status_code == 200, res
@@ -18,7 +15,7 @@ class TestAPIGetSubscription:
         assert res.status_code == 401, res
 
     def test_not_found(self, as_user, as_admin, feed_server):
-        subscription_id = as_admin.put(
+        subscription_id = as_admin.post(
             "/api/subscriptions/", json={"uri": feed_server.url}).json["id"]
         res = as_user.get(f"/api/subscriptions/{subscription_id}/")
         assert res.status_code == 404, res

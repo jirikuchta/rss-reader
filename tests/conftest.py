@@ -1,11 +1,10 @@
-import pytest
+import pytest  # type: ignore
 import random
 import string
 from xml.etree import ElementTree as ET
 
 from rss_reader import create_app, db
-from rss_reader.lib.models import User, UserRoles, Feed, Subscription, \
-    SubscriptionEntry
+from rss_reader.lib.models import User, UserRole, Feed, Subscription
 from rss_reader.parser.common import NS
 from rss_reader.parser.rss import RSSParser
 
@@ -15,8 +14,8 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
 
 
 TestUsers = {
-    "admin": {"username": "aaa", "password": "aaa", "role": UserRoles.admin},
-    "user": {"username": "bbb", "password": "bbb", "role": UserRoles.user}
+    "admin": {"username": "aaa", "password": "aaa", "role": UserRole.admin},
+    "user": {"username": "bbb", "password": "bbb", "role": UserRole.user}
 }
 
 

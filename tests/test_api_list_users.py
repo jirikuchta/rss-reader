@@ -1,6 +1,3 @@
-import requests
-
-
 class TestAPIListUsers:
 
     def test_as_admin(self, as_admin):

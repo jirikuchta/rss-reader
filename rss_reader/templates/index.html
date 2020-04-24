@@ -1,11 +1,6 @@
-<!doctype html>
-<html>
-	<head>
-		<title>RSS reader</title>
-		<link rel="stylesheet" type="text/css" href="/static/css/app.css" />
-	</head>
-	<body>
-		<main></main>
-		<script src="/static/js/app.js"></script>
-	</body>
-</html>
+{% extends "base.html" %}
+{% block title %}RSS reader{% endblock %}
+{% block body %}
+	<main></main>
+	<script src="/static/js/app.js"></script>
+{% endblock %}

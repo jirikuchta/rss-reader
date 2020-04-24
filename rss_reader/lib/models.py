@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash
 db = SQLAlchemy()
 
 
-class UserRoles(enum.Enum):
+class UserRole(enum.Enum):
     admin = "admin"
     user = "user"
 
@@ -19,8 +19,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum(UserRoles),
-                     nullable=False, default=UserRoles.user)
+    role = db.Column(db.Enum(UserRole),
+                     nullable=False, default=UserRole.user)
 
     subscriptions = db.relationship(
         "Subscription", cascade="save-update, merge, delete, delete-orphan")

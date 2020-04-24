@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, Response
 from flask_login import current_user
 
 from rss_reader.lib.models import db, Feed, Subscription
@@ -10,15 +10,15 @@ from rss_reader.api import api, login_required
 
 @api.route("/subscriptions/", methods=["GET"])
 @login_required
-def list_subscriptions():
+def list_subscriptions() -> Response:
     subscriptions = Subscription.query.filter(
         Subscription.user == current_user).all()
     return res.ok([subscription.to_json() for subscription in subscriptions])
 
 
-@api.route("/subscriptions/", methods=["PUT"])
+@api.route("/subscriptions/", methods=["POST"])
 @login_required
-def subscribe():
+def subscribe() -> Response:
     if request.json is None:
         return res.bad_request()
 
@@ -55,7 +55,7 @@ def subscribe():
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
 @login_required
-def get_subscription(feed_id: int):
+def get_subscription(feed_id: int) -> Response:
     subscription = Subscription.query.filter(
         Subscription.user == current_user,
         Subscription.feed_id == feed_id).first()
@@ -68,7 +68,7 @@ def get_subscription(feed_id: int):
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
 @login_required
-def unsubscribe(feed_id: int):
+def unsubscribe(feed_id: int) -> Response:
     subscription = Subscription.query.filter(
         Subscription.user == current_user,
         Subscription.feed_id == feed_id).first()
