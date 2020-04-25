@@ -77,10 +77,11 @@ def randomize_feed():
 
 @pytest.fixture(scope="session")
 def create_user(as_admin):
-    def wrapper(username=None, password=None):
+    def wrapper(username=None, password=None, role=None):
         res = as_admin.post("/api/users/", json={
             "username": username if username else generate_str(),
-            "password": password if password else generate_str()})
+            "password": password if password else generate_str(),
+            "role": role})
         assert res.status_code == 201, res
         return res.json
     return wrapper

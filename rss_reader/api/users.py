@@ -79,6 +79,9 @@ def update_user(user_id: int) -> TReturnValue:
         except KeyError:
             raise InvalidFieldError("role")
 
+        if user.role is UserRole.user and role is not UserRole.user:
+            raise ClientError(ErrorType.Forbidden)
+
         if user.role is UserRole.admin and role is not UserRole.admin:
             last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
             if last_admin:
@@ -88,7 +91,7 @@ def update_user(user_id: int) -> TReturnValue:
 
     db.session.commit()
 
-    return user.to_json()
+    return user.to_json(), 200
 
 
 @api.route("/users/<int:user_id>/", methods=["DELETE"])
