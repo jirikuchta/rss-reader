@@ -1,36 +1,38 @@
-from flask import request, Response
+from flask import request
 from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, Feed, Subscription
 from rss_reader.parser import parse
 
-import rss_reader.api.response as res
-from rss_reader.api import api, login_required
+from rss_reader.api import api, TReturnValue, api_response, login_required, \
+    ErrorType, ClientError, MissingFieldError
 
 
 @api.route("/subscriptions/", methods=["GET"])
+@api_response
 @login_required
-def list_subscriptions() -> Response:
+def list_subscriptions() -> TReturnValue:
     subscriptions = Subscription.query.filter(
         Subscription.user == current_user).all()
-    return res.ok([subscription.to_json() for subscription in subscriptions])
+    return [subscription.to_json() for subscription in subscriptions], 200
 
 
 @api.route("/subscriptions/", methods=["POST"])
+@api_response
 @login_required
-def subscribe() -> Response:
+def subscribe() -> TReturnValue:
     if request.json is None:
-        return res.bad_request()
+        raise ClientError(ErrorType.BadRequest)
 
     uri = request.json.get("uri")
     if not uri:
-        return res.missing_field("uri")
+        raise MissingFieldError("uri")
 
     try:
         parser = parse(uri)
         uri = parser.link
     except Exception:
-        return res.parser_error()
+        raise ClientError(ErrorType.ParserError)
 
     feed = Feed.query.filter_by(uri=uri).first()
 
@@ -39,7 +41,7 @@ def subscribe() -> Response:
             user=current_user, feed=feed).first())
 
         if already_subscribed:
-            return res.already_exists()
+            raise ClientError(ErrorType.AlreadyExists)
 
     if feed is None:
         feed = Feed.from_parser(parser)
@@ -49,31 +51,33 @@ def subscribe() -> Response:
     db.session.add(subscription)
     db.session.commit()
 
-    return res.created(subscription.to_json())
+    return subscription.to_json(), 201
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
+@api_response
 @login_required
-def get_subscription(feed_id: int) -> Response:
+def get_subscription(feed_id: int) -> TReturnValue:
     subscription = Subscription.query.filter_by(
         user=current_user, feed_id=feed_id).first()
 
     if not subscription:
-        return res.not_found()
+        raise ClientError(ErrorType.NotFound)
 
-    return res.ok(subscription.to_json())
+    return subscription.to_json(), 200
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
+@api_response
 @login_required
-def unsubscribe(feed_id: int) -> Response:
+def unsubscribe(feed_id: int) -> TReturnValue:
     subscription = Subscription.query.filter_by(
         user=current_user, feed_id=feed_id).first()
 
     if not subscription:
-        return res.not_found()
+        raise ClientError(ErrorType.NotFound)
 
     db.session.delete(subscription)
     db.session.commit()
 
-    return res.no_content()
+    return None, 204

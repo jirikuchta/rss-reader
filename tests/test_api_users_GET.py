@@ -8,7 +8,6 @@ class TestAPIListUsers:
     def test_as_user(self, as_user):
         res = as_user.get("/api/users/")
         assert res.status_code == 403, res
-        assert res.json is None
 
     def test_as_anonymous(sef, as_anonymous):
         res = as_anonymous.get("/api/users/")

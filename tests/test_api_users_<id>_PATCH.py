@@ -11,3 +11,4 @@ class TestAPIDeleteUser:
     def test_last_admin_forbidden(self, as_admin, admin_id):
         res = as_admin.patch(f"/api/users/{admin_id}/", json={"role": "user"})
         assert res.status_code == 403, res
+        assert res.json["error"]["code"] == "last_admin"

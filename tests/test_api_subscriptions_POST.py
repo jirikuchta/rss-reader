@@ -24,15 +24,15 @@ class TestAPISubscribe:
     def test_missing_uri(self, as_user, feed_server):
         res = as_user.post("/api/subscriptions/", json={})
         assert res.status_code == 400, res
-        assert res.json["errors"][0]["code"] == "missing_field"
-        assert res.json["errors"][0]["field"] == "uri"
+        assert res.json["error"]["code"] == "missing_field"
+        assert res.json["error"]["field"] == "uri"
 
     def test_parser_error(self, as_user, feed_server):
         feed_server.feed = MockRSSFeed(title=None, link=None)  # invalid feed
         res = as_user.post("/api/subscriptions/",
                            json={"uri": feed_server.url})
         assert res.status_code == 400, res
-        assert res.json["errors"][0]["code"] == "parser_error"
+        assert res.json["error"]["code"] == "parser_error"
 
     def test_already_exists(self, as_user, feed_server):
         res = as_user.post("/api/subscriptions/",
@@ -42,4 +42,4 @@ class TestAPISubscribe:
         res = as_user.post("/api/subscriptions/",
                            json={"uri": feed_server.url})
         assert res.status_code == 409, res
-        assert res.json["errors"][0]["code"] == "already_exists"
+        assert res.json["error"]["code"] == "already_exists"

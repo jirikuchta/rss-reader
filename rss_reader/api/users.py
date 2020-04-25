@@ -1,54 +1,61 @@
-from flask import request, Response
+from flask import request
 from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, User, UserRole
 
-import rss_reader.api.response as res
-from rss_reader.api import api, login_required, admin_role_required
+from rss_reader.api import api, TReturnValue, api_response, login_required, \
+    admin_role_required, ClientError, ErrorType, MissingFieldError, \
+    InvalidFieldError
 
 
 @api.route("/users/", methods=["GET"])
+@api_response
 @admin_role_required
-def list_users():
-    return res.ok([user.to_json() for user in User.query.all()])
+def list_users() -> TReturnValue:
+    return [user.to_json() for user in User.query.all()], 200
 
 
 @api.route("/users/", methods=["POST"])
+@api_response
 @admin_role_required
-def create_user() -> Response:
+def create_user() -> TReturnValue:
     if request.json is None:
-        return res.bad_request()
+        raise ClientError(ErrorType.BadRequest)
 
     username = request.json.get("username")
     password = request.json.get("password")
     role = request.json.get("role")
 
     if not username:
-        return res.missing_field("username")
+        raise MissingFieldError("username")
 
     if not password:
-        return res.missing_field("password")
+        raise MissingFieldError("password")
 
     if role:
         try:
             role = UserRole[role]
         except KeyError:
-            return res.invalid_field("role")
+            raise InvalidFieldError("role")
 
     if User.query.filter_by(username=username).first():
-        return res.already_exists()
+        raise ClientError(ErrorType.AlreadyExists)
 
     user = User(username=username, password=password, role=role)
 
     db.session.add(user)
     db.session.commit()
 
-    return res.created(user.to_json())
+    return user.to_json(), 201
 
 
 @api.route("/users/<int:user_id>/", methods=["PATCH"])
+@api_response
 @login_required
-def update_user(user_id: int) -> Response:
+def update_user(user_id: int) -> TReturnValue:
+    if request.json is None:
+        raise ClientError(ErrorType.BadRequest)
+
     username = request.json.get("username")
     password = request.json.get("password")
     role = request.json.get("role")
@@ -56,11 +63,11 @@ def update_user(user_id: int) -> Response:
     user = User.query.get(user_id)
 
     if not user:
-        return res.not_found()
+        raise ClientError(ErrorType.NotFound)
 
     if username:
         if User.query.filter_by(username=username).first():
-            return res.already_exists()
+            raise ClientError(ErrorType.AlreadyExists)
         user.username = username
 
     if password:
@@ -70,44 +77,46 @@ def update_user(user_id: int) -> Response:
         try:
             role = UserRole[role]
         except KeyError:
-            return res.invalid_field("role")
+            raise InvalidFieldError("role")
 
         if user.role is UserRole.admin and role is not UserRole.admin:
             last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
             if last_admin:
-                return res.forbidden()  # TODO: reason
+                raise ClientError(ErrorType.Forbidden, code="last_admin")
 
         user.role = role
 
     db.session.commit()
 
-    return res.ok(user.to_json())
+    return user.to_json()
 
 
 @api.route("/users/<int:user_id>/", methods=["DELETE"])
+@api_response
 @login_required
-def delete_user(user_id: int) -> Response:
+def delete_user(user_id: int) -> TReturnValue:
     if current_user.role is not UserRole.admin:
         if current_user.id != user_id:
-            return res.forbidden()
+            raise ClientError(ErrorType.Forbidden)
 
     user = User.query.get(user_id)
 
     if not user:
-        return res.not_found()
+        raise ClientError(ErrorType.NotFound)
 
     if user.role is UserRole.admin:
         last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
         if last_admin:
-            return res.forbidden()  # TODO: reason
+            raise ClientError(ErrorType.Forbidden, code="last_admin")
 
     db.session.delete(user)
     db.session.commit()
 
-    return res.no_content()
+    return None, 204
 
 
 @api.route("/users/current/", methods=["GET"])
+@api_response
 @login_required
-def get_current_user() -> Response:
-    return res.ok(current_user.to_json())
+def get_current_user() -> TReturnValue:
+    return current_user.to_json(), 200

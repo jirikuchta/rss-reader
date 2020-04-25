@@ -19,3 +19,4 @@ class TestAPIDeleteUser:
     def test_last_admin_forbidden(self, as_admin, admin_id):
         res = as_admin.delete(f"/api/users/{admin_id}/")
         assert res.status_code == 403, res
+        assert res.json["error"]["code"] == "last_admin"

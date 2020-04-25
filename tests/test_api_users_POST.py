@@ -20,7 +20,6 @@ class TestAPICreateUser:
         res = as_user.post("/api/users/", json={
             "username": "abcd", "password": "1234"})
         assert res.status_code == 403, res
-        assert res.json is None
 
     def test_as_anonymous(self, as_anonymous):
         res = as_anonymous.get("/api/users/")
@@ -34,7 +33,7 @@ class TestAPICreateUser:
 
         res = as_admin.post("/api/users/", json=data)
         assert res.status_code == 409
-        assert res.json["errors"][0]["code"] == "already_exists"
+        assert res.json["error"]["code"] == "already_exists"
 
     @pytest.mark.parametrize("data", [
         {"username": "", "password": "1234"},
@@ -42,8 +41,8 @@ class TestAPICreateUser:
     def test_username_required(self, data, as_admin):
         res = as_admin.post("/api/users/", json=data)
         assert res.status_code == 400
-        assert res.json["errors"][0]["code"] == "missing_field"
-        assert res.json["errors"][0]["field"] == "username"
+        assert res.json["error"]["code"] == "missing_field"
+        assert res.json["error"]["field"] == "username"
 
     @pytest.mark.parametrize("data", [
         {"username": "abcd", "password": ""},
@@ -51,12 +50,12 @@ class TestAPICreateUser:
     def test_password_required(self, data, as_admin):
         res = as_admin.post("/api/users/", json=data)
         assert res.status_code == 400
-        assert res.json["errors"][0]["code"] == "missing_field"
-        assert res.json["errors"][0]["field"] == "password"
+        assert res.json["error"]["code"] == "missing_field"
+        assert res.json["error"]["field"] == "password"
 
     def test_unsuppoted_role(self, as_admin):
         res = as_admin.post("/api/users/", json={
             "username": "abcd", "password": 1234, "role": "aaa"})
         assert res.status_code == 400
-        assert res.json["errors"][0]["code"] == "invalid_field"
-        assert res.json["errors"][0]["field"] == "role"
+        assert res.json["error"]["code"] == "invalid_field"
+        assert res.json["error"]["field"] == "role"
