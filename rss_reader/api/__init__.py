@@ -21,7 +21,9 @@ class ErrorType(Enum):
     ParserError = auto()
     Unauthorized = auto()
     Forbidden = auto()
+    LastAdmin = auto()
     NotFound = auto()
+    CategoryNotFound = auto()
     AlreadyExists = auto()
 
 
@@ -33,7 +35,9 @@ Errors: Dict[ErrorType, Error] = {
     ErrorType.ParserError: Error(400, "parser_error"),
     ErrorType.Unauthorized: Error(401, "unauthorized"),
     ErrorType.Forbidden: Error(403, "forbidden"),
+    ErrorType.LastAdmin: Error(403, "last_admin"),
     ErrorType.NotFound: Error(404, "not_found"),
+    ErrorType.CategoryNotFound: Error(404, "category_not_found"),
     ErrorType.AlreadyExists: Error(409, "already_exists")}
 
 
@@ -41,8 +45,8 @@ class ClientError(Exception):
 
     def __init__(self, error: ErrorType, **kwargs) -> None:
         self.status_code = Errors[error].status_code
-        self.data = {"error": {"code": Errors[error].code}}
-        self.data["error"].update(kwargs)
+        self.data = {"error": kwargs}
+        self.data["error"].update({"code": Errors[error].code})
 
 
 class MissingFieldError(ClientError):

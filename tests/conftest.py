@@ -88,6 +88,17 @@ def create_user(as_admin):
 
 
 @pytest.fixture(scope="session")
+def create_category():
+    def wrapper(client, title=None):
+        if title is None:
+            title = generate_str()
+        res = client.post("/api/categories/", json={"title": title})
+        assert res.status_code == 201, res
+        return res.json
+    return wrapper
+
+
+@pytest.fixture(scope="session")
 def admin_id(as_admin):
     res = as_admin.get("api/users/current/")
     assert res.status_code == 200, res

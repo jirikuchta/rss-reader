@@ -93,9 +93,14 @@ class Subscription(db.Model):  # type: ignore
     feed_id = db.Column(db.Integer,
                         db.ForeignKey("feed.id", ondelete="CASCADE"),
                         nullable=False)
+    category_id = db.Column(db.Integer,
+                            db.ForeignKey("subscription_category.id",
+                                          ondelete="SET NULL"),
+                            nullable=True)
     title = db.Column(db.Text, nullable=True)
 
     user = db.relationship("User", back_populates="subscriptions")
+    category = db.relationship("SubscriptionCategory", lazy=False)
     feed = db.relationship("Feed", lazy=False)
     entries = db.relationship(
         "SubscriptionEntry", back_populates="subscription",
@@ -108,10 +113,30 @@ class Subscription(db.Model):  # type: ignore
                             for feed_entry in self.feed.entries]
 
     def to_json(self):
+        title = self.title if self.title is not None else self.feed.title
+        category = None if self.category is None else self.category.to_json()
+
         return {
             "id": self.feed.id,
-            "title": self.title if self.title is not None else self.feed.title,
-            "uri": self.feed.uri}
+            "title": title,
+            "uri": self.feed.uri,
+            "category": category}
+
+
+class SubscriptionCategory(db.Model):  # type: ignore
+    __tablename__ = "subscription_category"
+    __table_args__ = (db.UniqueConstraint("user_id", "title"),)
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("user.id", ondelete="CASCADE"),
+                        nullable=False)
+    title = db.Column(db.Text, nullable=False)
+
+    def to_json(self):
+        return {
+            "id": self.id,
+            "title": self.title}
 
 
 class SubscriptionEntry(db.Model):  # type: ignore

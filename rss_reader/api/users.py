@@ -85,7 +85,7 @@ def update_user(user_id: int) -> TReturnValue:
         if user.role is UserRole.admin and role is not UserRole.admin:
             last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
             if last_admin:
-                raise ClientError(ErrorType.Forbidden, code="last_admin")
+                raise ClientError(ErrorType.LastAdmin)
 
         user.role = role
 
@@ -110,7 +110,7 @@ def delete_user(user_id: int) -> TReturnValue:
     if user.role is UserRole.admin:
         last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
         if last_admin:
-            raise ClientError(ErrorType.Forbidden, code="last_admin")
+            raise ClientError(ErrorType.LastAdmin)
 
     db.session.delete(user)
     db.session.commit()
