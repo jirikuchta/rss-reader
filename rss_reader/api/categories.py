@@ -3,13 +3,13 @@ from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, SubscriptionCategory
 
-from rss_reader.api import api, TReturnValue, api_response, login_required, \
-    ClientError, ErrorType, MissingFieldError
+from rss_reader.api import api, TReturnValue, make_api_response, \
+    require_login, ClientError, ErrorType, MissingFieldError
 
 
 @api.route("/categories/", methods=["POST"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def create_category() -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -32,8 +32,8 @@ def create_category() -> TReturnValue:
 
 
 @api.route("/categories/", methods=["GET"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def list_categories() -> TReturnValue:
     categories = SubscriptionCategory.query.filter_by(
         user_id=current_user.id).all()
@@ -41,8 +41,8 @@ def list_categories() -> TReturnValue:
 
 
 @api.route("/categories/<int:category_id>/", methods=["GET"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def get_category(category_id: int) -> TReturnValue:
     category = SubscriptionCategory.query.filter_by(
         id=category_id, user_id=current_user.id).first()
@@ -54,8 +54,8 @@ def get_category(category_id: int) -> TReturnValue:
 
 
 @api.route("/categories/<int:category_id>/", methods=["PATCH"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def update_category(category_id: int) -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -81,8 +81,8 @@ def update_category(category_id: int) -> TReturnValue:
 
 
 @api.route("/categories/<int:category_id>/", methods=["DELETE"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def delete_category(category_id: int) -> TReturnValue:
     category = SubscriptionCategory.query.filter_by(
         id=category_id, user_id=current_user.id).first()

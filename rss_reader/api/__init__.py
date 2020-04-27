@@ -61,7 +61,7 @@ class InvalidFieldError(ClientError):
         self.data["error"]["field"] = field
 
 
-def login_required(func: TApiMethod) -> TApiMethod:
+def require_login(func: TApiMethod) -> TApiMethod:
     @wraps(func)
     def wrapper(*args, **kwargs) -> TReturnValue:
         if not current_user.is_authenticated:
@@ -70,18 +70,17 @@ def login_required(func: TApiMethod) -> TApiMethod:
     return cast(TApiMethod, wrapper)
 
 
-def admin_role_required(func: TApiMethod) -> TApiMethod:
+def require_admin_user(func: TApiMethod) -> TApiMethod:
     @wraps(func)
+    @require_login
     def wrapper(*args, **kwargs) -> TReturnValue:
-        if not current_user.is_authenticated:
-            raise ClientError(ErrorType.Unauthorized)
         if current_user.role != UserRole.admin:
             raise ClientError(ErrorType.Forbidden)
         return func(*args, **kwargs)
     return cast(TApiMethod, wrapper)
 
 
-def api_response(func: TApiMethod) -> TApiMethod:
+def make_api_response(func: TApiMethod) -> TApiMethod:
     @wraps(func)
     def wrapper(*args, **kwargs) -> Response:
         try:

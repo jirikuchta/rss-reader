@@ -3,21 +3,21 @@ from flask_login import current_user  # type: ignore
 
 from rss_reader.lib.models import db, User, UserRole
 
-from rss_reader.api import api, TReturnValue, api_response, login_required, \
-    admin_role_required, ClientError, ErrorType, MissingFieldError, \
-    InvalidFieldError
+from rss_reader.api import api, TReturnValue, make_api_response, \
+    require_login, require_admin_user, ClientError, ErrorType, \
+    MissingFieldError, InvalidFieldError
 
 
 @api.route("/users/", methods=["GET"])
-@api_response
-@admin_role_required
+@make_api_response
+@require_admin_user
 def list_users() -> TReturnValue:
     return [user.to_json() for user in User.query.all()], 200
 
 
 @api.route("/users/", methods=["POST"])
-@api_response
-@admin_role_required
+@make_api_response
+@require_admin_user
 def create_user() -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -50,8 +50,8 @@ def create_user() -> TReturnValue:
 
 
 @api.route("/users/<int:user_id>/", methods=["PATCH"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def update_user(user_id: int) -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -95,8 +95,8 @@ def update_user(user_id: int) -> TReturnValue:
 
 
 @api.route("/users/<int:user_id>/", methods=["DELETE"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def delete_user(user_id: int) -> TReturnValue:
     if current_user.role is not UserRole.admin:
         if current_user.id != user_id:
@@ -119,7 +119,7 @@ def delete_user(user_id: int) -> TReturnValue:
 
 
 @api.route("/users/current/", methods=["GET"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def get_current_user() -> TReturnValue:
     return current_user.to_json(), 200

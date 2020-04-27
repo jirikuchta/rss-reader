@@ -4,13 +4,13 @@ from flask_login import current_user  # type: ignore
 from rss_reader.lib.models import db, Feed, Subscription, SubscriptionCategory
 from rss_reader.parser import parse
 
-from rss_reader.api import api, TReturnValue, api_response, login_required, \
-    ErrorType, ClientError, MissingFieldError, InvalidFieldError
+from rss_reader.api import api, TReturnValue, make_api_response, \
+    require_login, ErrorType, ClientError, MissingFieldError, InvalidFieldError
 
 
 @api.route("/subscriptions/", methods=["POST"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def create_subscription() -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -46,8 +46,8 @@ def create_subscription() -> TReturnValue:
 
 
 @api.route("/subscriptions/", methods=["GET"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def list_subscriptions() -> TReturnValue:
     subscriptions = Subscription.query.filter(
         Subscription.user == current_user).all()
@@ -55,8 +55,8 @@ def list_subscriptions() -> TReturnValue:
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def get_subscription(feed_id: int) -> TReturnValue:
     subscription = Subscription.query.filter_by(
         user=current_user, feed_id=feed_id).first()
@@ -68,8 +68,8 @@ def get_subscription(feed_id: int) -> TReturnValue:
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["PATCH"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def update_subscription(feed_id: int) -> TReturnValue:
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -98,8 +98,8 @@ def update_subscription(feed_id: int) -> TReturnValue:
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
-@api_response
-@login_required
+@make_api_response
+@require_login
 def delete_subscription(feed_id: int) -> TReturnValue:
     subscription = Subscription.query.filter_by(
         user=current_user, feed_id=feed_id).first()
