@@ -14,5 +14,5 @@ class TestAPIListCategories:
         assert len(res.json) == 0
 
     def test_as_anonymous(self, as_anonymous):
-        res = as_anonymous.get("/api/subscriptions/")
+        res = as_anonymous.get("/api/categories/")
         assert res.status_code == 401, res

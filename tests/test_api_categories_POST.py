@@ -1,10 +1,10 @@
 class TestAPICreateCategory:
 
-    def test_ok(self, as_user):
-        res = as_user.post("/api/categories/", json={"title": "lorem ipsum"})
+    def test_ok(self, as_user, rand_str):
+        res = as_user.post("/api/categories/", json={"title": rand_str})
         assert res.status_code == 201
         assert res.json["id"] is not None
-        assert res.json["title"] == "lorem ipsum"
+        assert res.json["title"] == rand_str
 
     def test_no_conflict_with_other_user_cat(
             self, create_category, as_admin, as_user):
@@ -18,7 +18,7 @@ class TestAPICreateCategory:
         assert res.status_code == 400, res
 
     def test_as_anonymous(self, as_anonymous):
-        res = as_anonymous.post("/api/categories/", json={"title": "test"})
+        res = as_anonymous.post("/api/categories/")
         assert res.status_code == 401, res
 
     def test_missing_title(self, as_user):
@@ -27,10 +27,10 @@ class TestAPICreateCategory:
         assert res.json["error"]["code"] == "missing_field"
         assert res.json["error"]["field"] == "title"
 
-    def test_already_exists(self, as_user):
-        res = as_user.post("/api/categories/", json={"title": "aaa"})
+    def test_already_exists(self, as_user, rand_str):
+        res = as_user.post("/api/categories/", json={"title": rand_str})
         assert res.status_code == 201, res
 
-        res = as_user.post("/api/categories/", json={"title": "aaa"})
+        res = as_user.post("/api/categories/", json={"title": rand_str})
         assert res.status_code == 409, res
         assert res.json["error"]["code"] == "already_exists"

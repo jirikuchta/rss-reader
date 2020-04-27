@@ -1,10 +1,7 @@
 class TestAPIListArticles:
 
-    def test_ok(self, as_user, feed_server):
-        res = as_user.post(
-            "/api/subscriptions/", json={"uri": feed_server.url})
-        assert res.status_code == 201
-
+    def test_ok(self, as_user, create_subscription, feed_server):
+        create_subscription(as_user)
         res = as_user.get("/api/articles/")
         assert res.status_code == 200
         assert res.json is not None

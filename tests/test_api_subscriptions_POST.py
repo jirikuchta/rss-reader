@@ -11,17 +11,15 @@ class TestAPISubscribe:
         assert res.json["title"] == feed_server.feed.title
         assert res.json["uri"] == feed_server.feed.link
 
-    def test_as_anonymous(self, as_anonymous, feed_server):
-        res = as_anonymous.post("/api/subscriptions/",
-                                json={"uri": feed_server.url})
+    def test_as_anonymous(self, as_anonymous):
+        res = as_anonymous.post("/api/subscriptions/")
         assert res.status_code == 401, res
 
-    def test_bad_request(self, as_user, feed_server):
-        res = as_user.post("/api/subscriptions/",
-                           data={"uri": feed_server.url})
+    def test_bad_request(self, as_user):
+        res = as_user.post("/api/subscriptions/")
         assert res.status_code == 400, res
 
-    def test_missing_uri(self, as_user, feed_server):
+    def test_missing_uri(self, as_user):
         res = as_user.post("/api/subscriptions/", json={})
         assert res.status_code == 400, res
         assert res.json["error"]["code"] == "missing_field"

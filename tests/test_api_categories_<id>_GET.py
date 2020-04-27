@@ -13,5 +13,5 @@ class TestAPIGetCategory:
         assert res.status_code == 404, res
 
     def test_as_anonymous(self, as_anonymous):
-        res = as_anonymous.get("/api/subscriptions/")
+        res = as_anonymous.get("/api/categories/666/")
         assert res.status_code == 401, res

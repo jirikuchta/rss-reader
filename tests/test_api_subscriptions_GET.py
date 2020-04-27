@@ -1,13 +1,11 @@
 class TestAPIListSubscriptions:
 
-    def test_ok(self, as_user, feed_server):
+    def test_ok(self, as_user, feed_server, create_subscription):
         res = as_user.get("/api/subscriptions/")
         assert res.status_code == 200
         assert len(res.json) == 0
 
-        res = as_user.post(
-            "/api/subscriptions/", json={"uri": feed_server.url})
-        assert res.status_code == 201
+        create_subscription(as_user)
 
         res = as_user.get("/api/subscriptions/")
         assert res.status_code == 200

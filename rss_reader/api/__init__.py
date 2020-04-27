@@ -23,7 +23,6 @@ class ErrorType(Enum):
     Forbidden = auto()
     LastAdmin = auto()
     NotFound = auto()
-    CategoryNotFound = auto()
     AlreadyExists = auto()
 
 
@@ -37,7 +36,6 @@ Errors: Dict[ErrorType, Error] = {
     ErrorType.Forbidden: Error(403, "forbidden"),
     ErrorType.LastAdmin: Error(403, "last_admin"),
     ErrorType.NotFound: Error(404, "not_found"),
-    ErrorType.CategoryNotFound: Error(404, "category_not_found"),
     ErrorType.AlreadyExists: Error(409, "already_exists")}
 
 

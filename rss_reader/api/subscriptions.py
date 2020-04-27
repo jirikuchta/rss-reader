@@ -5,7 +5,7 @@ from rss_reader.lib.models import db, Feed, Subscription, SubscriptionCategory
 from rss_reader.parser import parse
 
 from rss_reader.api import api, TReturnValue, api_response, login_required, \
-    ErrorType, ClientError, MissingFieldError
+    ErrorType, ClientError, MissingFieldError, InvalidFieldError
 
 
 @api.route("/subscriptions/", methods=["POST"])
@@ -63,6 +63,36 @@ def get_subscription(feed_id: int) -> TReturnValue:
 
     if not subscription:
         raise ClientError(ErrorType.NotFound)
+
+    return subscription.to_json(), 200
+
+
+@api.route("/subscriptions/<int:feed_id>/", methods=["PATCH"])
+@api_response
+@login_required
+def update_subscription(feed_id: int) -> TReturnValue:
+    if request.json is None:
+        raise ClientError(ErrorType.BadRequest)
+
+    subscription = Subscription.query.filter_by(
+        user=current_user, feed_id=feed_id).first()
+
+    if not subscription:
+        raise ClientError(ErrorType.NotFound)
+
+    title = request.json.get("title")
+    if title:
+        subscription.title = title
+
+    category_id = request.json.get("category_id")
+    if category_id:
+        category = SubscriptionCategory.query.filter_by(
+            id=category_id, user_id=current_user.id).first()
+        if not category:
+            raise InvalidFieldError("category_id", msg=f"category not found")
+        subscription.category_id = category_id
+
+    db.session.commit()
 
     return subscription.to_json(), 200
 

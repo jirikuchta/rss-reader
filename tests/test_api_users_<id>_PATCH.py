@@ -1,20 +1,20 @@
 class TestAPIUpdateUser:
 
-    def test_as_admin(self, create_user, as_admin, admin_id):
+    def test_as_admin(self, create_user, as_admin, admin_id, rand_str):
         create_user(role="admin")  # to prevent "last_admin" error
         res = as_admin.patch(
             f"/api/users/{admin_id}/",
-            json={"username": "bob", "password": "abc1234", "role": "user"})
+            json={"username": rand_str, "password": rand_str, "role": "user"})
         assert res.status_code == 200, res
-        assert res.json["username"] == "bob"
+        assert res.json["username"] == rand_str
         assert res.json["role"] == "user"
 
-    def test_as_user(self, as_user, user_id):
+    def test_as_user(self, as_user, user_id, rand_str):
         res = as_user.patch(
             f"/api/users/{user_id}/",
-            json={"username": "bob", "password": "abc1234", "role": "user"})
+            json={"username": rand_str, "password": rand_str, "role": "user"})
         assert res.status_code == 200, res
-        assert res.json["username"] == "bob"
+        assert res.json["username"] == rand_str
         assert res.json["role"] == "user"
 
     def test_already_exists(self, create_user, as_admin):

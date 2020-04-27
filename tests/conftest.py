@@ -88,6 +88,15 @@ def create_user(as_admin):
 
 
 @pytest.fixture(scope="session")
+def create_subscription(feed_server):
+    def wrapper(client):
+        res = client.post("/api/subscriptions/", json={"uri": feed_server.url})
+        assert res.status_code == 201, res
+        return res.json
+    return wrapper
+
+
+@pytest.fixture(scope="session")
 def create_category():
     def wrapper(client, title=None):
         if title is None:
@@ -110,6 +119,11 @@ def user_id(as_user):
     res = as_user.get("api/users/current/")
     assert res.status_code == 200, res
     return res.json["id"]
+
+
+@pytest.fixture(scope="function")
+def rand_str():
+    return generate_str()
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
