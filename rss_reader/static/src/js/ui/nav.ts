@@ -1,5 +1,7 @@
 import * as html from "util/html";
 
+import Popup from "ui/popup";
+
 
 let node:HTMLElement;
 
@@ -64,6 +66,14 @@ function buildItem(name: string, isCategory: boolean = false) {
 	node.appendChild(html.node("span", {className: "title"}, name));
 	node.appendChild(html.node("span", {className: "count"}, "50"));
 
-	html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
+	let btn = html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
+	btn.addEventListener("click", e => showItemPopup(btn));
+
 	return node;
+}
+
+function showItemPopup(target: HTMLElement) {
+	let popup = new Popup();
+	html.node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
+	popup.open(target, "side");
 }

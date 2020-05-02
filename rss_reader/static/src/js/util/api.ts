@@ -1,3 +1,5 @@
+import { alert } from "ui/dialog";
+
 export async function api(uri: string, init?: RequestInit) {
 	try {
 		let res = await fetch(uri, init);
