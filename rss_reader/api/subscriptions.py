@@ -37,7 +37,16 @@ def create_subscription() -> TReturnValue:
     if feed is None:
         feed = Feed.from_parser(parser)
 
-    subscription = Subscription(user=current_user, feed=feed)
+    category_id = request.json.get("categoryId")
+    if category_id:
+        if not SubscriptionCategory.query.filter_by(
+                id=category_id, user_id=current_user.id).first():
+            raise InvalidFieldError("categoryId", msg=f"category not found")
+
+    subscription = Subscription(
+        user=current_user,
+        feed=feed,
+        category_id=category_id)
 
     db.session.add(subscription)
     db.session.commit()
@@ -84,12 +93,11 @@ def update_subscription(feed_id: int) -> TReturnValue:
     if title:
         subscription.title = title
 
-    category_id = request.json.get("category_id")
+    category_id = request.json.get("categoryId")
     if category_id:
-        category = SubscriptionCategory.query.filter_by(
-            id=category_id, user_id=current_user.id).first()
-        if not category:
-            raise InvalidFieldError("category_id", msg=f"category not found")
+        if not SubscriptionCategory.query.filter_by(
+                id=category_id, user_id=current_user.id).first():
+            raise InvalidFieldError("categoryId", msg=f"category not found")
         subscription.category_id = category_id
 
     db.session.commit()

@@ -1,33 +1,23 @@
-import { Subscription } from "data/types";
+import { Subscription, CategoryId } from "data/types";
 import { api } from "util/api";
 import * as pubsub from "util/pubsub";
 
 let subscriptions: Subscription[] = [];
 
-export let selected: Subscription | null = null;
-
 export async function init() {
-	type Res = {data:Subscription[], status: string};
-	let res:Res = await api("/api/subscriptions/");
-	if (res && res.status == "ok") { subscriptions = res.data; }
+	let res:Subscription[] = await api("/api/subscriptions/");
+	subscriptions = res;
 }
 
 export function list() { return subscriptions; }
 
-export function select(subscription: Subscription) {
-	selected = subscription;
-	pubsub.publish("subscription-selected");
-}
+export async function add(uri: string, categoryId?: CategoryId) {
+	let res:Subscription = await api("/api/subscriptions/", "POST",{
+		"uri": uri,
+		"categoryId": categoryId ?? null
+	});
 
-export async function add(uri: string) {
-	let body = new FormData();
-	body.append("uri", uri);
-
-	type Res = {data:Subscription, status: string};
-	let res:Res = await api("/api/subscriptions/", {method: "POST", body: body});
-	if (!res || res.status != "ok") { return false; }
-
-	subscriptions.push(res.data);
+	subscriptions.push(res);
 	pubsub.publish("subscriptions-changed");
 
 	return true;
@@ -35,7 +25,7 @@ export async function add(uri: string) {
 
 export async function remove(subscription: Subscription) {
 	type Res = {data:null, status:string};
-	let res:Res = await api(`/api/subscriptions/${subscription.id}/`, {method: "DELETE"});
+	let res:Res = await api(`/api/subscriptions/${subscription.id}/`, "DELETE");
 	if (!res || res.status != "ok") { return false; }
 
 	subscriptions = subscriptions.filter(item => item.id != subscription.id);

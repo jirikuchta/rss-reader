@@ -100,7 +100,6 @@ class Subscription(db.Model):  # type: ignore
     title = db.Column(db.Text, nullable=True)
 
     user = db.relationship("User", back_populates="subscriptions")
-    category = db.relationship("SubscriptionCategory", lazy=False)
     feed = db.relationship("Feed", lazy=False)
     entries = db.relationship(
         "SubscriptionEntry", back_populates="subscription",
@@ -114,13 +113,12 @@ class Subscription(db.Model):  # type: ignore
 
     def to_json(self):
         title = self.title if self.title is not None else self.feed.title
-        category = None if self.category is None else self.category.to_json()
 
         return {
             "id": self.feed.id,
             "title": title,
             "uri": self.feed.uri,
-            "category": category}
+            "categoryId": self.category_id}
 
 
 class SubscriptionCategory(db.Model):  # type: ignore

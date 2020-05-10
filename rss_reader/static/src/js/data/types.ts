@@ -1,17 +1,24 @@
+export type CategoryId = number;
+export type SubscriptionId = number;
+export type EntryId = number;
+
+export interface Category {
+	id: CategoryId;
+	title: string;
+}
+
 export interface Subscription {
-	id: number;
+	id: SubscriptionId;
 	title: string;
 	uri: string;
+	categoryId?: CategoryId;
 }
 
 export interface Entry {
-	id: string;
+	id: EntryId;
 	title: string;
 	uri: string;
 	unread: boolean;
 	starred: boolean;
-	summary?: string;
-	content?: string;
-	comments_link?: string;
-	author?: string;
+	subscriptionId: SubscriptionId;
 }

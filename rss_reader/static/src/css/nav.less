@@ -1,56 +1,77 @@
-nav li {
-	display: flex;
-	align-items: center;
+nav {
 	line-height: 3.2rem;
-	padding-left: 4.8rem;
-	padding-right: 1.4rem;
-	border-left: 4px solid transparent;
-	cursor: pointer;
 
-	&.category {
-		padding-left: 1.4rem;
+	> header {
+		display: flex;
+		align-items: center;
+		padding-left: 20px;
+		padding-right: 12px;
 
-		&.collapsed {
-			.icon-chevron-down { transform: rotate(-90deg); }
-			& ~ li { display: none; }
+		h3 {
+			flex-grow: 1;
+			text-transform: uppercase;
+			font-size: 1.2rem;
+		}
+
+		button {
+			width: 24px;
+			height: 24px;
 		}
 	}
 
-	.title {
-		flex-grow: 1;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
+	li  {
+		display: flex;
+		align-items: center;
+		padding-left: 48px;
+		padding-right: 14px;
+		border-left: 4px solid transparent;
+		cursor: pointer;
 
-	.count {
-		padding-right: .4rem;
-		font-size: 1.1rem;
-		color: var(--color-grey);
-	}
+		&.category {
+			padding-left: 14px;
 
-	button {
-		width: 2.4rem;
-		height: 2.4rem;
-
-		&.btn-chevron {
-			margin-right: 1rem;
+			&.is-collapsed {
+				.icon-chevron-down { transform: rotate(-90deg); }
+				& ~ li { display: none; }
+			}
 		}
 
-		&.btn-dots {
-			font-size: 1.6rem;
-			display: none;
+		.title {
+			flex-grow: 1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
-	}
 
-	&.selected {
-		border-left-color: var(--color-active);
-		color: var(--color-active);
-	}
+		.count {
+			padding-right: 4px;
+			font-size: 1.1rem;
+			color: var(--color-grey);
+		}
 
-	&:hover {
-		background-color: var(--color-hover);
-		.btn-dots { display: inline; }
-		.count { display: none; }
+		button {
+			width: 24px;
+			height: 24px;
+
+			&.btn-chevron {
+				margin-right: 10px;
+			}
+
+			&.btn-dots {
+				font-size: 1.6rem;
+				display: none;
+			}
+		}
+
+		&.selected {
+			border-left-color: var(--color-active);
+			color: var(--color-active);
+		}
+
+		&:hover {
+			background-color: var(--color-hover);
+			.btn-dots { display: inline; }
+			.count { display: none; }
+		}
 	}
 }

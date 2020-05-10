@@ -1,19 +1,41 @@
-body.with-dialog::after {
+.dialog {
+	width: 600px;
+	max-width: 100vw;
+	position: absolute;
+	top: 50%; left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+	background: #fff;
+	box-shadow: var(--shadow);
+
+	button.close {
+		position: absolute;
+		top: 8px; right: 8px;
+		font-size: 1.6rem;
+	}
+
+	> header {
+		padding: 16px;
+	}
+
+	> footer {
+		padding: 8px 16px;
+		background: var(--color-background);
+
+		button {
+			min-width: 100px;
+		}
+	}
+
+	&.alert {
+		text-align: center;
+	}
+}
+
+body.has-dialog::after {
 	content: "";
 	position: absolute;
 	top: 0; bottom: 0;
 	left: 0; right: 0;
+	background: rgba(0,0,0,0.5);
 }
-
-.dialog {
-	padding: 0.8rem;
-	position: absolute;
-	top: 50%; left: 50%;
-	transform: translate(-50%, -50%);
-	width: 600px;
-	max-width: 100vw;
-	border: 1px solid var(--color-border);
-	background: #fff;
-	z-index: 1;
-}
-

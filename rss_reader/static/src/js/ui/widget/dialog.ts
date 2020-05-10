@@ -12,13 +12,13 @@ export class Dialog {
 	open() {
 		current?.close();
 		current = this;
-		document.body.classList.add("with-dialog");
+		document.body.classList.add("has-dialog");
 		document.body.appendChild(this.node);
 	}
 
 	close() {
 		current = null;
-		document.body.classList.remove("with-dialog");
+		document.body.classList.remove("has-dialog");
 		this.node.parentNode?.removeChild(this.node);
 		this.onClose();
 	}
@@ -26,7 +26,7 @@ export class Dialog {
 	onClose() {}
 
 	closeButton() {
-		let button = html.button({icon: "cross"});
+		let button = html.button({icon: "cross", className: "close"});
 		button.addEventListener("click", e => this.close());
 		return button;
 	}
@@ -34,6 +34,7 @@ export class Dialog {
 
 export async function alert(text: string, description?: string): Promise<null> {
 	let dialog = new Dialog();
+	dialog.node.classList.add("alert");
 
 	let header = html.node("header", {}, "", dialog.node);
 	header.appendChild(dialog.closeButton());

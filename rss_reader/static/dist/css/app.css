@@ -7,6 +7,7 @@
   --color-background: #fafafa;
   --color-hover: #f4ecd8;
   --color-active: #ff5722;
+  --shadow: 0 4px 16px rgba(12, 12, 13, 0.1);
 }
 *,
 *::before,
@@ -86,6 +87,7 @@ main > nav {
   cursor: ew-resize;
 }
 button {
+  padding: 8px;
   margin: 0;
   display: inline-flex;
   align-items: center;
@@ -102,32 +104,49 @@ button:disabled {
 button[type=submit],
 button[type=button] {
   height: 32px;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
 }
 button[type=submit] {
   background-color: var(--color-active);
   font-weight: bold;
+  color: #fff;
 }
 button[type=button] {
+  border: 1px solid var(--color-border);
   background-color: #fff;
+}
+nav {
+  line-height: 3.2rem;
+}
+nav > header {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  padding-right: 12px;
+}
+nav > header h3 {
+  flex-grow: 1;
+  text-transform: uppercase;
+  font-size: 1.2rem;
+}
+nav > header button {
+  width: 24px;
+  height: 24px;
 }
 nav li {
   display: flex;
   align-items: center;
-  line-height: 3.2rem;
-  padding-left: 4.8rem;
-  padding-right: 1.4rem;
+  padding-left: 48px;
+  padding-right: 14px;
   border-left: 4px solid transparent;
   cursor: pointer;
 }
 nav li.category {
-  padding-left: 1.4rem;
+  padding-left: 14px;
 }
-nav li.category.collapsed .icon-chevron-down {
+nav li.category.is-collapsed .icon-chevron-down {
   transform: rotate(-90deg);
 }
-nav li.category.collapsed ~ li {
+nav li.category.is-collapsed ~ li {
   display: none;
 }
 nav li .title {
@@ -137,16 +156,16 @@ nav li .title {
   text-overflow: ellipsis;
 }
 nav li .count {
-  padding-right: 0.4rem;
+  padding-right: 4px;
   font-size: 1.1rem;
   color: var(--color-grey);
 }
 nav li button {
-  width: 2.4rem;
-  height: 2.4rem;
+  width: 24px;
+  height: 24px;
 }
 nav li button.btn-chevron {
-  margin-right: 1rem;
+  margin-right: 10px;
 }
 nav li button.btn-dots {
   font-size: 1.6rem;
@@ -179,29 +198,47 @@ nav li:hover .count {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-body.with-dialog::after {
+.dialog {
+  width: 600px;
+  max-width: 100vw;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+.dialog button.close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 1.6rem;
+}
+.dialog > header {
+  padding: 16px;
+}
+.dialog > footer {
+  padding: 8px 16px;
+  background: var(--color-background);
+}
+.dialog > footer button {
+  min-width: 100px;
+}
+.dialog.alert {
+  text-align: center;
+}
+body.has-dialog::after {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
-}
-.dialog {
-  padding: 0.8rem;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  max-width: 100vw;
-  border: 1px solid var(--color-border);
-  background: #fff;
-  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
 }
 .popup {
-  padding: 0.8rem;
   position: absolute;
-  border: 1px solid var(--color-border);
-  background: white;
+  background: #fff;
+  box-shadow: var(--shadow);
 }

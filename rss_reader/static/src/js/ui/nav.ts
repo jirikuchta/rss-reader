@@ -1,55 +1,45 @@
-import * as html from "util/html";
+import { Category } from "data/types";
+import * as categories from "data/categories";
+import * as subscriptions from "data/subscriptions";
 
-import Popup from "ui/popup";
+import * as html from "util/html";
+import * as pubsub from "util/pubsub";
+
+import SubscriptionForm from "ui/widget/subscription-form";
+import Popup from "ui/widget/popup";
+import { Dialog } from "ui/widget/dialog";
 
 
 let node:HTMLElement;
 
-interface FeedData {
-	name: string,
-	category: string;
-}
-
-let categories:string[] = ["tech", "humor+art"];
-let feeds:FeedData[] = [
-	{"name": "Changelog master feed", "category": "tech"},
-	{"name": "CSS-Tricks", "category": "tech"},
-	{"name": "David Walsch Blog", "category": "tech"},
-	{"name": "DEV Community", "category": "tech"},
-	{"name": "Go Make Things", "category": "tech"},
-	{"name": "Hacker News", "category": "tech"},
-	{"name": "Hacker Noon - Medium", "category": "tech"},
-	{"name": "ITNEXT - Medium", "category": "tech"},
-	{"name": "Jim Fisher`s blog", "category": "tech"},
-	{"name": "MDN recent document changes", "category": "tech"},
-	{"name": "ROOT.cz - články", "category": "tech"},
-	{"name": "Scotch.io RSS Feed", "category": "tech"},
-	{"name": "SitePoint", "category": "tech"},
-	{"name": "Zdroják", "category": "tech"},
-	{"name": "C-Heads Magazine", "category": "humor+art"},
-	{"name": "Explosm.net", "category": "humor+art"},
-	{"name": "Hyperbole and a Half", "category": "humor+art"},
-	{"name": "OPRÁSKI SČESKÍ HISTORJE", "category": "humor+art"},
-	{"name": "Roumenův Rouming", "category": "humor+art"},
-	{"name": "this isn`t happiness.", "category": "humor+art"},
-];
-
 
 export function init() {
 	build();
+
+	pubsub.subscribe("subscriptions-changed", build);
+	pubsub.subscribe("categories-changed", build);
+
 	return node;
 }
 
 async function build() {
 	node ? html.clear(node) : node = html.node("nav");
-	categories.forEach(cat => node.appendChild(buildCategory(cat)));
+
+	let header = html.node("header", {}, "", node);
+	html.node("h3", {}, "Subscriptions", header);
+	let btn = html.button({icon: "plus-circle"}, "", header);
+	btn.addEventListener("click", e => editSubscription());
+
+	categories.list().forEach(cat => node.appendChild(buildCategory(cat)));
 }
 
-function buildCategory(cat: string) {
+function buildCategory(category: Category) {
 	let node = html.node("ul");
+	node.appendChild(buildItem(category.title, true));
 
-	node.appendChild(buildItem(cat, true));
-	feeds.filter(feed => feed.category == cat).forEach(feed => node.appendChild(buildItem(feed.name)));
+	subscriptions.list()
+		.filter(s => s.categoryId == category.id)
+		.forEach(s => node.appendChild(buildItem(s.title)))
 
 	return node;
 }
@@ -60,7 +50,7 @@ function buildItem(name: string, isCategory: boolean = false) {
 	if (isCategory) {
 		node.classList.add("category");
 		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
-		btn.addEventListener("click", e => node.classList.toggle("collapsed"));
+		btn.addEventListener("click", e => node.classList.toggle("is-collapsed"));
 	}
 
 	node.appendChild(html.node("span", {className: "title"}, name));
@@ -75,5 +65,26 @@ function buildItem(name: string, isCategory: boolean = false) {
 function showItemPopup(target: HTMLElement) {
 	let popup = new Popup();
 	html.node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
-	popup.open(target, "side");
+	popup.open(target, "below");
+}
+
+
+export function editSubscription() {
+	let dialog = new Dialog();
+	let subscriptionForm = new SubscriptionForm();
+
+	let header = html.node("header", {}, "", dialog.node);
+	header.appendChild(subscriptionForm.node);
+
+	let footer = html.node("footer", {}, "", dialog.node);
+	let btnOk = html.button({type:"submit"}, "Submit", footer);
+	let btnCancel = html.button({type:"button"}, "Cancel", footer);
+
+	dialog.open();
+
+	return new Promise(resolve => {
+		dialog.onClose = () => resolve(false);
+		btnOk.addEventListener("click", e => subscriptionForm.submit());
+		btnCancel.addEventListener("click", e => dialog.close());
+	});
 }

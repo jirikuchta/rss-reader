@@ -1,7 +1,8 @@
 var icons = {
     "chevron-down": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 01.708 0L8 10.293l5.646-5.647a.5.5 0 01.708.708l-6 6a.5.5 0 01-.708 0l-6-6a.5.5 0 010-.708z" clip-rule="evenodd"/></svg>`,
     "dots-horizontal": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M3 9.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>`,
-    "cross": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/></svg>`
+    "cross": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/></svg>`,
+    "plus-circle": `<svg viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M8 3.5a.5.5 0 01.5.5v4a.5.5 0 01-.5.5H4a.5.5 0 010-1h3.5V4a.5.5 0 01.5-.5z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M7.5 8a.5.5 0 01.5-.5h4a.5.5 0 010 1H8.5V12a.5.5 0 01-1 0V8z" clip-rule="evenodd"/><path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm0 1A8 8 0 108 0a8 8 0 000 16z" clip-rule="evenodd"/></svg>`
 };
 
 const SVGNS = "http://www.w3.org/2000/svg";
@@ -69,25 +70,26 @@ class Dialog {
     open() {
         current === null || current === void 0 ? void 0 : current.close();
         current = this;
-        document.body.classList.add("with-dialog");
+        document.body.classList.add("has-dialog");
         document.body.appendChild(this.node);
     }
     close() {
         var _a;
         current = null;
-        document.body.classList.remove("with-dialog");
+        document.body.classList.remove("has-dialog");
         (_a = this.node.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.node);
         this.onClose();
     }
     onClose() { }
     closeButton() {
-        let button$1 = button({ icon: "cross" });
+        let button$1 = button({ icon: "cross", className: "close" });
         button$1.addEventListener("click", e => this.close());
         return button$1;
     }
 }
 async function alert(text, description) {
     let dialog = new Dialog();
+    dialog.node.classList.add("alert");
     let header = node("header", {}, "", dialog.node);
     header.appendChild(dialog.closeButton());
     node("h3", {}, text, header);
@@ -100,12 +102,14 @@ async function alert(text, description) {
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current === null || current === void 0 ? void 0 : current.close()));
 
-async function api(uri, init) {
+async function api(uri, method = "GET", data = null) {
     try {
-        let res = await fetch(uri, init);
-        if (!res.ok) {
-            throw Error(`${res.status} ${res.statusText}`);
+        let init = { method: method };
+        if (data) {
+            init.body = JSON.stringify(data),
+                init.headers = { "Content-Type": "application/json" };
         }
+        let res = await fetch(uri, init);
         return await res.json();
     }
     catch (e) {
@@ -129,12 +133,72 @@ function subscribe(message, subscriber) {
     storage[message].push(subscriber);
 }
 
-let subscriptions = [];
+let categories = [];
 async function init() {
+    let res = await api("/api/categories/");
+    categories = res;
+}
+function list() { return categories; }
+async function add(title) {
+    let res = await api("/api/categories/", "POST", { "title": title });
+    categories.push(res);
+    publish("categories-changed");
+    return res;
+}
+
+let subscriptions = [];
+async function init$1() {
     let res = await api("/api/subscriptions/");
-    if (res && res.status == "ok") {
-        subscriptions = res.data;
+    subscriptions = res;
+}
+function list$1() { return subscriptions; }
+async function add$1(uri, categoryId) {
+    let res = await api("/api/subscriptions/", "POST", {
+        "uri": uri,
+        "categoryId": categoryId !== null && categoryId !== void 0 ? categoryId : null
+    });
+    subscriptions.push(res);
+    publish("subscriptions-changed");
+    return true;
+}
+
+const CategoryListId = "subscriptionFormCategoryList";
+class SubscriptionForm {
+    constructor(subscription) {
+        this._subscription = subscription;
+        this._inputs = {
+            url: buildURLInput(subscription === null || subscription === void 0 ? void 0 : subscription.uri),
+            category: buildCategoryInput(subscription === null || subscription === void 0 ? void 0 : subscription.title)
+        };
+        this.node = this._build();
     }
+    _build() {
+        let node$1 = node("form");
+        node$1.appendChild(this._inputs.url);
+        node$1.appendChild(this._inputs.category);
+        node$1.appendChild(buildCategoryList());
+        return node$1;
+    }
+    async submit() {
+        let category;
+        if (this._inputs.category.value) {
+            category = await add(this._inputs.category.value);
+        }
+        add$1(this._inputs.url.value, category === null || category === void 0 ? void 0 : category.id);
+    }
+}
+function buildURLInput(value) {
+    return node("input", { placeholder: "Feed URL", value: value || "" });
+}
+function buildCategoryInput(value) {
+    let node$1 = node("input", { value: value || "" });
+    node$1.setAttribute("list", CategoryListId);
+    return node$1;
+}
+function buildCategoryList() {
+    let node$1 = node("datalist", { id: CategoryListId });
+    list().forEach(category => node("option", { value: category.title }, category.title, node$1));
+    return node$1;
 }
 
 const PAD = 8;
@@ -251,41 +315,26 @@ window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null |
 document.addEventListener("mousedown", e => current$1 === null || current$1 === void 0 ? void 0 : current$1.close(), true);
 
 let node$1;
-let categories = ["tech", "humor+art"];
-let feeds = [
-    { "name": "Changelog master feed", "category": "tech" },
-    { "name": "CSS-Tricks", "category": "tech" },
-    { "name": "David Walsch Blog", "category": "tech" },
-    { "name": "DEV Community", "category": "tech" },
-    { "name": "Go Make Things", "category": "tech" },
-    { "name": "Hacker News", "category": "tech" },
-    { "name": "Hacker Noon - Medium", "category": "tech" },
-    { "name": "ITNEXT - Medium", "category": "tech" },
-    { "name": "Jim Fisher`s blog", "category": "tech" },
-    { "name": "MDN recent document changes", "category": "tech" },
-    { "name": "ROOT.cz - články", "category": "tech" },
-    { "name": "Scotch.io RSS Feed", "category": "tech" },
-    { "name": "SitePoint", "category": "tech" },
-    { "name": "Zdroják", "category": "tech" },
-    { "name": "C-Heads Magazine", "category": "humor+art" },
-    { "name": "Explosm.net", "category": "humor+art" },
-    { "name": "Hyperbole and a Half", "category": "humor+art" },
-    { "name": "OPRÁSKI SČESKÍ HISTORJE", "category": "humor+art" },
-    { "name": "Roumenův Rouming", "category": "humor+art" },
-    { "name": "this isn`t happiness.", "category": "humor+art" },
-];
-function init$1() {
+function init$2() {
     build();
+    subscribe("subscriptions-changed", build);
+    subscribe("categories-changed", build);
     return node$1;
 }
 async function build() {
     node$1 ? clear(node$1) : node$1 = node("nav");
-    categories.forEach(cat => node$1.appendChild(buildCategory(cat)));
+    let header = node("header", {}, "", node$1);
+    node("h3", {}, "Subscriptions", header);
+    let btn = button({ icon: "plus-circle" }, "", header);
+    btn.addEventListener("click", e => editSubscription());
+    list().forEach(cat => node$1.appendChild(buildCategory(cat)));
 }
-function buildCategory(cat) {
+function buildCategory(category) {
     let node$1 = node("ul");
-    node$1.appendChild(buildItem(cat, true));
-    feeds.filter(feed => feed.category == cat).forEach(feed => node$1.appendChild(buildItem(feed.name)));
+    node$1.appendChild(buildItem(category.title, true));
+    list$1()
+        .filter(s => s.categoryId == category.id)
+        .forEach(s => node$1.appendChild(buildItem(s.title)));
     return node$1;
 }
 function buildItem(name, isCategory = false) {
@@ -293,7 +342,7 @@ function buildItem(name, isCategory = false) {
     if (isCategory) {
         node$1.classList.add("category");
         let btn = button({ icon: "chevron-down", className: "plain btn-chevron" }, "", node$1);
-        btn.addEventListener("click", e => node$1.classList.toggle("collapsed"));
+        btn.addEventListener("click", e => node$1.classList.toggle("is-collapsed"));
     }
     node$1.appendChild(node("span", { className: "title" }, name));
     node$1.appendChild(node("span", { className: "count" }, "50"));
@@ -304,41 +353,48 @@ function buildItem(name, isCategory = false) {
 function showItemPopup(target) {
     let popup = new Popup();
     node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
-    popup.open(target, "side");
+    popup.open(target, "below");
+}
+function editSubscription() {
+    let dialog = new Dialog();
+    let subscriptionForm = new SubscriptionForm();
+    let header = node("header", {}, "", dialog.node);
+    header.appendChild(subscriptionForm.node);
+    let footer = node("footer", {}, "", dialog.node);
+    let btnOk = button({ type: "submit" }, "Submit", footer);
+    let btnCancel = button({ type: "button" }, "Cancel", footer);
+    dialog.open();
+    return new Promise(resolve => {
+        dialog.onClose = () => resolve(false);
+        btnOk.addEventListener("click", e => subscriptionForm.submit());
+        btnCancel.addEventListener("click", e => dialog.close());
+    });
 }
 
-async function list(subscription) {
-    let res = await api(`/api/subscriptions/${subscription ? subscription.id + "/" : ""}entries/`);
-    if (!res || res.status != "ok") {
-        return false;
-    }
-    return res.data;
-}
-function select(entry) {
-    publish("entry-selected");
+async function list$2(subscription) {
+    let res = await api(`/api/entries/`);
+    return res;
 }
 
 let node$2;
-function init$2() {
+function init$3() {
     build$1();
     subscribe("subscription-selected", build$1);
     return node$2;
 }
 async function build$1() {
     node$2 ? clear(node$2) : node$2 = node("section", { "id": "list" });
-    let items = await list( undefined);
+    let items = await list$2();
     items && items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
 }
 function buildItem$1(entry) {
     let node$1 = node("article");
     node$1.appendChild(node("h3", {}, entry.title));
-    entry.summary && node$1.appendChild(node("p", {}, entry.summary));
-    node$1.addEventListener("click", e => select());
     return node$1;
 }
 
 let node$3;
-function init$3() {
+function init$4() {
     build$2();
     return node$3;
 }
@@ -347,12 +403,12 @@ async function build$2() {
 }
 
 let node$4 = document.querySelector("main");
-function init$4() {
-    let navNode = init$1();
-    let listNode = init$2();
+function init$5() {
+    let navNode = init$2();
+    let listNode = init$3();
     node$4.appendChild(navNode);
     node$4.appendChild(listNode);
-    node$4.appendChild(init$3());
+    node$4.appendChild(init$4());
     new Resizer(navNode, "sidebar-width");
     new Resizer(listNode, "entries-width");
 }
@@ -401,8 +457,9 @@ class Resizer {
     }
 }
 
-async function init$5() {
+async function init$6() {
     await init();
-    init$4();
+    await init$1();
+    init$5();
 }
-init$5();
+init$6();
