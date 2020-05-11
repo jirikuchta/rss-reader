@@ -102,7 +102,7 @@ async function alert(text, description) {
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current === null || current === void 0 ? void 0 : current.close()));
 
-async function api(uri, method = "GET", data = null) {
+async function api(method, uri, data = null) {
     try {
         let init = { method: method };
         if (data) {
@@ -135,12 +135,12 @@ function subscribe(message, subscriber) {
 
 let categories = [];
 async function init() {
-    let res = await api("/api/categories/");
+    let res = await api("GET", "/api/categories/");
     categories = res;
 }
 function list() { return categories; }
-async function add(title) {
-    let res = await api("/api/categories/", "POST", { "title": title });
+async function add(data) {
+    let res = await api("POST", "/api/categories/", data);
     categories.push(res);
     publish("categories-changed");
     return res;
@@ -148,57 +148,88 @@ async function add(title) {
 
 let subscriptions = [];
 async function init$1() {
-    let res = await api("/api/subscriptions/");
+    let res = await api("GET", "/api/subscriptions/");
     subscriptions = res;
 }
 function list$1() { return subscriptions; }
-async function add$1(uri, categoryId) {
-    let res = await api("/api/subscriptions/", "POST", {
-        "uri": uri,
-        "categoryId": categoryId !== null && categoryId !== void 0 ? categoryId : null
-    });
+async function add$1(data) {
+    let res = await api("POST", "/api/subscriptions/", data);
     subscriptions.push(res);
     publish("subscriptions-changed");
-    return true;
+}
+async function edit(id, data) {
+    await api("PATCH", `/api/subscriptions/${id}/`, data);
+    publish("subscriptions-changed");
 }
 
-const CategoryListId = "subscriptionFormCategoryList";
+function str() {
+    return Math.random().toString(36).substr(2, 9);
+}
+
 class SubscriptionForm {
     constructor(subscription) {
+        var _a;
         this._subscription = subscription;
-        this._inputs = {
-            url: buildURLInput(subscription === null || subscription === void 0 ? void 0 : subscription.uri),
-            category: buildCategoryInput(subscription === null || subscription === void 0 ? void 0 : subscription.title)
-        };
+        this._title = node("input", { value: (subscription === null || subscription === void 0 ? void 0 : subscription.title) || "" });
+        this._uri = node("input", { value: (subscription === null || subscription === void 0 ? void 0 : subscription.uri) || "" });
+        this._category = node("input");
         this.node = this._build();
-    }
-    _build() {
-        let node$1 = node("form");
-        node$1.appendChild(this._inputs.url);
-        node$1.appendChild(this._inputs.category);
-        node$1.appendChild(buildCategoryList());
-        return node$1;
+        if (subscription && subscription.categoryId) {
+            this._category.value = ((_a = list().find(cat => cat.id == subscription.categoryId)) === null || _a === void 0 ? void 0 : _a.title) || "";
+        }
     }
     async submit() {
-        let category;
-        if (this._inputs.category.value) {
-            category = await add(this._inputs.category.value);
+        var _a;
+        let data = {
+            title: this._title.value,
+            uri: this._uri.value,
+            categoryId: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
+        };
+        if (this._subscription) {
+            await edit(this._subscription.id, data);
         }
-        add$1(this._inputs.url.value, category === null || category === void 0 ? void 0 : category.id);
+        else {
+            await add$1(data);
+        }
+    }
+    _build() {
+        let node$1 = node("form", { id: "subscription-form" });
+        this._subscription && node$1.appendChild(buildTitleField(this._title));
+        node$1.appendChild(buildUrlField(this._uri));
+        node$1.appendChild(buildCategoryField(this._category));
+        return node$1;
     }
 }
-function buildURLInput(value) {
-    return node("input", { placeholder: "Feed URL", value: value || "" });
-}
-function buildCategoryInput(value) {
-    let node$1 = node("input", { value: value || "" });
-    node$1.setAttribute("list", CategoryListId);
+function buildTitleField(input) {
+    let node$1 = node("label", {}, "Title");
+    node$1.appendChild(input);
     return node$1;
 }
-function buildCategoryList() {
-    let node$1 = node("datalist", { id: CategoryListId });
-    list().forEach(category => node("option", { value: category.title }, category.title, node$1));
+function buildUrlField(input) {
+    let node$1 = node("label", {}, "Feed URL");
+    node$1.appendChild(input);
     return node$1;
+}
+function buildCategoryField(input) {
+    let listId = str();
+    let node$1 = node("label", {}, "Category");
+    input.setAttribute("list", listId);
+    node$1.appendChild(input);
+    let list$1 = node("datalist", { id: listId }, "", node$1);
+    list().forEach(c => node("option", { value: c.title }, c.title, list$1));
+    return node$1;
+}
+async function getCategory(title) {
+    title = title.trim();
+    if (!title) {
+        return;
+    }
+    let category = list()
+        .find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
+    if (!category) {
+        category = await add({ title });
+    }
+    return category;
 }
 
 const PAD = 8;
@@ -361,18 +392,16 @@ function editSubscription() {
     let header = node("header", {}, "", dialog.node);
     header.appendChild(subscriptionForm.node);
     let footer = node("footer", {}, "", dialog.node);
-    let btnOk = button({ type: "submit" }, "Submit", footer);
-    let btnCancel = button({ type: "button" }, "Cancel", footer);
+    let btn = button({ type: "submit" }, "Submit", footer);
     dialog.open();
     return new Promise(resolve => {
         dialog.onClose = () => resolve(false);
-        btnOk.addEventListener("click", e => subscriptionForm.submit());
-        btnCancel.addEventListener("click", e => dialog.close());
+        btn.addEventListener("click", e => subscriptionForm.submit());
     });
 }
 
 async function list$2(subscription) {
-    let res = await api(`/api/entries/`);
+    let res = await api("GET", "/api/entries/");
     return res;
 }
 

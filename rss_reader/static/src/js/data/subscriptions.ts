@@ -1,34 +1,33 @@
-import { Subscription, CategoryId } from "data/types";
+import { SubscriptionId, Subscription } from "data/types";
 import { api } from "util/api";
 import * as pubsub from "util/pubsub";
 
 let subscriptions: Subscription[] = [];
 
 export async function init() {
-	let res:Subscription[] = await api("/api/subscriptions/");
+	let res:Subscription[] = await api("GET", "/api/subscriptions/");
 	subscriptions = res;
 }
 
 export function list() { return subscriptions; }
 
-export async function add(uri: string, categoryId?: CategoryId) {
-	let res:Subscription = await api("/api/subscriptions/", "POST",{
-		"uri": uri,
-		"categoryId": categoryId ?? null
-	});
-
+export async function add(data: Partial<Subscription>) {
+	let res:Subscription = await api("POST", "/api/subscriptions/", data);
 	subscriptions.push(res);
 	pubsub.publish("subscriptions-changed");
-
-	return true;
 }
 
-export async function remove(subscription: Subscription) {
+export async function edit(id: SubscriptionId, data: Partial<Subscription>) {
+	await api("PATCH", `/api/subscriptions/${id}/`, data);
+	pubsub.publish("subscriptions-changed");
+}
+
+export async function remove(id: SubscriptionId) {
 	type Res = {data:null, status:string};
-	let res:Res = await api(`/api/subscriptions/${subscription.id}/`, "DELETE");
+	let res:Res = await api("DELETE", `/api/subscriptions/${id}/`);
 	if (!res || res.status != "ok") { return false; }
 
-	subscriptions = subscriptions.filter(item => item.id != subscription.id);
+	subscriptions = subscriptions.filter(s => s.id != id);
 	pubsub.publish("subscriptions-changed");
 
 	return true;

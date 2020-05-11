@@ -77,14 +77,12 @@ export function editSubscription() {
 	header.appendChild(subscriptionForm.node);
 
 	let footer = html.node("footer", {}, "", dialog.node);
-	let btnOk = html.button({type:"submit"}, "Submit", footer);
-	let btnCancel = html.button({type:"button"}, "Cancel", footer);
+	let btn = html.button({type:"submit"}, "Submit", footer);
 
 	dialog.open();
 
 	return new Promise(resolve => {
 		dialog.onClose = () => resolve(false);
-		btnOk.addEventListener("click", e => subscriptionForm.submit());
-		btnCancel.addEventListener("click", e => dialog.close());
+		btn.addEventListener("click", e => subscriptionForm.submit());
 	});
 }

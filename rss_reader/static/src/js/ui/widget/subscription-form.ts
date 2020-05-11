@@ -1,59 +1,88 @@
 import * as html from "util/html";
+import * as random from "util/random";
 
 import { Subscription } from "data/types";
-import * as subscriptions from "data/subscriptions";
 import * as categories from "data/categories";
-
-const CategoryListId = "subscriptionFormCategoryList";
-
+import * as subscriptions from "data/subscriptions";
 
 export default class SubscriptionForm {
 	node: HTMLFormElement;
+	_title: HTMLInputElement;
+	_uri: HTMLInputElement;
+	_category: HTMLInputElement;
 	_subscription?: Subscription;
-	_inputs: {
-		url: HTMLInputElement;
-		category: HTMLInputElement;
-	};
 
 	constructor(subscription?: Subscription) {
 		this._subscription = subscription;
-		this._inputs = {
-			url: buildURLInput(subscription?.uri),
-			category: buildCategoryInput(subscription?.title)
-		};
+		this._title = html.node("input", {value: subscription?.title || ""});
+		this._uri = html.node("input", {value: subscription?.uri || ""});
+		this._category = html.node("input");
 		this.node = this._build();
-	}
 
-	_build() {
-		let node = html.node("form");
-		node.appendChild(this._inputs.url);
-		node.appendChild(this._inputs.category);
-		node.appendChild(buildCategoryList());
-		return node;
+		if (subscription && subscription.categoryId) {
+			this._category.value = categories.list().find(
+				cat => cat.id == subscription.categoryId)?.title || "";
+		}
 	}
 
 	async submit() {
-		let category;
-		if (this._inputs.category.value) {
-			category = await categories.add(this._inputs.category.value);
+		let data: Partial<Subscription> = {
+			title: this._title.value,
+			uri: this._uri.value,
+			categoryId: (await getCategory(this._category.value))?.id
+		};
+
+		if (this._subscription) {
+			await subscriptions.edit(this._subscription.id, data);
+		} else {
+			await subscriptions.add(data);
 		}
-		subscriptions.add(this._inputs.url.value, category?.id);
+	}
+
+	_build() {
+		let node = html.node("form", {id: "subscription-form"});
+		this._subscription && node.appendChild(buildTitleField(this._title));
+		node.appendChild(buildUrlField(this._uri));
+		node.appendChild(buildCategoryField(this._category));
+		return node;
 	}
 }
 
-function buildURLInput(value?: string) {
-	return html.node("input", {placeholder: "Feed URL", value: value || ""});
-}
-
-function buildCategoryInput(value?: string) {
-	let node = html.node("input", {value: value || ""});
-	node.setAttribute("list", CategoryListId);
+function buildTitleField(input: HTMLInputElement) {
+	let node = html.node("label", {}, "Title");
+	node.appendChild(input);
 	return node;
 }
 
-function buildCategoryList() {
-	let node = html.node("datalist", {id: CategoryListId});
-	categories.list().forEach(category => html.node(
-		"option", {value: category.title}, category.title, node));
+function buildUrlField(input: HTMLInputElement) {
+	let node = html.node("label", {}, "Feed URL");
+	node.appendChild(input);
 	return node;
+}
+
+function buildCategoryField(input: HTMLInputElement) {
+	let listId = random.str();
+	let node = html.node("label", {}, "Category");
+
+	input.setAttribute("list", listId);
+	node.appendChild(input);
+
+	let list = html.node("datalist", {id: listId}, "", node);
+	categories.list().forEach(c => html.node("option", {value: c.title}, c.title, list));
+
+	return node;
+}
+
+async function getCategory(title: string) {
+	title = title.trim();
+	if (!title) { return; }
+
+	let category = categories.list()
+		.find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
+
+	if (!category) {
+		category = await categories.add({title});
+	}
+
+	return category;
 }

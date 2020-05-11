@@ -1,6 +1,8 @@
 import { alert } from "ui/widget/dialog";
 
-export async function api(uri: string, method: string = "GET", data: any = null) {
+type METHODS = "GET" | "POST" | "PATCH" | "DELETE";
+
+export async function api(method: METHODS, uri: string, data: any = null) {
 	try {
 		let init: RequestInit = {method: method};
 		if (data) {
