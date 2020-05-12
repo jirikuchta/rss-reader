@@ -26,7 +26,7 @@ class ErrorType(Enum):
     AlreadyExists = auto()
 
 
-Error = namedtuple("ErrorCode", "status_code, code")
+Error = namedtuple("ErrorCode", "status_code, error_code")
 Errors: Dict[ErrorType, Error] = {
     ErrorType.BadRequest: Error(400, "bad_request"),
     ErrorType.MissingField: Error(400, "missing_field"),
@@ -44,7 +44,7 @@ class ClientError(Exception):
     def __init__(self, error: ErrorType, **kwargs) -> None:
         self.status_code = Errors[error].status_code
         self.data = {"error": kwargs}
-        self.data["error"].update({"code": Errors[error].code})
+        self.data["error"].update({"code": Errors[error].error_code})
 
 
 class MissingFieldError(ClientError):

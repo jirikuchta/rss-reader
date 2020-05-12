@@ -6,19 +6,19 @@ export class Dialog {
 	node: HTMLElement;
 
 	constructor() {
-		this.node = html.node("div", {className: "dialog"});
+		this.node = html.node("div", {id: "dialog"});
 	}
 
 	open() {
 		current?.close();
 		current = this;
-		document.body.classList.add("has-dialog");
+		document.body.classList.add("with-dialog");
 		document.body.appendChild(this.node);
 	}
 
 	close() {
 		current = null;
-		document.body.classList.remove("has-dialog");
+		document.body.classList.remove("with-dialog");
 		this.node.parentNode?.removeChild(this.node);
 		this.onClose();
 	}

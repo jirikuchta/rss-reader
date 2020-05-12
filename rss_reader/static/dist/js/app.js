@@ -1,3 +1,74 @@
+async function api(method, uri, data = null) {
+    let init = { method: method };
+    if (data) {
+        init.body = JSON.stringify(data);
+        init.headers = new Headers({ "Content-Type": "application/json" });
+    }
+    let res = await fetch(uri, init);
+    let body = await res.json();
+    return {
+        ok: res.ok,
+        [res.ok ? "data" : "error"]: res.ok ? body : body["error"]
+    };
+}
+
+const storage = Object.create(null);
+function publish(message, publisher, data) {
+    let subscribers = storage[message] || [];
+    subscribers.forEach((subscriber) => {
+        typeof (subscriber) == "function"
+            ? subscriber(message, publisher, data)
+            : subscriber.handleMessage(message, publisher, data);
+    });
+}
+function subscribe(message, subscriber) {
+    if (!(message in storage)) {
+        storage[message] = [];
+    }
+    storage[message].push(subscriber);
+}
+
+let categories = [];
+async function init() {
+    let res = await api("GET", "/api/categories/");
+    res.ok && (categories = res.data);
+}
+function list() { return categories; }
+async function add(data) {
+    let res = await api("POST", "/api/categories/", data);
+    if (res.ok) {
+        categories.push(res.data);
+        publish("categories-changed");
+    }
+    return res;
+}
+
+let subscriptions = [];
+async function init$1() {
+    let res = await api("GET", "/api/subscriptions/");
+    res.ok && (subscriptions = res.data);
+}
+function list$1() { return subscriptions; }
+async function add$1(data) {
+    let res = await api("POST", "/api/subscriptions/", data);
+    if (res.ok) {
+        subscriptions.push(res.data);
+        publish("subscriptions-changed");
+    }
+    return res;
+}
+async function edit(id, data) {
+    let res = await api("PATCH", `/api/subscriptions/${id}/`, data);
+    if (res.ok) {
+        let i = subscriptions.findIndex(s => s.id == id);
+        if (i != -1) {
+            subscriptions[i] = res.data;
+            publish("subscriptions-changed");
+        }
+    }
+    return res;
+}
+
 var icons = {
     "chevron-down": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 01.708 0L8 10.293l5.646-5.647a.5.5 0 01.708.708l-6 6a.5.5 0 01-.708 0l-6-6a.5.5 0 010-.708z" clip-rule="evenodd"/></svg>`,
     "dots-horizontal": `<svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M3 9.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm5 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd"/></svg>`,
@@ -61,105 +132,8 @@ function icon(type, title = "", parent) {
     parent && parent.appendChild(s);
     return s;
 }
-
-let current = null;
-class Dialog {
-    constructor() {
-        this.node = node("div", { className: "dialog" });
-    }
-    open() {
-        current === null || current === void 0 ? void 0 : current.close();
-        current = this;
-        document.body.classList.add("has-dialog");
-        document.body.appendChild(this.node);
-    }
-    close() {
-        var _a;
-        current = null;
-        document.body.classList.remove("has-dialog");
-        (_a = this.node.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.node);
-        this.onClose();
-    }
-    onClose() { }
-    closeButton() {
-        let button$1 = button({ icon: "cross", className: "close" });
-        button$1.addEventListener("click", e => this.close());
-        return button$1;
-    }
-}
-async function alert(text, description) {
-    let dialog = new Dialog();
-    dialog.node.classList.add("alert");
-    let header = node("header", {}, "", dialog.node);
-    header.appendChild(dialog.closeButton());
-    node("h3", {}, text, header);
-    description && node("p", {}, description, header);
-    let footer = node("footer", {}, "", dialog.node);
-    let button$1 = button({ type: "submit" }, "OK", footer);
-    button$1.addEventListener("click", _ => dialog.close());
-    dialog.open();
-    return new Promise(resolve => dialog.onClose = resolve);
-}
-window.addEventListener("keydown", e => e.keyCode == 27 && (current === null || current === void 0 ? void 0 : current.close()));
-
-async function api(method, uri, data = null) {
-    try {
-        let init = { method: method };
-        if (data) {
-            init.body = JSON.stringify(data),
-                init.headers = { "Content-Type": "application/json" };
-        }
-        let res = await fetch(uri, init);
-        return await res.json();
-    }
-    catch (e) {
-        alert(e);
-    }
-}
-
-const storage = Object.create(null);
-function publish(message, publisher, data) {
-    let subscribers = storage[message] || [];
-    subscribers.forEach((subscriber) => {
-        typeof (subscriber) == "function"
-            ? subscriber(message, publisher, data)
-            : subscriber.handleMessage(message, publisher, data);
-    });
-}
-function subscribe(message, subscriber) {
-    if (!(message in storage)) {
-        storage[message] = [];
-    }
-    storage[message].push(subscriber);
-}
-
-let categories = [];
-async function init() {
-    let res = await api("GET", "/api/categories/");
-    categories = res;
-}
-function list() { return categories; }
-async function add(data) {
-    let res = await api("POST", "/api/categories/", data);
-    categories.push(res);
-    publish("categories-changed");
-    return res;
-}
-
-let subscriptions = [];
-async function init$1() {
-    let res = await api("GET", "/api/subscriptions/");
-    subscriptions = res;
-}
-function list$1() { return subscriptions; }
-async function add$1(data) {
-    let res = await api("POST", "/api/subscriptions/", data);
-    subscriptions.push(res);
-    publish("subscriptions-changed");
-}
-async function edit(id, data) {
-    await api("PATCH", `/api/subscriptions/${id}/`, data);
-    publish("subscriptions-changed");
+function fragment() {
+    return document.createDocumentFragment();
 }
 
 function str() {
@@ -170,12 +144,16 @@ class SubscriptionForm {
     constructor(subscription) {
         var _a;
         this._subscription = subscription;
-        this._title = node("input", { value: (subscription === null || subscription === void 0 ? void 0 : subscription.title) || "" });
-        this._uri = node("input", { value: (subscription === null || subscription === void 0 ? void 0 : subscription.uri) || "" });
-        this._category = node("input");
+        this._title = node("input", { type: "text" });
+        this._uri = node("input", { type: "text" });
+        this._category = node("input", { type: "text" });
         this.node = this._build();
-        if (subscription && subscription.categoryId) {
-            this._category.value = ((_a = list().find(cat => cat.id == subscription.categoryId)) === null || _a === void 0 ? void 0 : _a.title) || "";
+        if (subscription) {
+            this._title.value = subscription.title;
+            this._uri.value = subscription.uri;
+            if (subscription.categoryId) {
+                this._category.value = ((_a = list().find(cat => cat.id == subscription.categoryId)) === null || _a === void 0 ? void 0 : _a.title) || "";
+            }
         }
     }
     async submit() {
@@ -185,38 +163,40 @@ class SubscriptionForm {
             uri: this._uri.value,
             categoryId: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
         };
+        let res;
         if (this._subscription) {
-            await edit(this._subscription.id, data);
+            res = await edit(this._subscription.id, data);
         }
         else {
-            await add$1(data);
+            res = await add$1(data);
         }
+        return res;
     }
     _build() {
-        let node$1 = node("form", { id: "subscription-form" });
-        this._subscription && node$1.appendChild(buildTitleField(this._title));
-        node$1.appendChild(buildUrlField(this._uri));
-        node$1.appendChild(buildCategoryField(this._category));
+        let node$1 = node("form");
+        this._subscription && node$1.appendChild(labelInput("Title", this._title, true));
+        node$1.appendChild(labelInput("Feed URL", this._uri, true));
+        node$1.appendChild(labelInput("Category", this._category));
+        let categoryList = buildCategoryList();
+        this._category.setAttribute("list", categoryList.id);
+        node$1.appendChild(categoryList);
         return node$1;
     }
 }
-function buildTitleField(input) {
-    let node$1 = node("label", {}, "Title");
-    node$1.appendChild(input);
-    return node$1;
+function labelInput(text, input, required = false) {
+    let label = node("label", {}, text);
+    required && label.classList.add("required");
+    let id = str();
+    label.setAttribute("for", id);
+    input.setAttribute("id", id);
+    let frag = fragment();
+    frag.appendChild(label);
+    frag.appendChild(input);
+    return frag;
 }
-function buildUrlField(input) {
-    let node$1 = node("label", {}, "Feed URL");
-    node$1.appendChild(input);
-    return node$1;
-}
-function buildCategoryField(input) {
-    let listId = str();
-    let node$1 = node("label", {}, "Category");
-    input.setAttribute("list", listId);
-    node$1.appendChild(input);
-    let list$1 = node("datalist", { id: listId }, "", node$1);
-    list().forEach(c => node("option", { value: c.title }, c.title, list$1));
+function buildCategoryList() {
+    let node$1 = node("datalist", { id: str() });
+    list().forEach(c => node("option", { value: c.title }, c.title, node$1));
     return node$1;
 }
 async function getCategory(title) {
@@ -227,13 +207,14 @@ async function getCategory(title) {
     let category = list()
         .find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
     if (!category) {
-        category = await add({ title });
+        let res = await add({ title });
+        res.ok && (category = res.data);
     }
     return category;
 }
 
 const PAD = 8;
-let current$1 = null;
+let current = null;
 function preventOverflow(position, type, avail) {
     let overflow = 0;
     switch (type) {
@@ -326,14 +307,14 @@ class Popup {
         this.node = node("div", { className: "popup" });
     }
     open(target, pos, offset) {
-        current$1 === null || current$1 === void 0 ? void 0 : current$1.close();
-        current$1 = this;
+        current === null || current === void 0 ? void 0 : current.close();
+        current = this;
         document.body.appendChild(this.node);
         this.anchorTo(target, pos, offset);
     }
     close() {
         var _a;
-        current$1 = null;
+        current = null;
         (_a = this.node.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.node);
         this.onClose();
     }
@@ -342,8 +323,35 @@ class Popup {
     }
     onClose() { }
 }
+window.addEventListener("keydown", e => e.keyCode == 27 && (current === null || current === void 0 ? void 0 : current.close()));
+document.addEventListener("mousedown", e => current === null || current === void 0 ? void 0 : current.close(), true);
+
+let current$1 = null;
+class Dialog {
+    constructor() {
+        this.node = node("div", { id: "dialog" });
+    }
+    open() {
+        current$1 === null || current$1 === void 0 ? void 0 : current$1.close();
+        current$1 = this;
+        document.body.classList.add("with-dialog");
+        document.body.appendChild(this.node);
+    }
+    close() {
+        var _a;
+        current$1 = null;
+        document.body.classList.remove("with-dialog");
+        (_a = this.node.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(this.node);
+        this.onClose();
+    }
+    onClose() { }
+    closeButton() {
+        let button$1 = button({ icon: "cross", className: "close" });
+        button$1.addEventListener("click", e => this.close());
+        return button$1;
+    }
+}
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
-document.addEventListener("mousedown", e => current$1 === null || current$1 === void 0 ? void 0 : current$1.close(), true);
 
 let node$1;
 function init$2() {
@@ -389,20 +397,24 @@ function showItemPopup(target) {
 function editSubscription() {
     let dialog = new Dialog();
     let subscriptionForm = new SubscriptionForm();
-    let header = node("header", {}, "", dialog.node);
-    header.appendChild(subscriptionForm.node);
+    let header = node("header", {}, "Add subscription", dialog.node);
+    header.appendChild(dialog.closeButton());
+    dialog.node.appendChild(subscriptionForm.node);
     let footer = node("footer", {}, "", dialog.node);
     let btn = button({ type: "submit" }, "Submit", footer);
     dialog.open();
     return new Promise(resolve => {
         dialog.onClose = () => resolve(false);
-        btn.addEventListener("click", e => subscriptionForm.submit());
+        btn.addEventListener("click", async (e) => {
+            let res = await subscriptionForm.submit();
+            res.ok && dialog.close();
+        });
     });
 }
 
 async function list$2(subscription) {
     let res = await api("GET", "/api/entries/");
-    return res;
+    return res.data;
 }
 
 let node$2;

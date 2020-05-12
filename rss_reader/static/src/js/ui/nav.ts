@@ -73,8 +73,10 @@ export function editSubscription() {
 	let dialog = new Dialog();
 	let subscriptionForm = new SubscriptionForm();
 
-	let header = html.node("header", {}, "", dialog.node);
-	header.appendChild(subscriptionForm.node);
+	let header = html.node("header", {}, "Add subscription", dialog.node);
+	header.appendChild(dialog.closeButton());
+
+	dialog.node.appendChild(subscriptionForm.node);
 
 	let footer = html.node("footer", {}, "", dialog.node);
 	let btn = html.button({type:"submit"}, "Submit", footer);
@@ -83,6 +85,9 @@ export function editSubscription() {
 
 	return new Promise(resolve => {
 		dialog.onClose = () => resolve(false);
-		btn.addEventListener("click", e => subscriptionForm.submit());
+		btn.addEventListener("click", async e => {
+			let res = await subscriptionForm.submit();
+			res.ok && dialog.close();
+		});
 	});
 }

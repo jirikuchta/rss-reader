@@ -1,11 +1,19 @@
 label {
-	display: flex;
-	flex-direction: column;
+	display: block;
 	font-weight: bold;
+
+	&.required::after {
+		content: "*";
+		font-size: 1rem;
+		vertical-align: super;
+		color: red;
+	}
 }
 
-input {
+input:not([type]), input[type=text], input[type=password] {
+	width: 100%;
 	padding: 8px;
+	margin-bottom: 8px;
 	border: 1px solid var(--color-border);
 	background-color: var(--color-background);
 }

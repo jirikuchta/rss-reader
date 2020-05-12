@@ -5,30 +5,41 @@ import * as pubsub from "util/pubsub";
 let subscriptions: Subscription[] = [];
 
 export async function init() {
-	let res:Subscription[] = await api("GET", "/api/subscriptions/");
-	subscriptions = res;
+	let res = await api("GET", "/api/subscriptions/");
+	res.ok && (subscriptions = res.data);
 }
 
 export function list() { return subscriptions; }
 
 export async function add(data: Partial<Subscription>) {
-	let res:Subscription = await api("POST", "/api/subscriptions/", data);
-	subscriptions.push(res);
-	pubsub.publish("subscriptions-changed");
+	let res = await api("POST", "/api/subscriptions/", data);
+	if (res.ok) {
+		subscriptions.push(res.data);
+		pubsub.publish("subscriptions-changed");
+	}
+	return res;
 }
 
 export async function edit(id: SubscriptionId, data: Partial<Subscription>) {
-	await api("PATCH", `/api/subscriptions/${id}/`, data);
-	pubsub.publish("subscriptions-changed");
+	let res = await api("PATCH", `/api/subscriptions/${id}/`, data);
+	if (res.ok) {
+		let i = subscriptions.findIndex(s => s.id == id);
+		if (i != -1) {
+			subscriptions[i] = res.data;
+			pubsub.publish("subscriptions-changed");
+		}
+	}
+	return res;
 }
 
 export async function remove(id: SubscriptionId) {
-	type Res = {data:null, status:string};
-	let res:Res = await api("DELETE", `/api/subscriptions/${id}/`);
-	if (!res || res.status != "ok") { return false; }
-
-	subscriptions = subscriptions.filter(s => s.id != id);
-	pubsub.publish("subscriptions-changed");
-
-	return true;
+	let res = await api("DELETE", `/api/subscriptions/${id}/`);
+	if (res.ok) {
+		let i = subscriptions.findIndex(s => s.id == id);
+		if (i != -1) {
+			subscriptions.splice(i, 1);
+			pubsub.publish("subscriptions-changed");
+		}
+	}
+	return res;
 }

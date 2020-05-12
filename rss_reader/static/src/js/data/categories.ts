@@ -6,26 +6,41 @@ import * as pubsub from "util/pubsub";
 let categories: Category[] = [];
 
 export async function init() {
-	let res:Category[] = await api("GET", "/api/categories/");
-	categories = res;
+	let res = await api("GET", "/api/categories/");
+	res.ok && (categories = res.data);
 }
 
 export function list() { return categories; }
 
 export async function add(data: Partial<Category>) {
-	let res:Category = await api("POST", "/api/categories/", data);
-	categories.push(res);
-	pubsub.publish("categories-changed");
+	let res = await api("POST", "/api/categories/", data);
+	if (res.ok) {
+		categories.push(res.data);
+		pubsub.publish("categories-changed");
+	}
 	return res;
 }
 
 export async function edit(id: CategoryId, data: Partial<Category>) {
-	await api("PATCH", `/api/categories/${id}/`, data);
-	pubsub.publish("categories-changed");
+	let res = await api("PATCH", `/api/categories/${id}/`, data);
+	if (res.ok) {
+		let i = categories.findIndex(s => s.id == id);
+		if (i != -1) {
+			categories[i] = res.data;
+			pubsub.publish("categories-changed");
+		}
+	}
+	return res;
 }
 
 export async function remove(id: CategoryId) {
-	await api("DELETE", `/api/categories/${id}/`);
-	categories = categories.filter(c => c.id != id);
-	pubsub.publish("categories-changed");
+	let res = await api("DELETE", `/api/categories/${id}/`);
+	if (res.ok) {
+		let i = categories.findIndex(s => s.id == id);
+		if (i != -1) {
+			categories.splice(i, 1);
+			pubsub.publish("categories-changed");
+		}
+	}
+	return res;
 }
