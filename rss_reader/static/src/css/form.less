@@ -1,6 +1,5 @@
 label {
 	display: block;
-	font-weight: bold;
 
 	&.required::after {
 		content: "*";
@@ -10,12 +9,20 @@ label {
 	}
 }
 
-input:not([type]), input[type=text], input[type=password] {
+input:not([type]),
+input[type=text],
+input[type=password],
+input[type=url] {
 	width: 100%;
 	padding: 8px;
 	margin-bottom: 8px;
 	border: 1px solid var(--color-border);
 	background-color: var(--color-background);
+}
+
+form.invalid input:invalid {
+	background-color: var(--color-lightred);
+	border-color: var(--color-darkred);
 }
 
 button {

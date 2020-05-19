@@ -90,15 +90,17 @@ def update_subscription(feed_id: int) -> TReturnValue:
         raise ClientError(ErrorType.NotFound)
 
     title = request.json.get("title")
+    if title == "":
+        raise MissingFieldError("title")
     if title:
         subscription.title = title
 
     category_id = request.json.get("categoryId")
+    subscription.category_id = category_id
     if category_id:
         if not SubscriptionCategory.query.filter_by(
                 id=category_id, user_id=current_user.id).first():
             raise InvalidFieldError("categoryId", msg=f"category not found")
-        subscription.category_id = category_id
 
     db.session.commit()
 

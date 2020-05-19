@@ -1,6 +1,6 @@
 type METHODS = "GET" | "POST" | "PATCH" | "DELETE";
 
-export interface ClientError {
+export interface ErrorData {
 	code: string;
 	field?: string;
 	[key: string]: any;
@@ -9,7 +9,7 @@ export interface ClientError {
 export interface ApiResponse {
 	ok: boolean;
 	data?: any;
-	error?: ClientError;
+	error?: ErrorData;
 }
 
 export async function api(method: METHODS, uri: string, data: any = null) {

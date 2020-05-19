@@ -136,66 +136,101 @@ function fragment() {
     return document.createDocumentFragment();
 }
 
-function str() {
-    return Math.random().toString(36).substr(2, 9);
+function id() {
+    return `i${Math.random().toString(36).substr(2, 9)}`;
 }
 
 class SubscriptionForm {
     constructor(subscription) {
-        var _a;
         this._subscription = subscription;
-        this._title = node("input", { type: "text" });
-        this._uri = node("input", { type: "text" });
-        this._category = node("input", { type: "text" });
-        this.node = this._build();
-        if (subscription) {
-            this._title.value = subscription.title;
-            this._uri.value = subscription.uri;
-            if (subscription.categoryId) {
-                this._category.value = ((_a = list().find(cat => cat.id == subscription.categoryId)) === null || _a === void 0 ? void 0 : _a.title) || "";
-            }
-        }
+        this._build();
+        this.node.addEventListener("submit", this);
     }
-    async submit() {
+    async handleEvent(e) {
         var _a;
-        let data = {
-            title: this._title.value,
-            uri: this._uri.value,
-            categoryId: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
-        };
-        let res;
-        if (this._subscription) {
-            res = await edit(this._subscription.id, data);
+        if (e.type == "submit") {
+            e.preventDefault();
+            let data = {
+                title: this._title.value,
+                uri: this._uri.value,
+                categoryId: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
+            };
+            let res;
+            if (this._subscription) {
+                res = await edit(this._subscription.id, data);
+            }
+            else {
+                res = await add$1(data);
+            }
+            this._validate(res);
+            this.node.checkValidity() && this.afterSubmit();
         }
-        else {
-            res = await add$1(data);
-        }
-        return res;
     }
+    afterSubmit() { }
     _build() {
-        let node$1 = node("form");
-        this._subscription && node$1.appendChild(labelInput("Title", this._title, true));
-        node$1.appendChild(labelInput("Feed URL", this._uri, true));
-        node$1.appendChild(labelInput("Category", this._category));
+        var _a;
+        this.node = node("form", { id: id() });
+        this.node.noValidate = true;
+        this.submitBtn = button({ type: "submit" }, "Submit");
+        this.submitBtn.setAttribute("form", this.node.id);
+        this._title = node("input", { type: "text", required: "true" });
+        this._uri = node("input", { type: "url", required: "true" });
+        this._category = node("input", { type: "text" });
+        if (this._subscription) {
+            this._title.value = this._subscription.title;
+            this._uri.value = this._subscription.uri;
+            this._uri.disabled = true;
+            let catTitle = (_a = list().find(c => { var _a; return c.id == ((_a = this._subscription) === null || _a === void 0 ? void 0 : _a.categoryId); })) === null || _a === void 0 ? void 0 : _a.title;
+            catTitle && (this._category.value = catTitle);
+        }
+        this._subscription && this.node.appendChild(labelInput("Title", this._title));
+        this.node.appendChild(labelInput("Feed URL", this._uri));
+        this.node.appendChild(labelInput("Category", this._category));
         let categoryList = buildCategoryList();
         this._category.setAttribute("list", categoryList.id);
-        node$1.appendChild(categoryList);
-        return node$1;
+        this.node.appendChild(categoryList);
+    }
+    _validate(res) {
+        var _a;
+        this._clearValidation();
+        switch ((_a = res.error) === null || _a === void 0 ? void 0 : _a.code) {
+            case "missing_field":
+                let msg = "Please fill out this field.";
+                res.error.field == "title" && this._title.setCustomValidity(msg);
+                res.error.field == "uri" && this._uri.setCustomValidity(msg);
+                break;
+            case "invalid_field":
+                res.error.field == "categoryId" && this._category.setCustomValidity("Category not found.");
+                break;
+            case "parser_error":
+                this._uri.setCustomValidity("No valid RSS/Atom feed found.");
+                break;
+            case "already_exists":
+                this._uri.setCustomValidity("You are already subscribed to this feed.");
+                break;
+        }
+        this.node.classList.toggle("invalid", !this.node.checkValidity());
+        this.node.reportValidity();
+    }
+    _clearValidation() {
+        this._title.setCustomValidity("");
+        this._uri.setCustomValidity("");
+        this._category.setCustomValidity("");
     }
 }
-function labelInput(text, input, required = false) {
+function labelInput(text, input) {
     let label = node("label", {}, text);
-    required && label.classList.add("required");
-    let id = str();
-    label.setAttribute("for", id);
-    input.setAttribute("id", id);
+    input.required && label.classList.add("required");
+    let id$1 = id();
+    label.setAttribute("for", id$1);
+    input.setAttribute("id", id$1);
     let frag = fragment();
     frag.appendChild(label);
     frag.appendChild(input);
     return frag;
 }
 function buildCategoryList() {
-    let node$1 = node("datalist", { id: str() });
+    let node$1 = node("datalist", { id: id() });
     list().forEach(c => node("option", { value: c.title }, c.title, node$1));
     return node$1;
 }
@@ -394,22 +429,16 @@ function showItemPopup(target) {
     node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
     popup.open(target, "below");
 }
-function editSubscription() {
+function editSubscription(subscription) {
     let dialog = new Dialog();
-    let subscriptionForm = new SubscriptionForm();
-    let header = node("header", {}, "Add subscription", dialog.node);
+    let subscriptionForm = new SubscriptionForm(subscription);
+    subscriptionForm.afterSubmit = () => dialog.close();
+    let header = node("header", {}, `${subscription ? "Edit" : "Add"} subscription`, dialog.node);
     header.appendChild(dialog.closeButton());
     dialog.node.appendChild(subscriptionForm.node);
     let footer = node("footer", {}, "", dialog.node);
-    let btn = button({ type: "submit" }, "Submit", footer);
+    footer.appendChild(subscriptionForm.submitBtn);
     dialog.open();
-    return new Promise(resolve => {
-        dialog.onClose = () => resolve(false);
-        btn.addEventListener("click", async (e) => {
-            let res = await subscriptionForm.submit();
-            res.ok && dialog.close();
-        });
-    });
 }
 
 async function list$2(subscription) {

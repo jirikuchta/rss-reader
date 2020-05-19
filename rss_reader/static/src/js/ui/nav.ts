@@ -1,4 +1,4 @@
-import { Category } from "data/types";
+import { Category, Subscription } from "data/types";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
@@ -69,25 +69,19 @@ function showItemPopup(target: HTMLElement) {
 }
 
 
-export function editSubscription() {
+export function editSubscription(subscription?: Subscription) {
 	let dialog = new Dialog();
-	let subscriptionForm = new SubscriptionForm();
 
-	let header = html.node("header", {}, "Add subscription", dialog.node);
+	let subscriptionForm = new SubscriptionForm(subscription);
+	subscriptionForm.afterSubmit = () => dialog.close();
+
+	let header = html.node("header", {}, `${subscription ? "Edit" : "Add"} subscription`, dialog.node);
 	header.appendChild(dialog.closeButton());
 
 	dialog.node.appendChild(subscriptionForm.node);
 
 	let footer = html.node("footer", {}, "", dialog.node);
-	let btn = html.button({type:"submit"}, "Submit", footer);
+	footer.appendChild(subscriptionForm.submitBtn);
 
 	dialog.open();
-
-	return new Promise(resolve => {
-		dialog.onClose = () => resolve(false);
-		btn.addEventListener("click", async e => {
-			let res = await subscriptionForm.submit();
-			res.ok && dialog.close();
-		});
-	});
 }

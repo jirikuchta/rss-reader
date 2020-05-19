@@ -7,66 +7,107 @@ import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
 export default class SubscriptionForm {
-	node: HTMLFormElement;
-	_title: HTMLInputElement;
-	_uri: HTMLInputElement;
-	_category: HTMLInputElement;
+	node!: HTMLFormElement;
+	submitBtn!: HTMLButtonElement;
+	_title!: HTMLInputElement;
+	_uri!: HTMLInputElement;
+	_category!: HTMLInputElement;
 	_subscription?: Subscription;
 
 	constructor(subscription?: Subscription) {
 		this._subscription = subscription;
-		this._title = html.node("input", {type: "text"});
-		this._uri = html.node("input", {type: "text"});
-		this._category = html.node("input", {type: "text"});
-		this.node = this._build();
+		this._build();
+		this.node.addEventListener("submit", this);
+	}
 
-		if (subscription) {
-			this._title.value = subscription.title;
-			this._uri.value = subscription.uri;
-			if (subscription.categoryId) {
-				this._category.value = categories.list().find(
-				cat => cat.id == subscription.categoryId)?.title || "";
+	async handleEvent(e: Event) {
+		if (e.type == "submit") {
+			e.preventDefault();
+
+			let data: Partial<Subscription> = {
+				title: this._title.value,
+				uri: this._uri.value,
+				categoryId: (await getCategory(this._category.value))?.id
+			};
+
+			let res: ApiResponse;
+			if (this._subscription) {
+				res = await subscriptions.edit(this._subscription.id, data);
+			} else {
+				res = await subscriptions.add(data);
 			}
+
+			this._validate(res);
+			this.node.checkValidity() && this.afterSubmit();
 		}
 	}
 
-	async submit() {
-		let data: Partial<Subscription> = {
-			title: this._title.value,
-			uri: this._uri.value,
-			categoryId: (await getCategory(this._category.value))?.id
-		};
-
-		let res: ApiResponse;
-		if (this._subscription) {
-			res = await subscriptions.edit(this._subscription.id, data);
-		} else {
-			res = await subscriptions.add(data);
-		}
-
-		return res
-	}
+	afterSubmit() {}
 
 	_build() {
-		let node = html.node("form");
+		this.node = html.node("form", {id: random.id()});
+		this.node.noValidate = true;
 
-		this._subscription && node.appendChild(labelInput("Title", this._title, true));
-		node.appendChild(labelInput("Feed URL", this._uri, true));
-		node.appendChild(labelInput("Category", this._category));
+		this.submitBtn = html.button({type: "submit"}, "Submit");
+		this.submitBtn.setAttribute("form", this.node.id);
+
+		this._title = html.node("input", {type: "text", required: "true"});
+		this._uri = html.node("input", {type: "url", required: "true"});
+		this._category = html.node("input", {type: "text"});
+
+		if (this._subscription) {
+			this._title.value = this._subscription.title;
+			this._uri.value = this._subscription.uri;
+			this._uri.disabled = true;
+			let catTitle = categories.list().find(c => c.id == this._subscription?.categoryId)?.title;
+			catTitle && (this._category.value = catTitle);
+		}
+
+		this._subscription && this.node.appendChild(labelInput("Title", this._title));
+		this.node.appendChild(labelInput("Feed URL", this._uri));
+		this.node.appendChild(labelInput("Category", this._category));
 
 		let categoryList = buildCategoryList();
 		this._category.setAttribute("list", categoryList.id);
-		node.appendChild(categoryList);
+		this.node.appendChild(categoryList);
+	}
 
-		return node;
+	_validate(res: ApiResponse) {
+		this._clearValidation();
+
+		switch (res.error?.code) {
+			case "missing_field":
+				let msg = "Please fill out this field.";
+				res.error.field == "title" && this._title.setCustomValidity(msg);
+				res.error.field == "uri" && this._uri.setCustomValidity(msg);
+			break;
+			case "invalid_field":
+				res.error.field == "categoryId" && this._category.setCustomValidity("Category not found.");
+			break;
+			case "parser_error":
+				this._uri.setCustomValidity("No valid RSS/Atom feed found.");
+			break;
+			case "already_exists":
+				this._uri.setCustomValidity("You are already subscribed to this feed.");
+			break;
+		}
+
+		this.node.classList.toggle("invalid", !this.node.checkValidity());
+		this.node.reportValidity();
+	}
+
+	_clearValidation() {
+		this._title.setCustomValidity("");
+		this._uri.setCustomValidity("");
+		this._category.setCustomValidity("");
 	}
 }
 
-function labelInput(text: string, input: HTMLInputElement, required: boolean = false) {
+export function labelInput(text: string, input: HTMLInputElement) {
 	let label = html.node("label", {}, text);
-	required && label.classList.add("required");
+	input.required && label.classList.add("required");
 
-	let id = random.str();
+	let id = random.id();
 	label.setAttribute("for", id);
 	input.setAttribute("id", id);
 
@@ -78,9 +119,8 @@ function labelInput(text: string, input: HTMLInputElement, required: boolean = f
 }
 
 function buildCategoryList() {
-	let node = html.node("datalist", {id: random.str()});
-	categories.list().forEach(
-		c => html.node("option", {value: c.title}, c.title, node));
+	let node = html.node("datalist", {id: random.id()});
+	categories.list().forEach(c => html.node("option", {value: c.title}, c.title, node));
 	return node;
 }
 
