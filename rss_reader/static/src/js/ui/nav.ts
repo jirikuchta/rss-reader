@@ -1,4 +1,4 @@
-import { Category, Subscription } from "data/types";
+import { Category, Subscription, isSubscription } from "data/types";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
@@ -6,8 +6,9 @@ import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
 import SubscriptionForm from "ui/widget/subscription-form";
+import CategoryForm from "ui/widget/category-form";
 import Popup from "ui/widget/popup";
-import { Dialog } from "ui/widget/dialog";
+import { Dialog, confirm } from "ui/widget/dialog";
 
 
 let node:HTMLElement;
@@ -30,46 +31,80 @@ async function build() {
 	let btn = html.button({icon: "plus-circle"}, "", header);
 	btn.addEventListener("click", e => editSubscription());
 
-	categories.list().forEach(cat => node.appendChild(buildCategory(cat)));
+	categories.list()
+		.forEach(cat => node.appendChild(buildCategory(cat)));
+
+	let uncategorized = html.node("ul", {}, "", node);
+	subscriptions.list()
+		.filter(s => s.categoryId == null)
+		.forEach(s => uncategorized.appendChild(buildItem(s)));
 }
 
 function buildCategory(category: Category) {
 	let node = html.node("ul");
-	node.appendChild(buildItem(category.title, true));
+	node.appendChild(buildItem(category));
 
 	subscriptions.list()
 		.filter(s => s.categoryId == category.id)
-		.forEach(s => node.appendChild(buildItem(s.title)))
+		.forEach(s => node.appendChild(buildItem(s)))
 
 	return node;
 }
 
-function buildItem(name: string, isCategory: boolean = false) {
+function buildItem(entity: Category | Subscription) {
 	let node = html.node("li", {tabIndex: "0"});
 
-	if (isCategory) {
+	if (isSubscription(entity)) {
+		node.appendChild(html.node("span", {className: "title"}, entity.title));
+		node.appendChild(html.node("span", {className: "count"}, "50"));
+	} else {
 		node.classList.add("category");
 		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
 		btn.addEventListener("click", e => node.classList.toggle("is-collapsed"));
+		node.appendChild(html.node("span", {className: "title"}, entity.title));
+		node.appendChild(html.node("span", {className: "count"}, "50"));
 	}
 
-	node.appendChild(html.node("span", {className: "title"}, name));
-	node.appendChild(html.node("span", {className: "count"}, "50"));
-
 	let btn = html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
-	btn.addEventListener("click", e => showItemPopup(btn));
+	btn.addEventListener("click", e => showItemPopup(entity, btn));
 
 	return node;
 }
 
-function showItemPopup(target: HTMLElement) {
+function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
 	let popup = new Popup();
-	html.node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
+
+	if (isSubscription(entity)) {
+		let editBtn = html.button({}, "Edit subscription", popup.node);
+		editBtn.addEventListener("click", e => {
+			popup.close();
+			editSubscription(entity as Subscription);
+		});
+
+		let deleteBtn = html.button({}, "Unsubscribe", popup.node);
+		deleteBtn.addEventListener("click", e => {
+			popup.close();
+			deleteSubscription(entity as Subscription);
+		});
+	} else {
+		let editBtn = html.button({}, "Edit category", popup.node);
+		editBtn.addEventListener("click", e => {
+			popup.close();
+			editCategory(entity as Category);
+		});
+
+		let deleteBtn = html.button({}, "Delete category", popup.node);
+		deleteBtn.addEventListener("click", e => {
+			popup.close();
+			deleteCategory(entity as Category);
+		});
+	}
+
 	popup.open(target, "below");
 }
 
 
-export function editSubscription(subscription?: Subscription) {
+function editSubscription(subscription?: Subscription) {
 	let dialog = new Dialog();
 
 	let subscriptionForm = new SubscriptionForm(subscription);
@@ -84,4 +119,33 @@ export function editSubscription(subscription?: Subscription) {
 	footer.appendChild(subscriptionForm.submitBtn);
 
 	dialog.open();
+}
+
+async function deleteSubscription(subscription: Subscription) {
+	if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
+		subscriptions.remove(subscription.id);
+	}
+}
+
+function editCategory(category: Category) {
+	let dialog = new Dialog();
+
+	let categoryForm = new CategoryForm(category);
+	categoryForm.afterSubmit = () => dialog.close();
+
+	let header = html.node("header", {}, "Edit category", dialog.node);
+	header.appendChild(dialog.closeButton());
+
+	dialog.node.appendChild(categoryForm.node);
+
+	let footer = html.node("footer", {}, "", dialog.node);
+	footer.appendChild(categoryForm.submitBtn);
+
+	dialog.open();
+}
+
+async function deleteCategory(category: Category) {
+	if (await confirm(`Delete category ${category.title}? Any nested subscriptions would be `)) {
+		categories.remove(category.id);
+	}
 }

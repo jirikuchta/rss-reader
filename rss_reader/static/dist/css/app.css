@@ -160,7 +160,7 @@ nav > header button {
 nav li {
   display: flex;
   align-items: center;
-  padding-left: 48px;
+  padding-left: 24px;
   padding-right: 14px;
   border-left: 4px solid transparent;
   cursor: pointer;
@@ -173,6 +173,9 @@ nav li.category.is-collapsed .icon-chevron-down {
 }
 nav li.category.is-collapsed ~ li {
   display: none;
+}
+nav li.category ~ li {
+  padding-left: 48px;
 }
 nav li .title {
   flex-grow: 1;
@@ -215,7 +218,7 @@ nav li:hover .count {
   border-bottom: 1px solid var(--color-border);
 }
 #list article:hover {
-  background-color: var(--color-active);
+  background-color: var(--color-hover);
 }
 #list article h3,
 #list article p {

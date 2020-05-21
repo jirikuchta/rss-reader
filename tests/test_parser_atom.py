@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 
 from rss_reader.parser.common import ParserError, FeedType, Enclosure
 from rss_reader.parser.atom import AtomParser, AtomItemParser

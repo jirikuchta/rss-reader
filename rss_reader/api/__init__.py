@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from collections import namedtuple
 from flask import Blueprint, jsonify, make_response, Response
-from flask_login import current_user  # type: ignore
+from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 

@@ -5,7 +5,7 @@ async function api(method, uri, data = null) {
         init.headers = new Headers({ "Content-Type": "application/json" });
     }
     let res = await fetch(uri, init);
-    let body = await res.json();
+    let body = res.status != 204 ? await res.json() : null;
     return {
         ok: res.ok,
         [res.ok ? "data" : "error"]: res.ok ? body : body["error"]
@@ -42,6 +42,28 @@ async function add(data) {
     }
     return res;
 }
+async function edit(id, data) {
+    let res = await api("PATCH", `/api/categories/${id}/`, data);
+    if (res.ok) {
+        let i = categories.findIndex(s => s.id == id);
+        if (i != -1) {
+            categories[i] = res.data;
+            publish("categories-changed");
+        }
+    }
+    return res;
+}
+async function remove(id) {
+    let res = await api("DELETE", `/api/categories/${id}/`);
+    if (res.ok) {
+        let i = categories.findIndex(s => s.id == id);
+        if (i != -1) {
+            categories.splice(i, 1);
+            publish("categories-changed");
+        }
+    }
+    return res;
+}
 
 let subscriptions = [];
 async function init$1() {
@@ -57,12 +79,23 @@ async function add$1(data) {
     }
     return res;
 }
-async function edit(id, data) {
+async function edit$1(id, data) {
     let res = await api("PATCH", `/api/subscriptions/${id}/`, data);
     if (res.ok) {
         let i = subscriptions.findIndex(s => s.id == id);
         if (i != -1) {
             subscriptions[i] = res.data;
+            publish("subscriptions-changed");
+        }
+    }
+    return res;
+}
+async function remove$1(id) {
+    let res = await api("DELETE", `/api/subscriptions/${id}/`);
+    if (res.ok) {
+        let i = subscriptions.findIndex(s => s.id == id);
+        if (i != -1) {
+            subscriptions.splice(i, 1);
             publish("subscriptions-changed");
         }
     }
@@ -136,6 +169,10 @@ function fragment() {
     return document.createDocumentFragment();
 }
 
+function isSubscription(entity) {
+    return entity.uri != undefined;
+}
+
 function id() {
     return `i${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -157,7 +194,7 @@ class SubscriptionForm {
             };
             let res;
             if (this._subscription) {
-                res = await edit(this._subscription.id, data);
+                res = await edit$1(this._subscription.id, data);
             }
             else {
                 res = await add$1(data);
@@ -246,6 +283,61 @@ async function getCategory(title) {
         res.ok && (category = res.data);
     }
     return category;
+}
+
+class CategoryForm {
+    constructor(category) {
+        this._category = category;
+        this._build();
+        this.node.addEventListener("submit", this);
+    }
+    async handleEvent(e) {
+        if (e.type == "submit") {
+            e.preventDefault();
+            let res = await edit(this._category.id, {
+                title: this._title.value
+            });
+            this._validate(res);
+            this.node.checkValidity() && this.afterSubmit();
+        }
+    }
+    afterSubmit() { }
+    _build() {
+        this.node = node("form", { id: id() });
+        this.node.noValidate = true;
+        this.submitBtn = button({ type: "submit" }, "Submit");
+        this.submitBtn.setAttribute("form", this.node.id);
+        this._title = node("input", { type: "text", required: "true", value: this._category.title });
+        this.node.appendChild(labelInput$1("Title", this._title));
+    }
+    _validate(res) {
+        var _a;
+        this._clearValidation();
+        switch ((_a = res.error) === null || _a === void 0 ? void 0 : _a.code) {
+            case "missing_field":
+                this._title.setCustomValidity("Please fill out this field.");
+                break;
+            case "already_exists":
+                this._title.setCustomValidity(`Title already exists.`);
+                break;
+        }
+        this.node.classList.toggle("invalid", !this.node.checkValidity());
+        this.node.reportValidity();
+    }
+    _clearValidation() {
+        this._title.setCustomValidity("");
+    }
+}
+function labelInput$1(text, input) {
+    let label = node("label", {}, text);
+    input.required && label.classList.add("required");
+    let id$1 = id();
+    label.setAttribute("for", id$1);
+    input.setAttribute("id", id$1);
+    let frag = fragment();
+    frag.appendChild(label);
+    frag.appendChild(input);
+    return frag;
 }
 
 const PAD = 8;
@@ -340,6 +432,7 @@ function position(windowNode, referenceNode, type, offset) {
 class Popup {
     constructor() {
         this.node = node("div", { className: "popup" });
+        this.node.addEventListener("mousedown", e => e.stopPropagation());
     }
     open(target, pos, offset) {
         current === null || current === void 0 ? void 0 : current.close();
@@ -359,7 +452,7 @@ class Popup {
     onClose() { }
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current === null || current === void 0 ? void 0 : current.close()));
-document.addEventListener("mousedown", e => current === null || current === void 0 ? void 0 : current.close(), true);
+document.addEventListener("mousedown", e => current === null || current === void 0 ? void 0 : current.close());
 
 let current$1 = null;
 class Dialog {
@@ -386,6 +479,24 @@ class Dialog {
         return button$1;
     }
 }
+async function confirm(text, ok, cancel) {
+    let dialog = new Dialog();
+    let header = node("header", {}, "", dialog.node);
+    header.appendChild(dialog.closeButton());
+    node("h3", {}, text, header);
+    let footer = node("footer", {}, "", dialog.node);
+    let btnOk = button({ type: "submit" }, ok || "OK", footer);
+    let btnCancel = button({ type: "button" }, cancel || "Cancel", footer);
+    dialog.open();
+    return new Promise(resolve => {
+        dialog.onClose = () => resolve(false);
+        btnOk.addEventListener("click", e => {
+            resolve(true);
+            dialog.close();
+        });
+        btnCancel.addEventListener("click", e => dialog.close());
+    });
+}
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
 
 let node$1;
@@ -401,32 +512,64 @@ async function build() {
     node("h3", {}, "Subscriptions", header);
     let btn = button({ icon: "plus-circle" }, "", header);
     btn.addEventListener("click", e => editSubscription());
-    list().forEach(cat => node$1.appendChild(buildCategory(cat)));
+    list()
+        .forEach(cat => node$1.appendChild(buildCategory(cat)));
+    let uncategorized = node("ul", {}, "", node$1);
+    list$1()
+        .filter(s => s.categoryId == null)
+        .forEach(s => uncategorized.appendChild(buildItem(s)));
 }
 function buildCategory(category) {
     let node$1 = node("ul");
-    node$1.appendChild(buildItem(category.title, true));
+    node$1.appendChild(buildItem(category));
     list$1()
         .filter(s => s.categoryId == category.id)
-        .forEach(s => node$1.appendChild(buildItem(s.title)));
+        .forEach(s => node$1.appendChild(buildItem(s)));
     return node$1;
 }
-function buildItem(name, isCategory = false) {
+function buildItem(entity) {
     let node$1 = node("li", { tabIndex: "0" });
-    if (isCategory) {
+    if (isSubscription(entity)) {
+        node$1.appendChild(node("span", { className: "title" }, entity.title));
+        node$1.appendChild(node("span", { className: "count" }, "50"));
+    }
+    else {
         node$1.classList.add("category");
         let btn = button({ icon: "chevron-down", className: "plain btn-chevron" }, "", node$1);
         btn.addEventListener("click", e => node$1.classList.toggle("is-collapsed"));
+        node$1.appendChild(node("span", { className: "title" }, entity.title));
+        node$1.appendChild(node("span", { className: "count" }, "50"));
     }
-    node$1.appendChild(node("span", { className: "title" }, name));
-    node$1.appendChild(node("span", { className: "count" }, "50"));
     let btn = button({ className: "plain btn-dots", icon: "dots-horizontal" }, "", node$1);
-    btn.addEventListener("click", e => showItemPopup(btn));
+    btn.addEventListener("click", e => showItemPopup(entity, btn));
     return node$1;
 }
-function showItemPopup(target) {
+function showItemPopup(entity, target) {
     let popup = new Popup();
-    node("div", {}, "ahfsadfa sdf as fas fsa fas foj", popup.node);
+    if (isSubscription(entity)) {
+        let editBtn = button({}, "Edit subscription", popup.node);
+        editBtn.addEventListener("click", e => {
+            popup.close();
+            editSubscription(entity);
+        });
+        let deleteBtn = button({}, "Unsubscribe", popup.node);
+        deleteBtn.addEventListener("click", e => {
+            popup.close();
+            deleteSubscription(entity);
+        });
+    }
+    else {
+        let editBtn = button({}, "Edit category", popup.node);
+        editBtn.addEventListener("click", e => {
+            popup.close();
+            editCategory(entity);
+        });
+        let deleteBtn = button({}, "Delete category", popup.node);
+        deleteBtn.addEventListener("click", e => {
+            popup.close();
+            deleteCategory(entity);
+        });
+    }
     popup.open(target, "below");
 }
 function editSubscription(subscription) {
@@ -439,6 +582,27 @@ function editSubscription(subscription) {
     let footer = node("footer", {}, "", dialog.node);
     footer.appendChild(subscriptionForm.submitBtn);
     dialog.open();
+}
+async function deleteSubscription(subscription) {
+    if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
+        remove$1(subscription.id);
+    }
+}
+function editCategory(category) {
+    let dialog = new Dialog();
+    let categoryForm = new CategoryForm(category);
+    categoryForm.afterSubmit = () => dialog.close();
+    let header = node("header", {}, "Edit category", dialog.node);
+    header.appendChild(dialog.closeButton());
+    dialog.node.appendChild(categoryForm.node);
+    let footer = node("footer", {}, "", dialog.node);
+    footer.appendChild(categoryForm.submitBtn);
+    dialog.open();
+}
+async function deleteCategory(category) {
+    if (await confirm(`Delete category ${category.title}? Any nested subscriptions would be `)) {
+        remove(category.id);
+    }
 }
 
 async function list$2(subscription) {

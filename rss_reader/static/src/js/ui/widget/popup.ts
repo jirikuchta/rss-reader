@@ -105,6 +105,7 @@ export default class Popup {
 
 	constructor() {
 		this.node = html.node("div", {className: "popup"});
+		this.node.addEventListener("mousedown", e => e.stopPropagation());
 	}
 
 	open(target: HTMLElement, pos: PositionType, offset?: [number, number]) {
@@ -128,4 +129,4 @@ export default class Popup {
 }
 
 window.addEventListener("keydown", e => e.keyCode == 27 && current?.close());
-document.addEventListener("mousedown", e => current?.close(), true);
+document.addEventListener("mousedown", e => current?.close());

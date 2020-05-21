@@ -1,4 +1,4 @@
-from flask_login import current_user  # type: ignore
+from flask_login import current_user
 
 from rss_reader.api import api, TReturnValue, make_api_response, require_login
 from rss_reader.lib.models import SubscriptionEntry

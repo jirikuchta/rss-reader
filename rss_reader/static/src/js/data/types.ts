@@ -22,3 +22,7 @@ export interface Entry {
 	starred: boolean;
 	subscriptionId: SubscriptionId;
 }
+
+export function isSubscription(entity: Category | Subscription) {
+	return (entity as Subscription).uri != undefined
+}

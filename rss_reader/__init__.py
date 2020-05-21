@@ -2,7 +2,9 @@ import os
 import click
 from flask import Flask
 from flask.cli import with_appcontext
-from flask_login import LoginManager  # type: ignore
+from flask_login import LoginManager
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 from rss_reader.lib.models import db, User, UserRole
 
@@ -18,6 +20,14 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+
+    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#foreign-key-support
+    if os.environ.get("DATABASE_URI").startswith("sqlite"):
+        @event.listens_for(Engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.close()
 
     login_manager = LoginManager()
     login_manager.init_app(app)

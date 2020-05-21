@@ -21,7 +21,7 @@ export async function api(method: METHODS, uri: string, data: any = null) {
 	}
 
 	let res = await fetch(uri, init);
-	let body = await res.json();
+	let body = res.status != 204 ? await res.json() : null;
 
 	return <ApiResponse> {
 		ok: res.ok,

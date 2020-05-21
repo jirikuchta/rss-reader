@@ -22,7 +22,7 @@ nav {
 	li  {
 		display: flex;
 		align-items: center;
-		padding-left: 48px;
+		padding-left: 24px;
 		padding-right: 14px;
 		border-left: 4px solid transparent;
 		cursor: pointer;
@@ -33,6 +33,10 @@ nav {
 			&.is-collapsed {
 				.icon-chevron-down { transform: rotate(-90deg); }
 				& ~ li { display: none; }
+			}
+
+			& ~ li {
+				padding-left: 48px;
 			}
 		}
 

@@ -1,5 +1,5 @@
 from flask import request
-from flask_login import current_user  # type: ignore
+from flask_login import current_user
 
 from rss_reader.lib.models import db, Feed, Subscription, SubscriptionCategory
 from rss_reader.parser import parse

@@ -1,4 +1,4 @@
-import pytest  # type: ignore
+import pytest
 import random
 import string
 from xml.etree import ElementTree as ET
