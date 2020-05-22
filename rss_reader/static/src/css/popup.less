@@ -3,3 +3,25 @@
 	background: #fff;
 	box-shadow: var(--shadow);
 }
+
+.popup-menu {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 0;
+
+	> button {
+		justify-content: start;
+		padding: 0 16px;
+		font-size: 1.4rem;
+		line-height: 3.6rem;
+
+		&:hover {
+			background: var(--color-hover);
+		}
+
+		.icon {
+			margin-right: 8px;
+		}
+	}
+}
+

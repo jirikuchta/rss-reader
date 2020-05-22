@@ -126,6 +126,31 @@ export default class Popup {
 	}
 
 	onClose() {}
+
+	addMenuItem(title: string, icon: string, onClick: Function) {
+		let node = html.button({icon: icon}, title, this.node);
+		node.addEventListener("click", e => {
+			this.close();
+			onClick();
+		})
+	}
+}
+
+export class PopupMenu extends Popup {
+
+	constructor() {
+		super();
+		this.node.classList.add("popup-menu");
+	}
+
+	addItem(title: string, icon: string, onClick: Function) {
+		let node = html.button({icon: icon}, title, this.node);
+		node.addEventListener("click", e => {
+			this.close();
+			onClick();
+		});
+		return node;
+	}
 }
 
 window.addEventListener("keydown", e => e.keyCode == 27 && current?.close());

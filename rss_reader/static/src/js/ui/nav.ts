@@ -7,7 +7,7 @@ import * as pubsub from "util/pubsub";
 
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
-import Popup from "ui/widget/popup";
+import { PopupMenu } from "ui/widget/popup";
 import { Dialog, confirm } from "ui/widget/dialog";
 
 
@@ -72,35 +72,19 @@ function buildItem(entity: Category | Subscription) {
 }
 
 function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
-	let popup = new Popup();
+	let menu = new PopupMenu();
 
 	if (isSubscription(entity)) {
-		let editBtn = html.button({}, "Edit subscription", popup.node);
-		editBtn.addEventListener("click", e => {
-			popup.close();
-			editSubscription(entity as Subscription);
-		});
-
-		let deleteBtn = html.button({}, "Unsubscribe", popup.node);
-		deleteBtn.addEventListener("click", e => {
-			popup.close();
-			deleteSubscription(entity as Subscription);
-		});
+		menu.addItem("Mark as read", "check-all", () => {});
+		menu.addItem("Edit subscription", "pencil", () => editSubscription(entity as Subscription));
+		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity as Subscription));
 	} else {
-		let editBtn = html.button({}, "Edit category", popup.node);
-		editBtn.addEventListener("click", e => {
-			popup.close();
-			editCategory(entity as Category);
-		});
-
-		let deleteBtn = html.button({}, "Delete category", popup.node);
-		deleteBtn.addEventListener("click", e => {
-			popup.close();
-			deleteCategory(entity as Category);
-		});
+		menu.addItem("Mark as read", "check-all", () => {});
+		menu.addItem("Edit category", "pencil", () => editCategory(entity as Category));
+		menu.addItem("Delete category", "trash", () => deleteCategory(entity as Category));
 	}
 
-	popup.open(target, "below");
+	menu.open(target, "below");
 }
 
 
