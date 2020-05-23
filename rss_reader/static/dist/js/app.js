@@ -64,6 +64,9 @@ async function remove(id) {
     }
     return res;
 }
+async function markRead(id) {
+    return await api("PUT", `/api/categories/${id}/read/`);
+}
 
 let subscriptions = [];
 async function init$1() {
@@ -100,6 +103,9 @@ async function remove$1(id) {
         }
     }
     return res;
+}
+async function markRead$1(id) {
+    return await api("PUT", `/api/subscriptions/${id}/read/`);
 }
 
 var icons = {
@@ -572,12 +578,12 @@ function buildItem(entity) {
 function showItemPopup(entity, target) {
     let menu = new PopupMenu();
     if (isSubscription(entity)) {
-        menu.addItem("Mark as read", "check-all", () => { });
+        menu.addItem("Mark as read", "check-all", () => markRead$1(entity.id));
         menu.addItem("Edit subscription", "pencil", () => editSubscription(entity));
         menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity));
     }
     else {
-        menu.addItem("Mark as read", "check-all", () => { });
+        menu.addItem("Mark as read", "check-all", () => markRead(entity.id));
         menu.addItem("Edit category", "pencil", () => editCategory(entity));
         menu.addItem("Delete category", "trash", () => deleteCategory(entity));
     }

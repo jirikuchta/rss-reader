@@ -21,8 +21,9 @@ class TestAPIUpdateCategory:
                             json={"title": not_owned_cat["title"]})
         assert res.status_code == 200, res
 
-    def test_no_data(self, as_user):
-        res = as_user.patch("/api/categories/666/")
+    def test_no_data(self, as_user, create_category):
+        cat = create_category(as_user)
+        res = as_user.patch(f"/api/categories/{cat['id']}/")
         assert res.status_code == 400, res
         assert res.json["error"]["code"] == "bad_request"
 

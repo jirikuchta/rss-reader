@@ -18,8 +18,6 @@ export interface Entry {
 	id: EntryId;
 	title: string;
 	uri: string;
-	unread: boolean;
-	starred: boolean;
 	subscriptionId: SubscriptionId;
 }
 

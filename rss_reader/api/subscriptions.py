@@ -1,11 +1,22 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.lib.models import db, Feed, Subscription, SubscriptionCategory
+from rss_reader.lib.models import db, Feed, Subscription, \
+    SubscriptionCategory, SubscriptionEntry
 from rss_reader.parser import parse
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ErrorType, ClientError, MissingFieldError, InvalidFieldError
+
+
+def _get_subscription_or_raise(feed_id: int) -> Subscription:
+    subscription = Subscription.query.filter_by(
+        user=current_user, feed_id=feed_id).first()
+
+    if not subscription:
+        raise ClientError(ErrorType.NotFound)
+
+    return subscription
 
 
 @api.route("/subscriptions/", methods=["POST"])
@@ -67,27 +78,17 @@ def list_subscriptions() -> TReturnValue:
 @make_api_response
 @require_login
 def get_subscription(feed_id: int) -> TReturnValue:
-    subscription = Subscription.query.filter_by(
-        user=current_user, feed_id=feed_id).first()
-
-    if not subscription:
-        raise ClientError(ErrorType.NotFound)
-
-    return subscription.to_json(), 200
+    return _get_subscription_or_raise(feed_id).to_json(), 200
 
 
 @api.route("/subscriptions/<int:feed_id>/", methods=["PATCH"])
 @make_api_response
 @require_login
 def update_subscription(feed_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(feed_id)
+
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
-
-    subscription = Subscription.query.filter_by(
-        user=current_user, feed_id=feed_id).first()
-
-    if not subscription:
-        raise ClientError(ErrorType.NotFound)
 
     title = request.json.get("title")
     if title == "":
@@ -111,13 +112,25 @@ def update_subscription(feed_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def delete_subscription(feed_id: int) -> TReturnValue:
-    subscription = Subscription.query.filter_by(
-        user=current_user, feed_id=feed_id).first()
-
-    if not subscription:
-        raise ClientError(ErrorType.NotFound)
+    subscription = _get_subscription_or_raise(feed_id)
 
     db.session.delete(subscription)
+    db.session.commit()
+
+    return None, 204
+
+
+@api.route("/subscriptions/<int:feed_id>/read/", methods=["PUT"])
+@make_api_response
+@require_login
+def mark_subscription_read(feed_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(feed_id)
+
+    SubscriptionEntry.query \
+        .filter_by(subscription=subscription) \
+        .update({SubscriptionEntry.read: db.func.now()},
+                synchronize_session=False)
+
     db.session.commit()
 
     return None, 204

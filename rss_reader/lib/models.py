@@ -132,6 +132,8 @@ class SubscriptionCategory(db.Model):  # type: ignore
                         nullable=False)
     title = db.Column(db.Text, nullable=False)
 
+    subscriptions = db.relationship("Subscription")
+
     def to_json(self):
         return {
             "id": self.id,
@@ -154,8 +156,8 @@ class SubscriptionEntry(db.Model):  # type: ignore
                          db.ForeignKey("feed_entry.id", ondelete="CASCADE"),
                          nullable=False)
     feed_id = db.Column(db.Integer, nullable=False)
-    unread = db.Column(db.Boolean, nullable=False, default=True, index=True)
-    starred = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    read = db.Column(db.DateTime, nullable=True, index=True)
+    starred = db.Column(db.DateTime, nullable=True, index=True)
 
     subscription = db.relationship("Subscription", back_populates="entries")
     feed_entry = db.relationship("FeedEntry", lazy=False)
@@ -170,5 +172,5 @@ class SubscriptionEntry(db.Model):  # type: ignore
             "comments_uri": self.feed_entry.comments_uri,
             "author": self.feed_entry.author,
             "feed_id": self.feed_id,
-            "unread": self.unread,
+            "read": self.read,
             "starred": self.starred}

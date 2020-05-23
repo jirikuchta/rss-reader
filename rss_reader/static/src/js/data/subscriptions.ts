@@ -43,3 +43,7 @@ export async function remove(id: SubscriptionId) {
 	}
 	return res;
 }
+
+export async function markRead(id: SubscriptionId) {
+	return await api("PUT", `/api/subscriptions/${id}/read/`);
+}

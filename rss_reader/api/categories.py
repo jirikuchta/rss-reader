@@ -1,10 +1,20 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.lib.models import db, SubscriptionCategory
+from rss_reader.lib.models import db, SubscriptionCategory, SubscriptionEntry
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
+
+
+def _get_category_or_raise(category_id: int) -> SubscriptionCategory:
+    category = SubscriptionCategory.query.filter_by(
+        id=category_id, user_id=current_user.id).first()
+
+    if not category:
+        raise ClientError(ErrorType.NotFound)
+
+    return category
 
 
 @api.route("/categories/", methods=["POST"])
@@ -44,27 +54,17 @@ def list_categories() -> TReturnValue:
 @make_api_response
 @require_login
 def get_category(category_id: int) -> TReturnValue:
-    category = SubscriptionCategory.query.filter_by(
-        id=category_id, user_id=current_user.id).first()
-
-    if not category:
-        raise ClientError(ErrorType.NotFound)
-
-    return category.to_json(), 200
+    return _get_category_or_raise(category_id).to_json(), 200
 
 
 @api.route("/categories/<int:category_id>/", methods=["PATCH"])
 @make_api_response
 @require_login
 def update_category(category_id: int) -> TReturnValue:
+    category = _get_category_or_raise(category_id)
+
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
-
-    category = SubscriptionCategory.query.filter_by(
-        id=category_id, user_id=current_user.id).first()
-
-    if not category:
-        raise ClientError(ErrorType.NotFound)
 
     title = request.json.get("title")
 
@@ -84,13 +84,26 @@ def update_category(category_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def delete_category(category_id: int) -> TReturnValue:
-    category = SubscriptionCategory.query.filter_by(
-        id=category_id, user_id=current_user.id).first()
-
-    if not category:
-        raise ClientError(ErrorType.NotFound)
+    category = _get_category_or_raise(category_id)
 
     db.session.delete(category)
+    db.session.commit()
+
+    return None, 204
+
+
+@api.route("/categories/<int:category_id>/read/", methods=["PUT"])
+@make_api_response
+@require_login
+def mark_category_read(category_id: int) -> TReturnValue:
+    category = _get_category_or_raise(category_id)
+    feed_ids = [s.feed_id for s in category.subscriptions]
+
+    SubscriptionEntry.query \
+        .filter(SubscriptionEntry.feed_id.in_(feed_ids)) \
+        .update({SubscriptionEntry.read: db.func.now()},
+                synchronize_session=False)
+
     db.session.commit()
 
     return None, 204

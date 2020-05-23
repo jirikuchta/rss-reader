@@ -75,18 +75,17 @@ function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
 	let menu = new PopupMenu();
 
 	if (isSubscription(entity)) {
-		menu.addItem("Mark as read", "check-all", () => {});
+		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((entity as Subscription).id));
 		menu.addItem("Edit subscription", "pencil", () => editSubscription(entity as Subscription));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity as Subscription));
 	} else {
-		menu.addItem("Mark as read", "check-all", () => {});
+		menu.addItem("Mark as read", "check-all", () => categories.markRead((entity as Category).id));
 		menu.addItem("Edit category", "pencil", () => editCategory(entity as Category));
 		menu.addItem("Delete category", "trash", () => deleteCategory(entity as Category));
 	}
 
 	menu.open(target, "below");
 }
-
 
 function editSubscription(subscription?: Subscription) {
 	let dialog = new Dialog();

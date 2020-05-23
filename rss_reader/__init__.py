@@ -43,7 +43,7 @@ def create_app():
     from rss_reader.api import api
     import rss_reader.api.users
     import rss_reader.api.subscriptions
-    import rss_reader.api.articles
+    import rss_reader.api.entries
     import rss_reader.api.categories  # noqa
     app.register_blueprint(api)
 

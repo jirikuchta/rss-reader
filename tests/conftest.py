@@ -89,8 +89,10 @@ def create_user(as_admin):
 
 @pytest.fixture(scope="session")
 def create_subscription(feed_server):
-    def wrapper(client):
-        res = client.post("/api/subscriptions/", json={"uri": feed_server.url})
+    def wrapper(client, category_id=None):
+        res = client.post("/api/subscriptions/", json={
+            "uri": feed_server.url,
+            "categoryId": category_id})
         assert res.status_code == 201, res
         return res.json
     return wrapper

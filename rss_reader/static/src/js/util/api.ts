@@ -1,4 +1,4 @@
-type METHODS = "GET" | "POST" | "PATCH" | "DELETE";
+type METHODS = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export interface ErrorData {
 	code: string;

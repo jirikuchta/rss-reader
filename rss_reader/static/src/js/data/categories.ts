@@ -44,3 +44,7 @@ export async function remove(id: CategoryId) {
 	}
 	return res;
 }
+
+export async function markRead(id: CategoryId) {
+	return await api("PUT", `/api/categories/${id}/read/`);
+}
