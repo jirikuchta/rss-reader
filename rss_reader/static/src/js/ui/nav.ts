@@ -1,10 +1,12 @@
-import { Category, Subscription, isSubscription } from "data/types";
 import * as categories from "data/categories";
+import { Category } from "data/categories";
 import * as subscriptions from "data/subscriptions";
+import { Subscription, isSubscription } from "data/subscriptions";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
+import { setSelectedNavItem } from "ui/list";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
@@ -17,6 +19,7 @@ let node:HTMLElement;
 export function init() {
 	build();
 
+	// FIXME: may cause two consecutive builds
 	pubsub.subscribe("subscriptions-changed", build);
 	pubsub.subscribe("categories-changed", build);
 
@@ -41,14 +44,14 @@ async function build() {
 }
 
 function buildCategory(category: Category) {
-	let node = html.node("ul");
-	node.appendChild(buildItem(category));
+	let list = html.node("ul");
+	list.appendChild(buildItem(category));
 
 	subscriptions.list()
 		.filter(s => s.categoryId == category.id)
-		.forEach(s => node.appendChild(buildItem(s)))
+		.forEach(s => list.appendChild(buildItem(s)))
 
-	return node;
+	return list;
 }
 
 function buildItem(entity: Category | Subscription) {
@@ -64,6 +67,8 @@ function buildItem(entity: Category | Subscription) {
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
 		node.appendChild(html.node("span", {className: "count"}, "50"));
 	}
+
+	node.addEventListener("click", e => setSelectedNavItem(entity));
 
 	let btn = html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
 	btn.addEventListener("click", e => showItemPopup(entity, btn));

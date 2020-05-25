@@ -1,12 +1,29 @@
-import { SubscriptionId, Subscription } from "data/types";
+import { Category, CategoryId } from "data/categories";
 import { api } from "util/api";
 import * as pubsub from "util/pubsub";
 
-let subscriptions: Subscription[] = [];
+let subscriptions: Subscription[];
 
-export async function init() {
+export type SubscriptionId = number;
+
+export interface Subscription {
+	id: SubscriptionId;
+	title: string;
+	uri: string;
+	categoryId?: CategoryId;
+}
+
+export function isSubscription(entity: Category | Subscription) {
+	return (entity as Subscription).uri != undefined
+}
+
+export function init() {
+	return sync();
+}
+
+export async function sync() {
 	let res = await api("GET", "/api/subscriptions/");
-	res.ok && (subscriptions = res.data);
+	res.ok && (subscriptions = res.data) && pubsub.publish("subscriptions-changed");
 }
 
 export function list() { return subscriptions; }

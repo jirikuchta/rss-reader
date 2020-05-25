@@ -3,14 +3,14 @@ class TestAPIMarkSubscriptionRead:
     def test_ok(self, as_user, create_subscription):
         subscription = create_subscription(as_user)
 
-        res = as_user.get(f"/api/entries/")
+        res = as_user.get(f"/api/articles/")
         assert res.status_code == 200, res
         assert len(res.json) != 0
 
         res = as_user.put(f"/api/subscriptions/{subscription['id']}/read/")
         assert res.status_code == 204, res
 
-        res = as_user.get(f"/api/entries/")
+        res = as_user.get(f"/api/articles/")
         assert res.status_code == 200, res
         assert len(res.json) == 0
 

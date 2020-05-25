@@ -160,13 +160,10 @@ nav > header button {
 nav li {
   display: flex;
   align-items: center;
-  padding-left: 24px;
+  padding-left: 16px;
   padding-right: 14px;
   border-left: 4px solid transparent;
   cursor: pointer;
-}
-nav li.category {
-  padding-left: 14px;
 }
 nav li.category.is-collapsed .icon-chevron-down {
   transform: rotate(-90deg);
@@ -193,7 +190,7 @@ nav li button {
   height: 24px;
 }
 nav li button.btn-chevron {
-  margin-right: 10px;
+  margin-right: 8px;
 }
 nav li button.btn-dots {
   font-size: 1.6rem;

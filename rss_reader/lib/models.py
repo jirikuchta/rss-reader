@@ -44,19 +44,19 @@ class Feed(db.Model):  # type: ignore
     uri = db.Column(db.String(255), nullable=False, unique=True)
     title = db.Column(db.Text, nullable=False)
 
-    entries = db.relationship(
-        "FeedEntry", cascade="save-update, merge, delete, delete-orphan")
+    articles = db.relationship(
+        "FeedArticle", cascade="save-update, merge, delete, delete-orphan")
 
     @classmethod
     def from_parser(cls, parser):
         return cls(
             uri=parser.link,
             title=parser.title,
-            entries=[FeedEntry.from_parser(item) for item in parser.items])
+            articles=[FeedArticle.from_parser(item) for item in parser.items])
 
 
-class FeedEntry(db.Model):  # type: ignore
-    __tablename__ = "feed_entry"
+class FeedArticle(db.Model):  # type: ignore
+    __tablename__ = "feed_article"
     __table_args__ = (db.UniqueConstraint("feed_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
@@ -102,15 +102,15 @@ class Subscription(db.Model):  # type: ignore
 
     user = db.relationship("User", back_populates="subscriptions")
     feed = db.relationship("Feed", lazy=False)
-    entries = db.relationship(
-        "SubscriptionEntry", back_populates="subscription",
+    articles = db.relationship(
+        "SubscriptionArticle", back_populates="subscription",
         cascade="save-update, merge, delete, delete-orphan")
 
     def __init__(self, **kwargs):
         super(Subscription, self).__init__(**kwargs)
         if self.feed:
-            self.entries = [SubscriptionEntry(feed_entry=feed_entry)
-                            for feed_entry in self.feed.entries]
+            self.articles = [SubscriptionArticle(feed_article=feed_article)
+                             for feed_article in self.feed.articles]
 
     def to_json(self):
         title = self.title if self.title is not None else self.feed.title
@@ -140,10 +140,10 @@ class SubscriptionCategory(db.Model):  # type: ignore
             "title": self.title}
 
 
-class SubscriptionEntry(db.Model):  # type: ignore
-    __tablename__ = "subscription_entry"
+class SubscriptionArticle(db.Model):  # type: ignore
+    __tablename__ = "subscription_article"
     __table_args__ = (
-        db.PrimaryKeyConstraint("user_id", "entry_id"),
+        db.PrimaryKeyConstraint("user_id", "article_id"),
         db.ForeignKeyConstraint(["feed_id", "user_id"],
                                 refcolumns=["subscription.feed_id",
                                             "subscription.user_id"],
@@ -152,25 +152,26 @@ class SubscriptionEntry(db.Model):  # type: ignore
     user_id = db.Column(db.Integer,
                         db.ForeignKey("user.id", ondelete="CASCADE"),
                         nullable=False)
-    entry_id = db.Column(db.Integer,
-                         db.ForeignKey("feed_entry.id", ondelete="CASCADE"),
-                         nullable=False)
+    article_id = db.Column(db.Integer,
+                           db.ForeignKey("feed_article.id",
+                                         ondelete="CASCADE"),
+                           nullable=False)
     feed_id = db.Column(db.Integer, nullable=False)
     read = db.Column(db.DateTime, nullable=True, index=True)
     starred = db.Column(db.DateTime, nullable=True, index=True)
 
-    subscription = db.relationship("Subscription", back_populates="entries")
-    feed_entry = db.relationship("FeedEntry", lazy=False)
+    subscription = db.relationship("Subscription", back_populates="articles")
+    feed_article = db.relationship("FeedArticle", lazy=False)
 
     def to_json(self):
         return {
-            "id": self.feed_entry.id,
-            "title": self.feed_entry.title,
-            "uri": self.feed_entry.uri,
-            "summary": self.feed_entry.summary,
-            "content": self.feed_entry.content,
-            "comments_uri": self.feed_entry.comments_uri,
-            "author": self.feed_entry.author,
+            "id": self.feed_article.id,
+            "title": self.feed_article.title,
+            "uri": self.feed_article.uri,
+            "summary": self.feed_article.summary,
+            "content": self.feed_article.content,
+            "comments_uri": self.feed_article.comments_uri,
+            "author": self.feed_article.author,
             "feed_id": self.feed_id,
             "read": self.read,
             "starred": self.starred}

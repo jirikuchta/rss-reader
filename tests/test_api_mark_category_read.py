@@ -4,14 +4,14 @@ class TestAPIMarkCategoryRead:
         cat = create_category(as_user)
         create_subscription(as_user, cat["id"])
 
-        res = as_user.get(f"/api/entries/")
+        res = as_user.get(f"/api/articles/")
         assert res.status_code == 200, res
         assert len(res.json) != 0
 
         res = as_user.put(f"/api/categories/{cat['id']}/read/")
         assert res.status_code == 204, res
 
-        res = as_user.get(f"/api/entries/")
+        res = as_user.get(f"/api/articles/")
         assert res.status_code == 200, res
         assert len(res.json) == 0
 

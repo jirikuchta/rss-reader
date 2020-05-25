@@ -2,7 +2,7 @@ from flask import request
 from flask_login import current_user
 
 from rss_reader.lib.models import db, Feed, Subscription, \
-    SubscriptionCategory, SubscriptionEntry
+    SubscriptionCategory, SubscriptionArticle
 from rss_reader.parser import parse
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
@@ -120,15 +120,25 @@ def delete_subscription(feed_id: int) -> TReturnValue:
     return None, 204
 
 
+@api.route("/subscriptions/<int:feed_id>/articles/", methods=["GET"])
+@make_api_response
+@require_login
+def list_subscription_articles(feed_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(feed_id)
+    articles = SubscriptionArticle.query.filter_by(
+        subscription=subscription).all()
+    return [article.to_json() for article in articles], 200
+
+
 @api.route("/subscriptions/<int:feed_id>/read/", methods=["PUT"])
 @make_api_response
 @require_login
 def mark_subscription_read(feed_id: int) -> TReturnValue:
     subscription = _get_subscription_or_raise(feed_id)
 
-    SubscriptionEntry.query \
+    SubscriptionArticle.query \
         .filter_by(subscription=subscription) \
-        .update({SubscriptionEntry.read: db.func.now()},
+        .update({SubscriptionArticle.read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()

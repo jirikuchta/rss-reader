@@ -1,7 +1,7 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.lib.models import db, SubscriptionCategory, SubscriptionEntry
+from rss_reader.lib.models import db, SubscriptionCategory, SubscriptionArticle
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
@@ -92,6 +92,19 @@ def delete_category(category_id: int) -> TReturnValue:
     return None, 204
 
 
+@api.route("/categories/<int:category_id>/articles/", methods=["GET"])
+@make_api_response
+@require_login
+def list_category_articles(category_id: int) -> TReturnValue:
+    category = _get_category_or_raise(category_id)
+    feed_ids = [s.feed_id for s in category.subscriptions]
+
+    articles = SubscriptionArticle.query.filter(
+        SubscriptionArticle.feed_id.in_(feed_ids)).all()
+
+    return [article.to_json() for article in articles], 200
+
+
 @api.route("/categories/<int:category_id>/read/", methods=["PUT"])
 @make_api_response
 @require_login
@@ -99,9 +112,9 @@ def mark_category_read(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
     feed_ids = [s.feed_id for s in category.subscriptions]
 
-    SubscriptionEntry.query \
-        .filter(SubscriptionEntry.feed_id.in_(feed_ids)) \
-        .update({SubscriptionEntry.read: db.func.now()},
+    SubscriptionArticle.query \
+        .filter(SubscriptionArticle.feed_id.in_(feed_ids)) \
+        .update({SubscriptionArticle.read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()

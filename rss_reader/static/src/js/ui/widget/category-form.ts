@@ -2,8 +2,8 @@ import * as html from "util/html";
 import * as random from "util/random";
 import { ApiResponse } from "util/api";
 
-import { Category } from "data/types";
 import * as categories from "data/categories";
+import { Category } from "data/categories";
 
 export default class CategoryForm {
     node!: HTMLFormElement;

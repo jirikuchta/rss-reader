@@ -7,7 +7,7 @@ import * as detail from "ui/detail";
 
 let node = document.querySelector("main") as HTMLElement;
 
-export function init() {
+export async function init() {
 	let navNode = nav.init();
 	let listNode = list.init();
 
@@ -16,7 +16,7 @@ export function init() {
 	node.appendChild(detail.init());
 
 	new Resizer(navNode, "sidebar-width");
-	new Resizer(listNode, "entries-width");
+	new Resizer(listNode, "articles-width");
 }
 
 

@@ -1,9 +1,15 @@
-import { CategoryId, Category } from "data/types";
-
+import * as subscriptions from "data/subscriptions";
 import { api } from "util/api";
 import * as pubsub from "util/pubsub";
 
 let categories: Category[] = [];
+
+export type CategoryId = number;
+
+export interface Category {
+	id: CategoryId;
+	title: string;
+}
 
 export async function init() {
 	let res = await api("GET", "/api/categories/");
@@ -39,6 +45,7 @@ export async function remove(id: CategoryId) {
 		let i = categories.findIndex(s => s.id == id);
 		if (i != -1) {
 			categories.splice(i, 1);
+			subscriptions.sync();
 			pubsub.publish("categories-changed");
 		}
 	}

@@ -28,53 +28,19 @@ function subscribe(message, subscriber) {
     storage[message].push(subscriber);
 }
 
-let categories = [];
-async function init() {
-    let res = await api("GET", "/api/categories/");
-    res.ok && (categories = res.data);
+let subscriptions;
+function isSubscription(entity) {
+    return entity.uri != undefined;
 }
-function list() { return categories; }
-async function add(data) {
-    let res = await api("POST", "/api/categories/", data);
-    if (res.ok) {
-        categories.push(res.data);
-        publish("categories-changed");
-    }
-    return res;
+function init() {
+    return sync();
 }
-async function edit(id, data) {
-    let res = await api("PATCH", `/api/categories/${id}/`, data);
-    if (res.ok) {
-        let i = categories.findIndex(s => s.id == id);
-        if (i != -1) {
-            categories[i] = res.data;
-            publish("categories-changed");
-        }
-    }
-    return res;
-}
-async function remove(id) {
-    let res = await api("DELETE", `/api/categories/${id}/`);
-    if (res.ok) {
-        let i = categories.findIndex(s => s.id == id);
-        if (i != -1) {
-            categories.splice(i, 1);
-            publish("categories-changed");
-        }
-    }
-    return res;
-}
-async function markRead(id) {
-    return await api("PUT", `/api/categories/${id}/read/`);
-}
-
-let subscriptions = [];
-async function init$1() {
+async function sync() {
     let res = await api("GET", "/api/subscriptions/");
-    res.ok && (subscriptions = res.data);
+    res.ok && (subscriptions = res.data) && publish("subscriptions-changed");
 }
-function list$1() { return subscriptions; }
-async function add$1(data) {
+function list() { return subscriptions; }
+async function add(data) {
     let res = await api("POST", "/api/subscriptions/", data);
     if (res.ok) {
         subscriptions.push(res.data);
@@ -82,7 +48,7 @@ async function add$1(data) {
     }
     return res;
 }
-async function edit$1(id, data) {
+async function edit(id, data) {
     let res = await api("PATCH", `/api/subscriptions/${id}/`, data);
     if (res.ok) {
         let i = subscriptions.findIndex(s => s.id == id);
@@ -93,7 +59,7 @@ async function edit$1(id, data) {
     }
     return res;
 }
-async function remove$1(id) {
+async function remove(id) {
     let res = await api("DELETE", `/api/subscriptions/${id}/`);
     if (res.ok) {
         let i = subscriptions.findIndex(s => s.id == id);
@@ -104,8 +70,49 @@ async function remove$1(id) {
     }
     return res;
 }
-async function markRead$1(id) {
+async function markRead(id) {
     return await api("PUT", `/api/subscriptions/${id}/read/`);
+}
+
+let categories = [];
+async function init$1() {
+    let res = await api("GET", "/api/categories/");
+    res.ok && (categories = res.data);
+}
+function list$1() { return categories; }
+async function add$1(data) {
+    let res = await api("POST", "/api/categories/", data);
+    if (res.ok) {
+        categories.push(res.data);
+        publish("categories-changed");
+    }
+    return res;
+}
+async function edit$1(id, data) {
+    let res = await api("PATCH", `/api/categories/${id}/`, data);
+    if (res.ok) {
+        let i = categories.findIndex(s => s.id == id);
+        if (i != -1) {
+            categories[i] = res.data;
+            publish("categories-changed");
+        }
+    }
+    return res;
+}
+async function remove$1(id) {
+    let res = await api("DELETE", `/api/categories/${id}/`);
+    if (res.ok) {
+        let i = categories.findIndex(s => s.id == id);
+        if (i != -1) {
+            categories.splice(i, 1);
+            sync();
+            publish("categories-changed");
+        }
+    }
+    return res;
+}
+async function markRead$1(id) {
+    return await api("PUT", `/api/categories/${id}/read/`);
 }
 
 var icons = {
@@ -179,8 +186,41 @@ function fragment() {
     return document.createDocumentFragment();
 }
 
-function isSubscription(entity) {
-    return entity.uri != undefined;
+async function list$2(entity) {
+    let res;
+    if (entity) {
+        if (isSubscription(entity)) {
+            res = await api("GET", `/api/subscriptions/${entity['id']}/articles/`);
+        }
+        else {
+            res = await api("GET", `/api/categories/${entity['id']}/articles/`);
+        }
+    }
+    else {
+        res = await api("GET", `/api/articles/`);
+    }
+    return res.data;
+}
+
+let node$1;
+let selectedNavItem;
+function init$2() {
+    build();
+    return node$1;
+}
+function setSelectedNavItem(item) {
+    selectedNavItem = item;
+    build();
+}
+async function build() {
+    node$1 ? clear(node$1) : node$1 = node("section", { "id": "list" });
+    let items = await list$2(selectedNavItem);
+    items && items.forEach(article => node$1.appendChild(buildItem(article)));
+}
+function buildItem(article) {
+    let node$1 = node("article");
+    node$1.appendChild(node("h3", {}, article.title));
+    return node$1;
 }
 
 function id() {
@@ -204,10 +244,10 @@ class SubscriptionForm {
             };
             let res;
             if (this._subscription) {
-                res = await edit$1(this._subscription.id, data);
+                res = await edit(this._subscription.id, data);
             }
             else {
-                res = await add$1(data);
+                res = await add(data);
             }
             this._validate(res);
             this.node.checkValidity() && this.afterSubmit();
@@ -227,7 +267,7 @@ class SubscriptionForm {
             this._title.value = this._subscription.title;
             this._uri.value = this._subscription.uri;
             this._uri.disabled = true;
-            let catTitle = (_a = list().find(c => { var _a; return c.id == ((_a = this._subscription) === null || _a === void 0 ? void 0 : _a.categoryId); })) === null || _a === void 0 ? void 0 : _a.title;
+            let catTitle = (_a = list$1().find(c => { var _a; return c.id == ((_a = this._subscription) === null || _a === void 0 ? void 0 : _a.categoryId); })) === null || _a === void 0 ? void 0 : _a.title;
             catTitle && (this._category.value = catTitle);
         }
         this._subscription && this.node.appendChild(labelInput("Title", this._title));
@@ -278,7 +318,7 @@ function labelInput(text, input) {
 }
 function buildCategoryList() {
     let node$1 = node("datalist", { id: id() });
-    list().forEach(c => node("option", { value: c.title }, c.title, node$1));
+    list$1().forEach(c => node("option", { value: c.title }, c.title, node$1));
     return node$1;
 }
 async function getCategory(title) {
@@ -286,10 +326,10 @@ async function getCategory(title) {
     if (!title) {
         return;
     }
-    let category = list()
+    let category = list$1()
         .find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
     if (!category) {
-        let res = await add({ title });
+        let res = await add$1({ title });
         res.ok && (category = res.data);
     }
     return category;
@@ -304,7 +344,7 @@ class CategoryForm {
     async handleEvent(e) {
         if (e.type == "submit") {
             e.preventDefault();
-            let res = await edit(this._category.id, {
+            let res = await edit$1(this._category.id, {
                 title: this._title.value
             });
             this._validate(res);
@@ -530,35 +570,36 @@ async function confirm(text, ok, cancel) {
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
 
-let node$1;
-function init$2() {
-    build();
-    subscribe("subscriptions-changed", build);
-    subscribe("categories-changed", build);
-    return node$1;
+let node$2;
+function init$3() {
+    build$1();
+    // FIXME: may cause two consecutive builds
+    subscribe("subscriptions-changed", build$1);
+    subscribe("categories-changed", build$1);
+    return node$2;
 }
-async function build() {
-    node$1 ? clear(node$1) : node$1 = node("nav");
-    let header = node("header", {}, "", node$1);
+async function build$1() {
+    node$2 ? clear(node$2) : node$2 = node("nav");
+    let header = node("header", {}, "", node$2);
     node("h3", {}, "Subscriptions", header);
     let btn = button({ icon: "plus-circle" }, "", header);
     btn.addEventListener("click", e => editSubscription());
-    list()
-        .forEach(cat => node$1.appendChild(buildCategory(cat)));
-    let uncategorized = node("ul", {}, "", node$1);
     list$1()
+        .forEach(cat => node$2.appendChild(buildCategory(cat)));
+    let uncategorized = node("ul", {}, "", node$2);
+    list()
         .filter(s => s.categoryId == null)
-        .forEach(s => uncategorized.appendChild(buildItem(s)));
+        .forEach(s => uncategorized.appendChild(buildItem$1(s)));
 }
 function buildCategory(category) {
-    let node$1 = node("ul");
-    node$1.appendChild(buildItem(category));
-    list$1()
+    let list$1 = node("ul");
+    list$1.appendChild(buildItem$1(category));
+    list()
         .filter(s => s.categoryId == category.id)
-        .forEach(s => node$1.appendChild(buildItem(s)));
-    return node$1;
+        .forEach(s => list$1.appendChild(buildItem$1(s)));
+    return list$1;
 }
-function buildItem(entity) {
+function buildItem$1(entity) {
     let node$1 = node("li", { tabIndex: "0" });
     if (isSubscription(entity)) {
         node$1.appendChild(node("span", { className: "title" }, entity.title));
@@ -571,6 +612,7 @@ function buildItem(entity) {
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
     }
+    node$1.addEventListener("click", e => setSelectedNavItem(entity));
     let btn = button({ className: "plain btn-dots", icon: "dots-horizontal" }, "", node$1);
     btn.addEventListener("click", e => showItemPopup(entity, btn));
     return node$1;
@@ -578,12 +620,12 @@ function buildItem(entity) {
 function showItemPopup(entity, target) {
     let menu = new PopupMenu();
     if (isSubscription(entity)) {
-        menu.addItem("Mark as read", "check-all", () => markRead$1(entity.id));
+        menu.addItem("Mark as read", "check-all", () => markRead(entity.id));
         menu.addItem("Edit subscription", "pencil", () => editSubscription(entity));
         menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity));
     }
     else {
-        menu.addItem("Mark as read", "check-all", () => markRead(entity.id));
+        menu.addItem("Mark as read", "check-all", () => markRead$1(entity.id));
         menu.addItem("Edit category", "pencil", () => editCategory(entity));
         menu.addItem("Delete category", "trash", () => deleteCategory(entity));
     }
@@ -602,7 +644,7 @@ function editSubscription(subscription) {
 }
 async function deleteSubscription(subscription) {
     if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
-        remove$1(subscription.id);
+        remove(subscription.id);
     }
 }
 function editCategory(category) {
@@ -618,30 +660,8 @@ function editCategory(category) {
 }
 async function deleteCategory(category) {
     if (await confirm(`Delete category ${category.title}? Any nested subscriptions would be `)) {
-        remove(category.id);
+        remove$1(category.id);
     }
-}
-
-async function list$2(subscription) {
-    let res = await api("GET", "/api/entries/");
-    return res.data;
-}
-
-let node$2;
-function init$3() {
-    build$1();
-    subscribe("subscription-selected", build$1);
-    return node$2;
-}
-async function build$1() {
-    node$2 ? clear(node$2) : node$2 = node("section", { "id": "list" });
-    let items = await list$2();
-    items && items.forEach(entry => node$2.appendChild(buildItem$1(entry)));
-}
-function buildItem$1(entry) {
-    let node$1 = node("article");
-    node$1.appendChild(node("h3", {}, entry.title));
-    return node$1;
 }
 
 let node$3;
@@ -654,14 +674,14 @@ async function build$2() {
 }
 
 let node$4 = document.querySelector("main");
-function init$5() {
-    let navNode = init$2();
-    let listNode = init$3();
+async function init$5() {
+    let navNode = init$3();
+    let listNode = init$2();
     node$4.appendChild(navNode);
     node$4.appendChild(listNode);
     node$4.appendChild(init$4());
     new Resizer(navNode, "sidebar-width");
-    new Resizer(listNode, "entries-width");
+    new Resizer(listNode, "articles-width");
 }
 class Resizer {
     constructor(node, storageId) {
@@ -709,8 +729,8 @@ class Resizer {
 }
 
 async function init$6() {
-    await init();
     await init$1();
+    await init();
     init$5();
 }
 init$6();
