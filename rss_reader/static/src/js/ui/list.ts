@@ -26,5 +26,6 @@ async function build() {
 function buildItem(article: Article) {
 	let node = html.node("article");
 	node.appendChild(html.node("h3", {}, article.title));
+	article.summary && node.appendChild(html.node("p", {}, article.summary));
 	return node;
 }

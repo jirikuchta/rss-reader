@@ -6,15 +6,15 @@ import { Subscription, isSubscription } from "data/subscriptions";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import { setSelectedNavItem } from "ui/list";
+import * as list from "ui/list";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
 import { Dialog, confirm } from "ui/widget/dialog";
 
+const SELECTED_CSS_CLASS = "is-selected";
 
 let node:HTMLElement;
-
 
 export function init() {
 	build();
@@ -55,7 +55,7 @@ function buildCategory(category: Category) {
 }
 
 function buildItem(entity: Category | Subscription) {
-	let node = html.node("li", {tabIndex: "0"});
+	let node = html.node("li");
 
 	if (isSubscription(entity)) {
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
@@ -63,17 +63,29 @@ function buildItem(entity: Category | Subscription) {
 	} else {
 		node.classList.add("category");
 		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
-		btn.addEventListener("click", e => node.classList.toggle("is-collapsed"));
+		btn.addEventListener("click", e => {
+			e.stopPropagation();
+			node.classList.toggle("is-collapsed");
+		});
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
 		node.appendChild(html.node("span", {className: "count"}, "50"));
 	}
 
-	node.addEventListener("click", e => setSelectedNavItem(entity));
+	node.addEventListener("click", e => selectItem(node, entity));
 
 	let btn = html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
-	btn.addEventListener("click", e => showItemPopup(entity, btn));
+	btn.addEventListener("click", e => {
+		e.stopPropagation();
+		showItemPopup(entity, btn);
+	});
 
 	return node;
+}
+
+function selectItem(itemNode: HTMLElement, entity: Category | Subscription) {
+	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
+	itemNode.classList.add(SELECTED_CSS_CLASS);
+	list.setSelectedNavItem(entity);
 }
 
 function showItemPopup(entity: Category | Subscription, target: HTMLElement) {

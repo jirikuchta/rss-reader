@@ -220,6 +220,7 @@ async function build() {
 function buildItem(article) {
     let node$1 = node("article");
     node$1.appendChild(node("h3", {}, article.title));
+    article.summary && node$1.appendChild(node("p", {}, article.summary));
     return node$1;
 }
 
@@ -570,6 +571,7 @@ async function confirm(text, ok, cancel) {
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
 
+const SELECTED_CSS_CLASS = "is-selected";
 let node$2;
 function init$3() {
     build$1();
@@ -600,7 +602,7 @@ function buildCategory(category) {
     return list$1;
 }
 function buildItem$1(entity) {
-    let node$1 = node("li", { tabIndex: "0" });
+    let node$1 = node("li");
     if (isSubscription(entity)) {
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
@@ -608,14 +610,26 @@ function buildItem$1(entity) {
     else {
         node$1.classList.add("category");
         let btn = button({ icon: "chevron-down", className: "plain btn-chevron" }, "", node$1);
-        btn.addEventListener("click", e => node$1.classList.toggle("is-collapsed"));
+        btn.addEventListener("click", e => {
+            e.stopPropagation();
+            node$1.classList.toggle("is-collapsed");
+        });
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
     }
-    node$1.addEventListener("click", e => setSelectedNavItem(entity));
+    node$1.addEventListener("click", e => selectItem(node$1, entity));
     let btn = button({ className: "plain btn-dots", icon: "dots-horizontal" }, "", node$1);
-    btn.addEventListener("click", e => showItemPopup(entity, btn));
+    btn.addEventListener("click", e => {
+        e.stopPropagation();
+        showItemPopup(entity, btn);
+    });
     return node$1;
+}
+function selectItem(itemNode, entity) {
+    var _a;
+    (_a = node$2.querySelector(`.${SELECTED_CSS_CLASS}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS);
+    itemNode.classList.add(SELECTED_CSS_CLASS);
+    setSelectedNavItem(entity);
 }
 function showItemPopup(entity, target) {
     let menu = new PopupMenu();

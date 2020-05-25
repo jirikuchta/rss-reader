@@ -196,7 +196,7 @@ nav li button.btn-dots {
   font-size: 1.6rem;
   display: none;
 }
-nav li.selected {
+nav li.is-selected {
   border-left-color: var(--color-active);
   color: var(--color-active);
 }

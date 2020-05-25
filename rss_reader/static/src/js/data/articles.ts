@@ -6,9 +6,10 @@ export type ArticleId = number;
 
 export interface Article {
 	id: ArticleId;
-	title: string;
-	uri: string;
 	subscriptionId: SubscriptionId;
+	title: string;
+	summary?: string;
+	uri: string;
 }
 
 export async function list(entity?: Subscription | Category) {
