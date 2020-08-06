@@ -5,7 +5,7 @@ from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 
-from rss_reader.lib.models import UserRole
+from app.models import UserRole
 
 
 TReturnValue = Tuple[Any, int]

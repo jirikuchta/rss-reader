@@ -13,8 +13,6 @@ services:
       FLASK_ENV: "development"
       SECRET_KEY: "insecure"
       DATABASE_URI: "sqlite:////rss_reader/rss_reader.db"
-    command: >
-      sh -c "flask create-db && flask run --host=0.0.0.0"
 
   static_builder:
     build:
