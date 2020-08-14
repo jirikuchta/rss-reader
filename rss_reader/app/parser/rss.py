@@ -1,10 +1,11 @@
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from .common import NS, ParserError, FeedType, FeedParser, FeedItemParser, \
-    Enclosure, get_child_node_text, get_child_node_content, format_author, \
-    find_children, get_node_text, find_child, get_node_attr, \
-    get_link_href_attr, raise_required_elm_missing_error
+from rss_reader.app.parser.common import NS, ParserError, FeedType, \
+    FeedParser, FeedItemParser, Enclosure, get_child_node_text, \
+    get_child_node_content, format_author, find_children, get_node_text, \
+    find_child, get_node_attr, get_link_href_attr, \
+    raise_required_elm_missing_error
 
 
 class RSSParser(FeedParser["RSSItemParser"]):

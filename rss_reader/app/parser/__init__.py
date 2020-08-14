@@ -1,9 +1,9 @@
 import urllib.request
 from xml.etree import ElementTree as ET
 
-from app.parser.common import FeedParser
-from app.parser.atom import AtomParser
-from app.parser.rss import RSSParser
+from rss_reader.app.parser.common import FeedParser
+from rss_reader.app.parser.atom import AtomParser
+from rss_reader.app.parser.rss import RSSParser
 
 
 def parse(uri: str) -> FeedParser:

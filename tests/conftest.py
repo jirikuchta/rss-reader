@@ -3,10 +3,10 @@ import random
 import string
 from xml.etree import ElementTree as ET
 
-from rss_reader import create_app, db
-from rss_reader.lib.models import User, UserRole, Feed, Subscription
-from rss_reader.parser.common import NS
-from rss_reader.parser.rss import RSSParser
+from rss_reader.app import create_app, db
+from rss_reader.app.models import User, UserRole, Feed, Subscription
+from rss_reader.app.parser.common import NS
+from rss_reader.app.parser.rss import RSSParser
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \

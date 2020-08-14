@@ -1,9 +1,9 @@
 from flask import request
 from flask_login import current_user
 
-from app.models import db, User, UserRole
+from rss_reader.app.models import db, User, UserRole
 
-from app.api import api, TReturnValue, make_api_response, \
+from rss_reader.app.api import api, TReturnValue, make_api_response, \
     require_login, require_admin_user, ClientError, ErrorType, \
     MissingFieldError, InvalidFieldError
 

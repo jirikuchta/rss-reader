@@ -4,7 +4,7 @@ from typing import Union
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers import Response
 
-from .models import db, User
+from rss_reader.app.models import db, User
 
 
 views = Blueprint("views", __name__)

@@ -1,9 +1,8 @@
 import os
-import click
 import signal
 from multiprocessing import Process, active_children
 import time
-from app import create_app
+from rss_reader.app import create_app
 
 
 app = None
@@ -33,4 +32,3 @@ if __name__ == "__main__":
 
     app_process.join()
     p.join()
-
