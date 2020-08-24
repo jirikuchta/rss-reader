@@ -1,8 +1,9 @@
 import os
 import signal
 from multiprocessing import Process, active_children
-import time
+
 from rss_reader.app import create_app
+from rss_reader.jobs import updater
 
 
 app = None
@@ -13,18 +14,12 @@ def sigterm_handler(signum: int, frame) -> None:
         os.kill(child.pid, signal.SIGINT)
 
 
-def f(app):
-    while True:
-        app.logger.info("aaaaaaaaaaa")
-        time.sleep(2)
-
-
 if __name__ == "__main__":
     app = create_app()
     app_process = Process(target=app.run, kwargs={"host": "0.0.0.0"})
     app_process.start()
 
-    p = Process(target=f, args=[app])
+    p = Process(target=updater, args=[app.logger])
     p.start()
 
     signal.signal(signal.SIGINT, sigterm_handler)

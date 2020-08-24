@@ -43,6 +43,7 @@ class Feed(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     uri = db.Column(db.String(255), nullable=False, unique=True)
     title = db.Column(db.Text, nullable=False)
+    updated_at = db.Column(db.DateTime, index=True)
 
     articles = db.relationship(
         "FeedArticle", cascade="save-update, merge, delete, delete-orphan")
