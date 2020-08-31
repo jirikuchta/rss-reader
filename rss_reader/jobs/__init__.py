@@ -1,16 +1,12 @@
 import time
 
-from rss_reader.app.models import Feed
-from rss_reader.app.parser import parse
+from rss_reader.models import Feed
 
 
-def updater(logger):
-    feeds = Feed.query.all()
+def updater(app):
+    app.app_context().push()
 
-    for feed in feeds:
-        parser = parse(feed.uri)
-
-    logger.info("aaaaaaaaaaaaaaaaaaaaaaaa")
+    app.logger.info("aaaaaaaaaaaaaaaaaaaaaaaa")
     while True:
-        logger.info("worker")
+        app.logger.info("worker")
         time.sleep(2)

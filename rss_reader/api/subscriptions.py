@@ -1,11 +1,11 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.app.models import db, Feed, Subscription, \
+from rss_reader.models import db, Feed, Subscription, \
     SubscriptionCategory, SubscriptionArticle
-from rss_reader.app.parser import parse
+from rss_reader.parser import parse
 
-from rss_reader.app.api import api, TReturnValue, make_api_response, \
+from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ErrorType, ClientError, MissingFieldError, InvalidFieldError
 
 

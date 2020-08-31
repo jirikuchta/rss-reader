@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from rss_reader.app.models import db, User, UserRole
+from rss_reader.models import db, User, UserRole
 
 
 def create_app():
@@ -15,8 +15,7 @@ def create_app():
                       static_folder="static/dist",
                       static_url_path="/static")
 
-    if os.environ.get("SECRET_KEY") is not None:
-        flask_app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
+    flask_app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
     flask_app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
     flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -38,14 +37,14 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from rss_reader.app.views import views
+    from rss_reader.views import views
     flask_app.register_blueprint(views)
 
-    from rss_reader.app.api import api
-    import rss_reader.app.api.users  # noqa
-    import rss_reader.app.api.subscriptions  # noqa
-    import rss_reader.app.api.articles  # noqa
-    import rss_reader.app.api.categories  # noqa
+    from rss_reader.api import api
+    import rss_reader.api.users  # noqa
+    import rss_reader.api.subscriptions  # noqa
+    import rss_reader.api.articles  # noqa
+    import rss_reader.api.categories  # noqa
     flask_app.register_blueprint(api)
 
     flask_app.cli.add_command(create_db)
