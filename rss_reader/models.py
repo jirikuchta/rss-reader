@@ -43,7 +43,9 @@ class Feed(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     uri = db.Column(db.String(255), nullable=False, unique=True)
     title = db.Column(db.Text, nullable=False)
-    updated_at = db.Column(db.DateTime, index=True)
+    update_planned = db.Column(db.Boolean, index=True, nullable=False,
+                               default=False)
+    time_last_updated = db.Column(db.DateTime, nullable=True, index=True)
 
     articles = db.relationship(
         "FeedArticle", cascade="save-update, merge, delete, delete-orphan")
@@ -176,3 +178,25 @@ class SubscriptionArticle(db.Model):  # type: ignore
             "feed_id": self.feed_id,
             "read": self.read,
             "starred": self.starred}
+
+
+class JobType(enum.Enum):
+    update = "update"
+    prune = "prune"
+
+
+class JobStatus(enum.Enum):
+    waiting = "waiting"
+    running = "running"
+    finished = "finished"
+    failed = "failed"
+
+
+class Jobs(db.Model):  # type: ignore
+    __tablename__ = "jobs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.Enum(JobType), nullable=False, index=True)
+    status = db.Column(db.Enum(JobStatus), nullable=False, index=True,
+                       default=JobStatus.waiting)
+    data = db.Column(db.JSON, nullable=True)
