@@ -192,8 +192,8 @@ class JobStatus(enum.Enum):
     failed = "failed"
 
 
-class Jobs(db.Model):  # type: ignore
-    __tablename__ = "jobs"
+class Job(db.Model):  # type: ignore
+    __tablename__ = "job"
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Enum(JobType), nullable=False, index=True)

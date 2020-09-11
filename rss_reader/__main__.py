@@ -3,7 +3,7 @@ import signal
 from multiprocessing import Process, active_children
 
 from rss_reader import create_app
-from rss_reader.jobs import updater, cleaner
+from rss_reader.jobs import run as updater
 
 
 def sigterm_handler(signum: int, frame) -> None:
@@ -20,12 +20,8 @@ if __name__ == "__main__":
     updater_process = Process(target=updater, args=[app])
     updater_process.start()
 
-    cleaner_process = Process(target=cleaner, args=[app])
-    cleaner_process.start()
-
     signal.signal(signal.SIGINT, sigterm_handler)
     signal.signal(signal.SIGTERM, sigterm_handler)
 
-    cleaner_process.join()
     updater_process.join()
     app_process.join()
