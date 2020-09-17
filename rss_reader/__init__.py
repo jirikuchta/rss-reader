@@ -11,15 +11,15 @@ from rss_reader.models import db, User, UserRole
 
 
 def create_app():
-    flask_app = Flask(__name__,
-                      static_folder="static/dist",
-                      static_url_path="/static")
+    app = Flask(__name__,
+                static_folder="static/dist",
+                static_url_path="/static")
 
-    flask_app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
-    flask_app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
-    flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
+    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    db.init_app(flask_app)
+    db.init_app(app)
 
     # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#foreign-key-support
     if os.environ.get("DATABASE_URI").startswith("sqlite"):
@@ -30,7 +30,7 @@ def create_app():
             cursor.close()
 
     login_manager = LoginManager()
-    login_manager.init_app(flask_app)
+    login_manager.init_app(app)
     login_manager.login_view = "views.login"
 
     @login_manager.user_loader
@@ -38,28 +38,28 @@ def create_app():
         return User.query.get(int(user_id))
 
     from rss_reader.views import views
-    flask_app.register_blueprint(views)
+    app.register_blueprint(views)
 
     from rss_reader.api import api
     import rss_reader.api.users  # noqa
     import rss_reader.api.subscriptions  # noqa
     import rss_reader.api.articles  # noqa
     import rss_reader.api.categories  # noqa
-    flask_app.register_blueprint(api)
+    app.register_blueprint(api)
 
-    flask_app.cli.add_command(create_db)
-    flask_app.cli.add_command(drop_db)
+    app.cli.add_command(create_db)
+    app.cli.add_command(drop_db)
 
-    return flask_app
+    return app
 
 
 @click.command("create-db")
 @with_appcontext
 def create_db():
     db.create_all()
-    if User.query.filter(User.username == "admin").first() is None:
+    if User.query.filter(User.role == UserRole.ADMIN).first() is None:
         db.session.add(User(username="admin", password="admin",
-                            role=UserRole.admin))
+                            role=UserRole.ADMIN))
     db.session.commit()
 
 

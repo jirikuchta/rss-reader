@@ -34,7 +34,7 @@ def create_user() -> TReturnValue:
 
     if role:
         try:
-            role = UserRole[role]
+            role = UserRole[role.upper()]
         except KeyError:
             raise InvalidFieldError("role")
 
@@ -75,15 +75,15 @@ def update_user(user_id: int) -> TReturnValue:
 
     if role:
         try:
-            role = UserRole[role]
+            role = UserRole[role.upper()]
         except KeyError:
             raise InvalidFieldError("role")
 
-        if user.role is UserRole.user and role is not UserRole.user:
+        if user.role is UserRole.USER and role is not UserRole.USER:
             raise ClientError(ErrorType.Forbidden)
 
-        if user.role is UserRole.admin and role is not UserRole.admin:
-            last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
+        if user.role is UserRole.ADMIN and role is not UserRole.ADMIN:
+            last_admin = User.query.filter_by(role=UserRole.ADMIN).count() == 1
             if last_admin:
                 raise ClientError(ErrorType.LastAdmin)
 
@@ -98,7 +98,7 @@ def update_user(user_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def delete_user(user_id: int) -> TReturnValue:
-    if current_user.role is not UserRole.admin:
+    if current_user.role is not UserRole.ADMIN:
         if current_user.id != user_id:
             raise ClientError(ErrorType.Forbidden)
 
@@ -107,8 +107,8 @@ def delete_user(user_id: int) -> TReturnValue:
     if not user:
         raise ClientError(ErrorType.NotFound)
 
-    if user.role is UserRole.admin:
-        last_admin = User.query.filter_by(role=UserRole.admin).count() == 1
+    if user.role is UserRole.ADMIN:
+        last_admin = User.query.filter_by(role=UserRole.ADMIN).count() == 1
         if last_admin:
             raise ClientError(ErrorType.LastAdmin)
 

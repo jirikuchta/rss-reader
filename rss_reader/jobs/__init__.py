@@ -1,12 +1,19 @@
+from datetime import datetime, timedelta
 from typing import List
 import time
-from datetime import datetime, timedelta
 
-from rss_reader.models import db, Feed, Job, JobType, JobStatus
+from rss_reader.models import db, Feed, Task, TaskType, TaskStatus
+
+
+def test():
+    while True:
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>")
+        time.sleep(2)
 
 
 def run(app):
     app.app_context().push()
+
     while True:
         try:
             plan_new_tasks()
@@ -18,8 +25,8 @@ def run(app):
             if len(tasks) == 0:
                 time.sleep(2)
 
-        except Exception:
-            pass
+        except Exception as e:
+            app.logger.error(e)
 
 
 def plan_new_tasks() -> None:
@@ -32,18 +39,28 @@ def plan_new_tasks() -> None:
     for feed in outdated_feeds:
         feed.update_planned = True
 
-        job = Job()
-        job.type = JobType.update
-        job.data = {"feed_id": feed.id}
-        db.session.add(job)
+        task = Task()
+        task.type = TaskType.UPDATE
+        task.data = {"feed_id": feed.id}
+
+        db.session.add(task)
 
     db.session.commit()
 
 
-def get_tasks() -> List[Job]:
-    return Job.query.filter_by(type=JobType.update,
-                               status=JobStatus.waiting).all()
+def get_tasks() -> List[Task]:
+    return Task.query.filter_by(type=TaskType.UPDATE,
+                                status=TaskStatus.QUEUED).all()
 
 
-def process_task(task: Job):
-    pass
+def process_task(task: Task):
+    try:
+        task.status = TaskStatus.FINISHED
+        db.session.commit()
+    except Exception:
+        task.status = TaskStatus.FAILED
+        db.session.commit()
+
+
+if __name__ == "__main__":
+    test()

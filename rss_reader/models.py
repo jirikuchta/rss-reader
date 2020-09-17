@@ -10,8 +10,8 @@ db = SQLAlchemy()
 
 
 class UserRole(enum.Enum):
-    admin = "admin"
-    user = "user"
+    ADMIN = "admin"
+    USER = "user"
 
 
 class User(UserMixin, db.Model):  # type: ignore
@@ -21,7 +21,7 @@ class User(UserMixin, db.Model):  # type: ignore
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum(UserRole),
-                     nullable=False, default=UserRole.user)
+                     nullable=False, default=UserRole.USER)
 
     subscriptions = db.relationship(
         "Subscription", cascade="save-update, merge, delete, delete-orphan")
@@ -180,23 +180,23 @@ class SubscriptionArticle(db.Model):  # type: ignore
             "starred": self.starred}
 
 
-class JobType(enum.Enum):
-    update = "update"
-    prune = "prune"
+class TaskType(enum.Enum):
+    UPDATE = "update"
+    PRUNE = "prune"
 
 
-class JobStatus(enum.Enum):
-    waiting = "waiting"
-    running = "running"
-    finished = "finished"
-    failed = "failed"
+class TaskStatus(enum.Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    FINISHED = "finished"
+    FAILED = "failed"
 
 
-class Job(db.Model):  # type: ignore
-    __tablename__ = "job"
+class Task(db.Model):  # type: ignore
+    __tablename__ = "task"
 
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Enum(JobType), nullable=False, index=True)
-    status = db.Column(db.Enum(JobStatus), nullable=False, index=True,
-                       default=JobStatus.waiting)
+    type = db.Column(db.Enum(TaskType), nullable=False, index=True)
+    status = db.Column(db.Enum(TaskStatus), nullable=False, index=True,
+                       default=TaskStatus.QUEUED)
     data = db.Column(db.JSON, nullable=True)
