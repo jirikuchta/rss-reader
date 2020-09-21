@@ -6,20 +6,13 @@ services:
       dockerfile: ./docker/app/Dockerfile
     volumes:
       - ./rss_reader:/rss_reader/
-    expose:
-      - 3031
-      - 9191
+    ports:
+      - 5000:5000
     environment:
       FLASK_APP: "."
       FLASK_ENV: "development"
       SECRET_KEY: "insecure"
       DATABASE_URI: "sqlite:////rss_reader/rss_reader.db"
-  nginx:
-    build:
-      context: .
-      dockerfile: ./docker/nginx/Dockerfile
-    ports:
-      - 5000:5000
   static_builder:
     build:
       context: .
