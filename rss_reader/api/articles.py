@@ -1,15 +1,15 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, SubscriptionArticle
+from rss_reader.models import db, Article
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType
 
 
-def _get_article_or_raise(article_id: int) -> SubscriptionArticle:
-    article = SubscriptionArticle.query.filter_by(
-        article_id=article_id, user_id=current_user.id).first()
+def _get_article_or_raise(article_id: int) -> Article:
+    article = Article.query.filter_by(
+        id=article_id, user_id=current_user.id).first()
 
     if not article:
         raise ClientError(ErrorType.NotFound)
@@ -21,7 +21,7 @@ def _get_article_or_raise(article_id: int) -> SubscriptionArticle:
 @make_api_response
 @require_login
 def list_articles() -> TReturnValue:
-    articles = SubscriptionArticle.query.filter_by(
+    articles = Article.query.filter_by(
         user_id=current_user.id, read=None).all()
     return [article.to_json() for article in articles], 200
 

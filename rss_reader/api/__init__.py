@@ -74,7 +74,7 @@ def require_admin_user(func: TApiMethod) -> TApiMethod:
     @wraps(func)
     @require_login
     def wrapper(*args, **kwargs) -> TReturnValue:
-        if current_user.role != UserRole.admin:
+        if current_user.role != UserRole.ADMIN:
             raise ClientError(ErrorType.Forbidden)
         return func(*args, **kwargs)
     return cast(TApiMethod, wrapper)

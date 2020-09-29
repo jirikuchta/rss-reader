@@ -1,17 +1,16 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, Feed, Subscription, \
-    SubscriptionCategory, SubscriptionArticle
+from rss_reader.models import db, Subscription, Category, Article
 from rss_reader.parser import parse
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ErrorType, ClientError, MissingFieldError, InvalidFieldError
 
 
-def _get_subscription_or_raise(feed_id: int) -> Subscription:
+def _get_subscription_or_raise(subscription_id: int) -> Subscription:
     subscription = Subscription.query.filter_by(
-        user=current_user, feed_id=feed_id).first()
+        id=subscription_id, user=current_user).first()
 
     if not subscription:
         raise ClientError(ErrorType.NotFound)
@@ -36,28 +35,21 @@ def create_subscription() -> TReturnValue:
     except Exception:
         raise ClientError(ErrorType.ParserError)
 
-    feed = Feed.query.filter_by(uri=uri).first()
-
-    if feed is not None:
-        already_subscribed = bool(Subscription.query.filter_by(
-            user=current_user, feed=feed).first())
-
-        if already_subscribed:
-            raise ClientError(ErrorType.AlreadyExists)
-
-    if feed is None:
-        feed = Feed.from_parser(parser)
+    already_subscribed = bool(Subscription.query.filter_by(
+        uri=uri, user=current_user).first())
+    if already_subscribed:
+        raise ClientError(ErrorType.AlreadyExists)
 
     category_id = request.json.get("categoryId")
     if category_id:
-        if not SubscriptionCategory.query.filter_by(
-                id=category_id, user_id=current_user.id).first():
+        category_exists = bool(Category.query.filter_by(
+            id=category_id, user_id=current_user.id).first())
+        if not category_exists:
             raise InvalidFieldError("categoryId", msg=f"category not found")
 
-    subscription = Subscription(
-        user=current_user,
-        feed=feed,
-        category_id=category_id)
+    subscription = Subscription.from_parser(parser)
+    subscription.user = current_user
+    subscription.category_id = category_id
 
     db.session.add(subscription)
     db.session.commit()
@@ -74,18 +66,18 @@ def list_subscriptions() -> TReturnValue:
     return [subscription.to_json() for subscription in subscriptions], 200
 
 
-@api.route("/subscriptions/<int:feed_id>/", methods=["GET"])
+@api.route("/subscriptions/<int:subscription_id>/", methods=["GET"])
 @make_api_response
 @require_login
-def get_subscription(feed_id: int) -> TReturnValue:
-    return _get_subscription_or_raise(feed_id).to_json(), 200
+def get_subscription(subscription_id: int) -> TReturnValue:
+    return _get_subscription_or_raise(subscription_id).to_json(), 200
 
 
-@api.route("/subscriptions/<int:feed_id>/", methods=["PATCH"])
+@api.route("/subscriptions/<int:subscription_id>/", methods=["PATCH"])
 @make_api_response
 @require_login
-def update_subscription(feed_id: int) -> TReturnValue:
-    subscription = _get_subscription_or_raise(feed_id)
+def update_subscription(subscription_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(subscription_id)
 
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -99,7 +91,7 @@ def update_subscription(feed_id: int) -> TReturnValue:
     category_id = request.json.get("categoryId")
     subscription.category_id = category_id
     if category_id:
-        if not SubscriptionCategory.query.filter_by(
+        if not Category.query.filter_by(
                 id=category_id, user_id=current_user.id).first():
             raise InvalidFieldError("categoryId", msg=f"category not found")
 
@@ -108,11 +100,11 @@ def update_subscription(feed_id: int) -> TReturnValue:
     return subscription.to_json(), 200
 
 
-@api.route("/subscriptions/<int:feed_id>/", methods=["DELETE"])
+@api.route("/subscriptions/<int:subscription_id>/", methods=["DELETE"])
 @make_api_response
 @require_login
-def delete_subscription(feed_id: int) -> TReturnValue:
-    subscription = _get_subscription_or_raise(feed_id)
+def delete_subscription(subscription_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(subscription_id)
 
     db.session.delete(subscription)
     db.session.commit()
@@ -120,25 +112,25 @@ def delete_subscription(feed_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/subscriptions/<int:feed_id>/articles/", methods=["GET"])
+@api.route("/subscriptions/<int:subscription_id>/articles/", methods=["GET"])
 @make_api_response
 @require_login
-def list_subscription_articles(feed_id: int) -> TReturnValue:
-    subscription = _get_subscription_or_raise(feed_id)
-    articles = SubscriptionArticle.query.filter_by(
+def list_subscription_articles(subscription_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(subscription_id)
+    articles = Article.query.filter_by(
         subscription=subscription).all()
     return [article.to_json() for article in articles], 200
 
 
-@api.route("/subscriptions/<int:feed_id>/read/", methods=["PUT"])
+@api.route("/subscriptions/<int:subscription_id>/read/", methods=["PUT"])
 @make_api_response
 @require_login
-def mark_subscription_read(feed_id: int) -> TReturnValue:
-    subscription = _get_subscription_or_raise(feed_id)
+def mark_subscription_read(subscription_id: int) -> TReturnValue:
+    subscription = _get_subscription_or_raise(subscription_id)
 
-    SubscriptionArticle.query \
+    Article.query \
         .filter_by(subscription=subscription) \
-        .update({SubscriptionArticle.read: db.func.now()},
+        .update({Article.read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()

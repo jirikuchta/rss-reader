@@ -4,9 +4,8 @@ import string
 from xml.etree import ElementTree as ET
 
 from rss_reader import create_app, db
-from rss_reader.models import User, UserRole, Feed, Subscription
+from rss_reader.models import User, UserRole
 from rss_reader.parser.common import NS
-from rss_reader.parser.rss import RSSParser
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
@@ -17,11 +16,11 @@ TestUsers = {
     "admin": {
         "username": "admin",
         "password": "admin",
-        "role": UserRole.admin},
+        "role": UserRole.ADMIN},
     "user": {
         "username": "user",
         "password": "user",
-        "role": UserRole.user}}
+        "role": UserRole.USER}}
 
 
 @pytest.fixture(scope="session")
@@ -139,20 +138,6 @@ def create_db(app):
         db.create_all()
         db.session.add(User(**TestUsers["admin"]))
         db.session.add(User(**TestUsers["user"]))
-
-        # fill some random data
-        hidden_user_1 = User(username=generate_str(), password=generate_str())
-        hidden_user_2 = User(username=generate_str(), password=generate_str())
-        shared_feed = Feed.from_parser(RSSParser(generate_feed().build()))
-        db.session.add(Subscription(user=hidden_user_1, feed=shared_feed))
-        db.session.add(Subscription(user=hidden_user_2, feed=shared_feed))
-        db.session.add(Subscription(
-            user=hidden_user_1,
-            feed=Feed.from_parser(RSSParser(generate_feed().build()))))
-        db.session.add(Subscription(
-            user=hidden_user_2,
-            feed=Feed.from_parser(RSSParser(generate_feed().build()))))
-
         db.session.commit()
 
 

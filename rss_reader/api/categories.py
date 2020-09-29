@@ -1,14 +1,14 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, SubscriptionCategory, SubscriptionArticle
+from rss_reader.models import db, Category, Article
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
 
 
-def _get_category_or_raise(category_id: int) -> SubscriptionCategory:
-    category = SubscriptionCategory.query.filter_by(
+def _get_category_or_raise(category_id: int) -> Category:
+    category = Category.query.filter_by(
         id=category_id, user_id=current_user.id).first()
 
     if not category:
@@ -29,11 +29,10 @@ def create_category() -> TReturnValue:
     if not title:
         raise MissingFieldError("title")
 
-    if SubscriptionCategory.query.filter_by(
-            title=title, user_id=current_user.id).first():
+    if Category.query.filter_by(title=title, user_id=current_user.id).first():
         raise ClientError(ErrorType.AlreadyExists)
 
-    category = SubscriptionCategory(title=title, user_id=current_user.id)
+    category = Category(title=title, user_id=current_user.id)
 
     db.session.add(category)
     db.session.commit()
@@ -45,7 +44,7 @@ def create_category() -> TReturnValue:
 @make_api_response
 @require_login
 def list_categories() -> TReturnValue:
-    categories = SubscriptionCategory.query.filter_by(
+    categories = Category.query.filter_by(
         user_id=current_user.id).all()
     return [category.to_json() for category in categories], 200
 
@@ -69,7 +68,7 @@ def update_category(category_id: int) -> TReturnValue:
     title = request.json.get("title")
 
     if title and title != category.title:
-        title_exists = SubscriptionCategory.query.filter_by(
+        title_exists = Category.query.filter_by(
             title=title, user_id=current_user.id).first()
         if title_exists:
             raise ClientError(ErrorType.AlreadyExists)
@@ -97,10 +96,10 @@ def delete_category(category_id: int) -> TReturnValue:
 @require_login
 def list_category_articles(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
-    feed_ids = [s.feed_id for s in category.subscriptions]
+    subscription_ids = [s.id for s in category.subscriptions]
 
-    articles = SubscriptionArticle.query.filter(
-        SubscriptionArticle.feed_id.in_(feed_ids)).all()
+    articles = Article.query.filter(
+        Article.subscription_id.in_(subscription_ids)).all()
 
     return [article.to_json() for article in articles], 200
 
@@ -110,11 +109,11 @@ def list_category_articles(category_id: int) -> TReturnValue:
 @require_login
 def mark_category_read(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
-    feed_ids = [s.feed_id for s in category.subscriptions]
+    subscription_ids = [s.id for s in category.subscriptions]
 
-    SubscriptionArticle.query \
-        .filter(SubscriptionArticle.feed_id.in_(feed_ids)) \
-        .update({SubscriptionArticle.read: db.func.now()},
+    Article.query \
+        .filter(Article.subscription_id.in_(subscription_ids)) \
+        .update({Article.read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()
