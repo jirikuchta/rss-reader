@@ -10,7 +10,8 @@ class TestAPISubscribe:
         assert res.status_code == 201
         assert res.json["id"] is not None
         assert res.json["title"] == feed_server.feed.title
-        assert res.json["feed_url"] == feed_server.feed.link
+        assert res.json["web_url"] == feed_server.feed.link
+        assert res.json["feed_url"] == feed_server.url
         assert res.json["category_id"] == category["id"]
 
     def test_as_anonymous(self, as_anonymous):

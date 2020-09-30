@@ -74,8 +74,8 @@ class Subscription(db.Model):  # type: ignore
     def from_parser(cls, parser, user_id):
         return cls(
             title=parser.title,
-            feed_url=parser.link,
-            web_url=parser.link,
+            feed_url=parser.feed_url,
+            web_url=parser.web_url,
             user_id=user_id)
 
     def to_json(self):

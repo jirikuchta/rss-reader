@@ -31,12 +31,11 @@ def create_subscription() -> TReturnValue:
 
     try:
         parser = parse(feed_url)
-        feed_url = parser.link
     except Exception:
         raise ClientError(ErrorType.ParserError)
 
     already_subscribed = bool(Subscription.query.filter_by(
-        feed_url=feed_url, user_id=current_user.id).first())
+        feed_url=parser.feed_url, user_id=current_user.id).first())
     if already_subscribed:
         raise ClientError(ErrorType.AlreadyExists)
 
@@ -50,6 +49,7 @@ def create_subscription() -> TReturnValue:
     subscription = Subscription.from_parser(parser, current_user.id)
     subscription.user = current_user
     subscription.category_id = category_id
+
     db.session.add(subscription)
     db.session.flush()
 

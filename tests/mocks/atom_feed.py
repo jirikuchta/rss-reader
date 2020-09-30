@@ -9,10 +9,10 @@ class MockAtomFeed:
     def __init__(
             self,
             title: Optional[str],
-            link: Optional["MockAtomLink"] = None,
+            links: Optional[List["MockAtomLink"]] = None,
             items: List["MockAtomFeedItem"] = None) -> None:
         self.title = title
-        self.link = link
+        self.links = [] if links is None else links
         self.items = [] if items is None else items
 
     def build(self) -> ET.Element:
@@ -22,8 +22,8 @@ class MockAtomFeed:
             title = ET.SubElement(root, "title")
             title.text = self.title
 
-        if self.link is not None:
-            root.append(self.link.build())
+        for link in self.links:
+            root.append(link.build())
 
         for item in self.items:
             root.append(item.build())

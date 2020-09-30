@@ -12,7 +12,8 @@ class TestAPIListSubscriptions:
         assert len(res.json) == 1
         assert res.json[0]["id"] is not None
         assert res.json[0]["title"] == feed_server.feed.title
-        assert res.json[0]["feed_url"] == feed_server.feed.link
+        assert res.json[0]["web_url"] == feed_server.feed.link
+        assert res.json[0]["feed_url"] == feed_server.url
 
     def test_as_anonymous(self, as_anonymous):
         res = as_anonymous.get("/api/subscriptions/")

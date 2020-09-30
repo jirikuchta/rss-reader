@@ -42,6 +42,10 @@ class FeedParser(ABC, Generic[TFeedItemParser]):
     def feed_type(self) -> FeedType:
         pass
 
+    @property
+    def feed_url(self) -> str:
+        pass
+
 
 class FeedItemParser(ABC):
 

@@ -9,26 +9,31 @@ from rss_reader.parser.common import FeedType, FeedParser, FeedItemParser, \
 
 class AtomParser(FeedParser["AtomItemParser"]):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, feed_url: str) -> None:
         self._node = node
+        self._feed_url = get_link_href_attr(node, ["self"]) or feed_url
 
         title = get_child_node_text(node, "title")
         if title is None:
             raise_required_elm_missing_error("title", "feed")
         self._title = title
 
-        link = get_link_href_attr(self._node, [None, "alternate"])
-        if link is None:
-            raise_required_elm_missing_error("link", "entry")
-        self._link = link
+        web_url = get_link_href_attr(self._node, [None, "alternate"])
+        if web_url is None:
+            raise_required_elm_missing_error("link", "feed")
+        self._web_url = web_url
 
     @property
     def title(self) -> str:
         return self._title
 
     @property
-    def link(self) -> str:
-        return self._link
+    def feed_url(self) -> FeedType:
+        return self._feed_url
+
+    @property
+    def web_url(self) -> str:
+        return self._web_url
 
     @property
     def items(self) -> List["AtomItemParser"]:

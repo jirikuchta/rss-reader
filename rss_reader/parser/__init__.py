@@ -6,13 +6,13 @@ from rss_reader.parser.atom import AtomParser
 from rss_reader.parser.rss import RSSParser
 
 
-def parse(uri: str) -> FeedParser:
-    with urllib.request.urlopen(uri) as response:
+def parse(feed_url: str) -> FeedParser:
+    with urllib.request.urlopen(feed_url) as response:
         content = response.read()
 
     root = ET.fromstring(content)
 
     if root.tag == "rss":
-        return RSSParser(root)
+        return RSSParser(root, feed_url)
     else:
-        return AtomParser(root)
+        return AtomParser(root, feed_url)
