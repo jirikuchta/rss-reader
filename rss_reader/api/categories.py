@@ -1,7 +1,7 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, Category, Article
+from rss_reader.models import db, Category, Article, Subscription
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
@@ -109,7 +109,9 @@ def list_category_articles(category_id: int) -> TReturnValue:
 @require_login
 def mark_category_read(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
-    subscription_ids = [s.id for s in category.subscriptions]
+    subscription_ids = [
+        subscription.id for subscription in
+        Subscription.query.filter_by(category_id=category.id).all()]
 
     Article.query \
         .filter(Article.subscription_id.in_(subscription_ids)) \

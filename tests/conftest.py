@@ -90,8 +90,8 @@ def create_user(as_admin):
 def create_subscription(feed_server):
     def wrapper(client, category_id=None):
         res = client.post("/api/subscriptions/", json={
-            "uri": feed_server.url,
-            "categoryId": category_id})
+            "feed_url": feed_server.url,
+            "category_id": category_id})
         assert res.status_code == 201, res
         return res.json
     return wrapper

@@ -6,11 +6,11 @@ class TestAPIUpdateSubscription:
 
         res = as_user.patch(
             f"/api/subscriptions/{subscription['id']}/",
-            json={"categoryId": category["id"], "title": rand_str})
+            json={"category_id": category["id"], "title": rand_str})
 
         assert res.status_code == 200, res
         assert res.json["title"] == rand_str
-        assert res.json["categoryId"] == category["id"]
+        assert res.json["category_id"] == category["id"]
 
     def test_category_not_found(
             self, create_category, create_subscription, as_user, as_admin):
@@ -19,11 +19,11 @@ class TestAPIUpdateSubscription:
 
         res = as_user.patch(
             f"/api/subscriptions/{subscription['id']}/",
-            json={"categoryId": not_owned_category["id"]})
+            json={"category_id": not_owned_category["id"]})
 
         assert res.status_code == 400, res
         assert res.json["error"]["code"] == "invalid_field"
-        assert res.json["error"]["field"] == "categoryId"
+        assert res.json["error"]["field"] == "category_id"
         assert res.json["error"]["msg"] == "category not found"
 
     def test_as_anonymous(self, as_anonymous):

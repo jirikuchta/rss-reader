@@ -39,7 +39,7 @@ async function build() {
 
 	let uncategorized = html.node("ul", {}, "", node);
 	subscriptions.list()
-		.filter(s => s.categoryId == null)
+		.filter(s => s.category_id == null)
 		.forEach(s => uncategorized.appendChild(buildItem(s)));
 }
 
@@ -48,7 +48,7 @@ function buildCategory(category: Category) {
 	list.appendChild(buildItem(category));
 
 	subscriptions.list()
-		.filter(s => s.categoryId == category.id)
+		.filter(s => s.category_id == category.id)
 		.forEach(s => list.appendChild(buildItem(s)))
 
 	return list;

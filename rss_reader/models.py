@@ -1,6 +1,6 @@
 import enum
 
-from flask_login import UserMixin, current_user
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 
 from werkzeug.security import generate_password_hash
@@ -20,14 +20,7 @@ class User(UserMixin, db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum(UserRole),
-                     nullable=False, default=UserRole.USER)
-
-    subscriptions = db.relationship(
-        "Subscription", cascade="save-update, merge, delete, delete-orphan")
-
-    categories = db.relationship(
-        "Category", cascade="save-update, merge, delete, delete-orphan")
+    role = db.Column(db.Enum(UserRole), nullable=False, default=UserRole.USER)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -45,12 +38,10 @@ class Category(db.Model):  # type: ignore
     __table_args__ = (db.UniqueConstraint("user_id", "title"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("user.id", ondelete="CASCADE"),
-                        nullable=False)
     title = db.Column(db.Text, nullable=False)
-
-    subscriptions = db.relationship("Subscription")
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     def to_json(self):
         return {
@@ -60,42 +51,40 @@ class Category(db.Model):  # type: ignore
 
 class Subscription(db.Model):  # type: ignore
     __tablename__ = "subscription"
-    __table_args__ = (db.UniqueConstraint("user_id", "uri"),)
+    __table_args__ = (db.UniqueConstraint("user_id", "feed_url"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer,
-                        db.ForeignKey("user.id", ondelete="CASCADE"),
-                        nullable=False)
-    uri = db.Column(db.String(255), nullable=False)
-    category_id = db.Column(db.Integer,
-                            db.ForeignKey("category.id",
-                                          ondelete="SET NULL"),
-                            nullable=True)
     title = db.Column(db.Text, nullable=False)
-    update_planned = db.Column(db.Boolean, index=True, nullable=False,
-                               default=False)
-    time_last_updated = db.Column(db.DateTime, nullable=True, index=True)
-
-    user = db.relationship("User", back_populates="subscriptions")
-
-    articles = db.relationship(
-        "Article", back_populates="subscription",
-        cascade="save-update, merge, delete, delete-orphan")
+    feed_url = db.Column(db.String(255), nullable=False)
+    web_url = db.Column(db.String(255), nullable=False)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    category_id = db.Column(
+        db.Integer,
+        db.ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
+    update_planned = db.Column(
+        db.Boolean,
+        index=True, nullable=False, default=False)
+    time_last_updated = db.Column(
+        db.DateTime,
+        index=True, nullable=True)
 
     @classmethod
-    def from_parser(cls, parser):
+    def from_parser(cls, parser, user_id):
         return cls(
-            user_id=current_user.id,
-            uri=parser.link,
             title=parser.title,
-            articles=[Article.from_parser(item) for item in parser.items])
+            feed_url=parser.link,
+            web_url=parser.link,
+            user_id=user_id)
 
     def to_json(self):
         return {
             "id": self.id,
             "title": self.title,
-            "uri": self.uri,
-            "categoryId": self.category_id}
+            "feed_url": self.feed_url,
+            "web_url": self.web_url,
+            "category_id": self.category_id}
 
 
 class Article(db.Model):  # type: ignore
@@ -103,14 +92,6 @@ class Article(db.Model):  # type: ignore
     __table_args__ = (db.UniqueConstraint("subscription_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    subscription_id = db.Column(
-        db.Integer,
-        db.ForeignKey("subscription.id", ondelete="CASCADE"),
-        nullable=False)
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"),
-        nullable=False)
     guid = db.Column(db.String(255), nullable=False, index=True)
     title = db.Column(db.Text, nullable=False)
     uri = db.Column(db.String(255), nullable=False)
@@ -120,20 +101,25 @@ class Article(db.Model):  # type: ignore
     author = db.Column(db.String(255))
     read = db.Column(db.DateTime, nullable=True, index=True)
     starred = db.Column(db.DateTime, nullable=True, index=True)
-
-    subscription = db.relationship("Subscription", back_populates="articles")
+    subscription_id = db.Column(
+        db.Integer,
+        db.ForeignKey("subscription.id", ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     @classmethod
-    def from_parser(cls, parser):
+    def from_parser(cls, parser, subscription_id, user_id):
         return cls(
-            user_id=current_user.id,
             guid=parser.id,
             title=parser.title,
             uri=parser.link,
             summary=parser.summary,
             content=parser.content,
             comments_uri=parser.comments_link,
-            author=parser.author)
+            author=parser.author,
+            user_id=user_id,
+            subscription_id=subscription_id)
 
     def to_json(self):
         return {

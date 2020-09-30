@@ -9,12 +9,12 @@ export type SubscriptionId = number;
 export interface Subscription {
 	id: SubscriptionId;
 	title: string;
-	uri: string;
-	categoryId?: CategoryId;
+	feed_url: string;
+	category_id?: CategoryId;
 }
 
 export function isSubscription(entity: Category | Subscription) {
-	return (entity as Subscription).uri != undefined
+	return (entity as Subscription).feed_url != undefined
 }
 
 export function init() {

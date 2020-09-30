@@ -10,7 +10,7 @@ export default class SubscriptionForm {
 	node!: HTMLFormElement;
 	submitBtn!: HTMLButtonElement;
 	_title!: HTMLInputElement;
-	_uri!: HTMLInputElement;
+	_url!: HTMLInputElement;
 	_category!: HTMLInputElement;
 	_subscription?: Subscription;
 
@@ -26,8 +26,8 @@ export default class SubscriptionForm {
 
 			let data: Partial<Subscription> = {
 				title: this._title.value,
-				uri: this._uri.value,
-				categoryId: (await getCategory(this._category.value))?.id
+				feed_url: this._url.value,
+				category_id: (await getCategory(this._category.value))?.id
 			};
 
 			let res: ApiResponse;
@@ -52,19 +52,19 @@ export default class SubscriptionForm {
 		this.submitBtn.setAttribute("form", this.node.id);
 
 		this._title = html.node("input", {type: "text", required: "true"});
-		this._uri = html.node("input", {type: "url", required: "true"});
+		this._url = html.node("input", {type: "url", required: "true"});
 		this._category = html.node("input", {type: "text"});
 
 		if (this._subscription) {
 			this._title.value = this._subscription.title;
-			this._uri.value = this._subscription.uri;
-			this._uri.disabled = true;
-			let catTitle = categories.list().find(c => c.id == this._subscription?.categoryId)?.title;
+			this._url.value = this._subscription.feed_url;
+			this._url.disabled = true;
+			let catTitle = categories.list().find(c => c.id == this._subscription?.category_id)?.title;
 			catTitle && (this._category.value = catTitle);
 		}
 
 		this._subscription && this.node.appendChild(labelInput("Title", this._title));
-		this.node.appendChild(labelInput("Feed URL", this._uri));
+		this.node.appendChild(labelInput("Feed URL", this._url));
 		this.node.appendChild(labelInput("Category", this._category));
 
 		let categoryList = buildCategoryList();
@@ -79,16 +79,16 @@ export default class SubscriptionForm {
 			case "missing_field":
 				let msg = "Please fill out this field.";
 				res.error.field == "title" && this._title.setCustomValidity(msg);
-				res.error.field == "uri" && this._uri.setCustomValidity(msg);
+				res.error.field == "uri" && this._url.setCustomValidity(msg);
 			break;
 			case "invalid_field":
 				res.error.field == "categoryId" && this._category.setCustomValidity("Category not found.");
 			break;
 			case "parser_error":
-				this._uri.setCustomValidity("No valid RSS/Atom feed found.");
+				this._url.setCustomValidity("No valid RSS/Atom feed found.");
 			break;
 			case "already_exists":
-				this._uri.setCustomValidity("You are already subscribed to this feed.");
+				this._url.setCustomValidity("You are already subscribed to this feed.");
 			break;
 		}
 
@@ -98,7 +98,7 @@ export default class SubscriptionForm {
 
 	_clearValidation() {
 		this._title.setCustomValidity("");
-		this._uri.setCustomValidity("");
+		this._url.setCustomValidity("");
 		this._category.setCustomValidity("");
 	}
 }

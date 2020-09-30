@@ -21,9 +21,9 @@ class TestAPIDeleteCategory:
         category = create_category(as_user)
 
         res = as_user.post("/api/subscriptions/", json={
-            "uri": feed_server.url, "categoryId": category["id"]})
+            "feed_url": feed_server.url, "category_id": category["id"]})
         assert res.status_code == 201, res
-        assert res.json["categoryId"] == category["id"]
+        assert res.json["category_id"] == category["id"]
         subscription = res.json
 
         res = as_user.delete(f"/api/categories/{category['id']}/")
@@ -31,4 +31,4 @@ class TestAPIDeleteCategory:
 
         res = as_user.get(f"/api/subscriptions/{subscription['id']}/")
         assert res.status_code == 200, res
-        assert res.json["categoryId"] is None
+        assert res.json["category_id"] is None

@@ -7,7 +7,7 @@ class TestAPIGetSubscription:
         assert res.json is not None
         assert res.json["id"] == subscription["id"]
         assert res.json["title"] == subscription["title"]
-        assert res.json["uri"] == subscription["uri"]
+        assert res.json["feed_url"] == subscription["feed_url"]
 
     def test_as_anonymous(self, as_anonymous):
         res = as_anonymous.get("/api/subscriptions/1234/")
