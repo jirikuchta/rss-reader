@@ -30,7 +30,7 @@ function subscribe(message, subscriber) {
 
 let subscriptions;
 function isSubscription(entity) {
-    return entity.uri != undefined;
+    return entity.feed_url != undefined;
 }
 function init() {
     return sync();
@@ -240,8 +240,8 @@ class SubscriptionForm {
             e.preventDefault();
             let data = {
                 title: this._title.value,
-                uri: this._uri.value,
-                categoryId: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
+                feed_url: this._url.value,
+                category_id: (_a = (await getCategory(this._category.value))) === null || _a === void 0 ? void 0 : _a.id
             };
             let res;
             if (this._subscription) {
@@ -262,17 +262,17 @@ class SubscriptionForm {
         this.submitBtn = button({ type: "submit" }, "Submit");
         this.submitBtn.setAttribute("form", this.node.id);
         this._title = node("input", { type: "text", required: "true" });
-        this._uri = node("input", { type: "url", required: "true" });
+        this._url = node("input", { type: "url", required: "true" });
         this._category = node("input", { type: "text" });
         if (this._subscription) {
             this._title.value = this._subscription.title;
-            this._uri.value = this._subscription.uri;
-            this._uri.disabled = true;
-            let catTitle = (_a = list$1().find(c => { var _a; return c.id == ((_a = this._subscription) === null || _a === void 0 ? void 0 : _a.categoryId); })) === null || _a === void 0 ? void 0 : _a.title;
+            this._url.value = this._subscription.feed_url;
+            this._url.disabled = true;
+            let catTitle = (_a = list$1().find(c => { var _a; return c.id == ((_a = this._subscription) === null || _a === void 0 ? void 0 : _a.category_id); })) === null || _a === void 0 ? void 0 : _a.title;
             catTitle && (this._category.value = catTitle);
         }
         this._subscription && this.node.appendChild(labelInput("Title", this._title));
-        this.node.appendChild(labelInput("Feed URL", this._uri));
+        this.node.appendChild(labelInput("Feed URL", this._url));
         this.node.appendChild(labelInput("Category", this._category));
         let categoryList = buildCategoryList();
         this._category.setAttribute("list", categoryList.id);
@@ -285,16 +285,16 @@ class SubscriptionForm {
             case "missing_field":
                 let msg = "Please fill out this field.";
                 res.error.field == "title" && this._title.setCustomValidity(msg);
-                res.error.field == "uri" && this._uri.setCustomValidity(msg);
+                res.error.field == "uri" && this._url.setCustomValidity(msg);
                 break;
             case "invalid_field":
                 res.error.field == "categoryId" && this._category.setCustomValidity("Category not found.");
                 break;
             case "parser_error":
-                this._uri.setCustomValidity("No valid RSS/Atom feed found.");
+                this._url.setCustomValidity("No valid RSS/Atom feed found.");
                 break;
             case "already_exists":
-                this._uri.setCustomValidity("You are already subscribed to this feed.");
+                this._url.setCustomValidity("You are already subscribed to this feed.");
                 break;
         }
         this.node.classList.toggle("invalid", !this.node.checkValidity());
@@ -302,7 +302,7 @@ class SubscriptionForm {
     }
     _clearValidation() {
         this._title.setCustomValidity("");
-        this._uri.setCustomValidity("");
+        this._url.setCustomValidity("");
         this._category.setCustomValidity("");
     }
 }
@@ -590,14 +590,14 @@ async function build$1() {
         .forEach(cat => node$2.appendChild(buildCategory(cat)));
     let uncategorized = node("ul", {}, "", node$2);
     list()
-        .filter(s => s.categoryId == null)
+        .filter(s => s.category_id == null)
         .forEach(s => uncategorized.appendChild(buildItem$1(s)));
 }
 function buildCategory(category) {
     let list$1 = node("ul");
     list$1.appendChild(buildItem$1(category));
     list()
-        .filter(s => s.categoryId == category.id)
+        .filter(s => s.category_id == category.id)
         .forEach(s => list$1.appendChild(buildItem$1(s)));
     return list$1;
 }

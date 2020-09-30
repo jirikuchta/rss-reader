@@ -1,3 +1,4 @@
+from typing import List
 from flask import request
 from flask_login import current_user
 
@@ -15,6 +16,10 @@ def _get_category_or_raise(category_id: int) -> Category:
         raise ClientError(ErrorType.NotFound)
 
     return category
+
+
+def _get_category_subscriptions(category: Category) -> List[Subscription]:
+    return Subscription.query.filter_by(category_id=category.id).all()
 
 
 @api.route("/categories/", methods=["POST"])
@@ -96,7 +101,7 @@ def delete_category(category_id: int) -> TReturnValue:
 @require_login
 def list_category_articles(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
-    subscription_ids = [s.id for s in category.subscriptions]
+    subscription_ids = [s.id for s in _get_category_subscriptions(category)]
 
     articles = Article.query.filter(
         Article.subscription_id.in_(subscription_ids)).all()
@@ -109,9 +114,7 @@ def list_category_articles(category_id: int) -> TReturnValue:
 @require_login
 def mark_category_read(category_id: int) -> TReturnValue:
     category = _get_category_or_raise(category_id)
-    subscription_ids = [
-        subscription.id for subscription in
-        Subscription.query.filter_by(category_id=category.id).all()]
+    subscription_ids = [s.id for s in _get_category_subscriptions(category)]
 
     Article.query \
         .filter(Article.subscription_id.in_(subscription_ids)) \

@@ -124,7 +124,7 @@ def delete_subscription(subscription_id: int) -> TReturnValue:
 def list_subscription_articles(subscription_id: int) -> TReturnValue:
     subscription = _get_subscription_or_raise(subscription_id)
     articles = Article.query.filter_by(
-        subscription=subscription).all()
+        subscription_id=subscription.id).all()
     return [article.to_json() for article in articles], 200
 
 
