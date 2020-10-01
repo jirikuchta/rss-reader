@@ -8,11 +8,12 @@ from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
 
 
-def _get_category_or_raise(category_id: int) -> Category:
+def _get_category(category_id: int,
+                  raise_if_not_found: bool = True) -> Category:
     category = Category.query.filter_by(
         id=category_id, user_id=current_user.id).first()
 
-    if not category:
+    if not category and raise_if_not_found:
         raise ClientError(ErrorType.NotFound)
 
     return category
@@ -58,14 +59,14 @@ def list_categories() -> TReturnValue:
 @make_api_response
 @require_login
 def get_category(category_id: int) -> TReturnValue:
-    return _get_category_or_raise(category_id).to_json(), 200
+    return _get_category(category_id).to_json(), 200
 
 
 @api.route("/categories/<int:category_id>/", methods=["PATCH"])
 @make_api_response
 @require_login
 def update_category(category_id: int) -> TReturnValue:
-    category = _get_category_or_raise(category_id)
+    category = _get_category(category_id)
 
     if request.json is None:
         raise ClientError(ErrorType.BadRequest)
@@ -88,7 +89,7 @@ def update_category(category_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def delete_category(category_id: int) -> TReturnValue:
-    category = _get_category_or_raise(category_id)
+    category = _get_category(category_id)
 
     db.session.delete(category)
     db.session.commit()
@@ -100,7 +101,7 @@ def delete_category(category_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def list_category_articles(category_id: int) -> TReturnValue:
-    category = _get_category_or_raise(category_id)
+    category = _get_category(category_id)
     subscription_ids = [s.id for s in _get_category_subscriptions(category)]
 
     articles = Article.query.filter(
@@ -113,7 +114,7 @@ def list_category_articles(category_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def mark_category_read(category_id: int) -> TReturnValue:
-    category = _get_category_or_raise(category_id)
+    category = _get_category(category_id)
     subscription_ids = [s.id for s in _get_category_subscriptions(category)]
 
     Article.query \

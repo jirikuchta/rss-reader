@@ -155,4 +155,4 @@ def generate_feed():
             link=f"http://{generate_str()}",
             guid=MockRSSFeedItemGUID(value=generate_str()),
             description=generate_str(100))
-            for i in range(random.randrange(10))])
+            for i in range(random.randrange(1, 10))])

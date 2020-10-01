@@ -55,7 +55,7 @@ class Subscription(db.Model):  # type: ignore
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, nullable=False)
-    feed_url = db.Column(db.String(255), nullable=False)
+    feed_url = db.Column(db.String(255), nullable=False, index=True)
     web_url = db.Column(db.String(255), nullable=False)
     user_id = db.Column(
         db.Integer,
@@ -71,12 +71,8 @@ class Subscription(db.Model):  # type: ignore
         index=True, nullable=True)
 
     @classmethod
-    def from_parser(cls, parser, user_id):
-        return cls(
-            title=parser.title,
-            feed_url=parser.feed_url,
-            web_url=parser.web_url,
-            user_id=user_id)
+    def from_parser(cls, parser, **kwargs):
+        return cls(title=parser.title, web_url=parser.web_url, **kwargs)
 
     def to_json(self):
         return {
@@ -109,7 +105,7 @@ class Article(db.Model):  # type: ignore
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     @classmethod
-    def from_parser(cls, parser, subscription_id, user_id):
+    def from_parser(cls, parser, **kwargs):
         return cls(
             guid=parser.id,
             title=parser.title,
@@ -118,8 +114,7 @@ class Article(db.Model):  # type: ignore
             content=parser.content,
             comments_uri=parser.comments_link,
             author=parser.author,
-            user_id=user_id,
-            subscription_id=subscription_id)
+            **kwargs)
 
     def to_json(self):
         return {

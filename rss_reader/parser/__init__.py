@@ -13,6 +13,6 @@ def parse(feed_url: str) -> FeedParser:
     root = ET.fromstring(content)
 
     if root.tag == "rss":
-        return RSSParser(root, feed_url)
+        return RSSParser(root)
     else:
-        return AtomParser(root, feed_url)
+        return AtomParser(root)

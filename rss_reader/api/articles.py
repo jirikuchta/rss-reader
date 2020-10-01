@@ -7,11 +7,11 @@ from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType
 
 
-def _get_article_or_raise(article_id: int) -> Article:
+def _get_article(article_id: int, raise_if_not_found: bool = True) -> Article:
     article = Article.query.filter_by(
         id=article_id, user_id=current_user.id).first()
 
-    if not article:
+    if not article and raise_if_not_found:
         raise ClientError(ErrorType.NotFound)
 
     return article
@@ -30,14 +30,14 @@ def list_articles() -> TReturnValue:
 @make_api_response
 @require_login
 def get_article(article_id: int) -> TReturnValue:
-    return _get_article_or_raise(article_id).to_json(), 200
+    return _get_article(article_id).to_json(), 200
 
 
 @api.route("/articles/<int:article_id>/read/", methods=["PUT", "DELETE"])
 @make_api_response
 @require_login
 def toggle_article_read(article_id: int) -> TReturnValue:
-    article = _get_article_or_raise(article_id)
+    article = _get_article(article_id)
 
     article.read = db.func.now() if request.method == "PUT" else None
     db.session.commit()
@@ -49,7 +49,7 @@ def toggle_article_read(article_id: int) -> TReturnValue:
 @make_api_response
 @require_login
 def toggle_article_star(article_id: int) -> TReturnValue:
-    article = _get_article_or_raise(article_id)
+    article = _get_article(article_id)
 
     article.starred = db.func.now() if request.method == "PUT" else None
     db.session.commit()

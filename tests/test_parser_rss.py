@@ -9,47 +9,46 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
 
 class TestParserRSS:
 
-    def test_feed_type(self, feed_server) -> None:
+    def test_feed_type(self) -> None:
         feed = MockRSSFeed(title="", link="")
-        parser = RSSParser(feed.build(), feed_server.url)
-        assert parser.feed_type == FeedType.RSS
+        assert RSSParser(feed.build()).feed_type == FeedType.RSS
 
-    def test_title(self, feed_server) -> None:
+    def test_title(self) -> None:
         feed = MockRSSFeed(title=None, link="")
 
         with pytest.raises(ParserError):
-            RSSParser(feed.build(), feed_server.url)
+            RSSParser(feed.build())
 
         feed.title = " <b> foo </b><br/> "
-        assert RSSParser(feed.build(), feed_server.url).title == "foo"
+        assert RSSParser(feed.build()).title == "foo"
 
-    def test_web_url(self, feed_server) -> None:
+    def test_web_url(self) -> None:
         feed = MockRSSFeed(title="", link=None)
 
         with pytest.raises(ParserError):
-            RSSParser(feed.build(), feed_server.url)
+            RSSParser(feed.build())
 
         feed.link = "foo"
-        assert RSSParser(feed.build(), feed_server.url).web_url == "foo"
+        assert RSSParser(feed.build()).web_url == "foo"
 
-    def test_items(self, feed_server) -> None:
+    def test_items(self) -> None:
         feed = MockRSSFeed(title="", link="")
-        assert len(RSSParser(feed.build(), feed_server.url).items) == 0
+        assert len(RSSParser(feed.build()).items) == 0
 
         feed.items = [MockRSSFeedItem(title="", link="",
                                       guid=MockRSSFeedItemGUID(""))]
-        parser = RSSParser(feed.build(), feed_server.url)
+        parser = RSSParser(feed.build())
         assert len(parser.items) == 1
         assert type(parser.items[0]) is RSSItemParser
 
         # invalid item
         feed.items = [MockRSSFeedItem(title=None, link=None, guid=None)]
-        assert len(RSSParser(feed.build(), feed_server.url).items) == 0
+        assert len(RSSParser(feed.build()).items) == 0
 
-    def test_no_channel_error(self, feed_server) -> None:
+    def test_no_channel_error(self) -> None:
+        feed = MockRSSFeed(title="", link="", channel=False)
         with pytest.raises(ParserError):
-            feed = MockRSSFeed(title="", link="", channel=False)
-            RSSParser(feed.build(), feed_server.url)
+            RSSParser(feed.build())
 
 
 class TestParserRSSItem:

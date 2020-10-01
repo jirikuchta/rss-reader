@@ -10,9 +10,7 @@ from rss_reader.parser.common import NS, ParserError, FeedType, \
 
 class RSSParser(FeedParser["RSSItemParser"]):
 
-    def __init__(self, node: ET.Element, feed_url: str) -> None:
-        self._feed_url = feed_url
-
+    def __init__(self, node: ET.Element) -> None:
         channel_node = node.find("channel")
         if channel_node is None:
             raise_required_elm_missing_error("channel", "rss")
@@ -31,10 +29,6 @@ class RSSParser(FeedParser["RSSItemParser"]):
     @property
     def title(self) -> str:
         return self._title
-
-    @property
-    def feed_url(self) -> FeedType:
-        return self._feed_url
 
     @property
     def web_url(self) -> str:

@@ -9,9 +9,8 @@ from rss_reader.parser.common import FeedType, FeedParser, FeedItemParser, \
 
 class AtomParser(FeedParser["AtomItemParser"]):
 
-    def __init__(self, node: ET.Element, feed_url: str) -> None:
+    def __init__(self, node: ET.Element) -> None:
         self._node = node
-        self._feed_url = get_link_href_attr(node, ["self"]) or feed_url
 
         title = get_child_node_text(node, "title")
         if title is None:
@@ -28,12 +27,12 @@ class AtomParser(FeedParser["AtomItemParser"]):
         return self._title
 
     @property
-    def feed_url(self) -> FeedType:
-        return self._feed_url
-
-    @property
     def web_url(self) -> str:
         return self._web_url
+
+    @property
+    def feed_url(self) -> Optional[str]:
+        return get_link_href_attr(self._node, ["self"])
 
     @property
     def items(self) -> List["AtomItemParser"]:
@@ -43,7 +42,6 @@ class AtomParser(FeedParser["AtomItemParser"]):
             try:
                 items.append(AtomItemParser(node))
             except Exception:
-
                 pass  # TODO: log
         return items
 

@@ -9,68 +9,60 @@ from tests.mocks.atom_feed import MockAtomFeed, MockAtomFeedItem, \
 
 class TestParserAtom:
 
-    def test_feed_type(self, feed_server) -> None:
+    def test_feed_type(self) -> None:
         feed = MockAtomFeed(title="", links=[MockAtomLink(href="")])
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.feed_type == FeedType.ATOM
+        assert AtomParser(feed.build()).feed_type == FeedType.ATOM
 
-    def test_title(self, feed_server) -> None:
+    def test_title(self) -> None:
         feed = MockAtomFeed(title=None, links=[MockAtomLink(href="")])
 
         with pytest.raises(ParserError):
-            AtomParser(feed.build(), feed_server.url)
+            AtomParser(feed.build())
 
         feed.title = " <b> foo </b><br/> "
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.title == "foo"
+        assert AtomParser(feed.build()).title == "foo"
 
-    def test_web_url(self, feed_server) -> None:
+    def test_web_url(self) -> None:
         feed = MockAtomFeed(title="")
 
         with pytest.raises(ParserError):
-            AtomParser(feed.build(), feed_server.url)
-
-        feed.links = [MockAtomLink(href="foo", rel=None)]
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.web_url == "foo"
-
-        feed.links = [MockAtomLink(href="foo", rel="alternate")]
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.web_url == "foo"
+            AtomParser(feed.build())
 
         feed.links = [MockAtomLink(href="foo", rel="enclosure")]
         with pytest.raises(ParserError):
-            AtomParser(feed.build(), feed_server.url)
+            AtomParser(feed.build())
 
         feed.links = [MockAtomLink(href="foo", rel="self")]
         with pytest.raises(ParserError):
-            AtomParser(feed.build(), feed_server.url)
+            AtomParser(feed.build())
 
-    def test_feed_url(self, feed_server) -> None:
+        feed.links = [MockAtomLink(href="foo", rel=None)]
+        assert AtomParser(feed.build()).web_url == "foo"
+
+        feed.links = [MockAtomLink(href="foo", rel="alternate")]
+        assert AtomParser(feed.build()).web_url == "foo"
+
+    def test_feed_url(self) -> None:
         feed = MockAtomFeed(title="", links=[MockAtomLink(href="")])
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.feed_url == feed_server.url
+        assert AtomParser(feed.build()).feed_url is None
 
         feed.links = [MockAtomLink(href=""),
                       MockAtomLink(href="foo", rel="self")]
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert parser.feed_url == "foo"
+        assert AtomParser(feed.build()).feed_url == "foo"
 
-    def test_items(self, feed_server) -> None:
+    def test_items(self) -> None:
         feed = MockAtomFeed(title="", links=[MockAtomLink(href="")])
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert len(parser.items) == 0
+        assert len(AtomParser(feed.build()).items) == 0
 
         feed.items = [MockAtomFeedItem(item_id="", title="",
                                        link=MockAtomLink(href=""))]
-        parser = AtomParser(feed.build(), feed_server.url)
+        parser = AtomParser(feed.build())
         assert len(parser.items) == 1
         assert type(parser.items[0]) is AtomItemParser
 
         # invalid item
         feed.items = [MockAtomFeedItem(item_id=None, title=None, link=None)]
-        parser = AtomParser(feed.build(), feed_server.url)
-        assert len(parser.items) == 0
+        assert len(AtomParser(feed.build()).items) == 0
 
 
 class TestParserAtomItem:
