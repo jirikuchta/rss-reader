@@ -1,15 +1,15 @@
 class TestAPIListCategories:
 
-    def test_ok(self, create_category, as_user):
-        cat = create_category(as_user)
-        res = as_user.get(f"/api/categories/")
+    def test_ok(self, create_category, as_user_1):
+        cat = create_category(as_user_1)
+        res = as_user_1.get(f"/api/categories/")
         assert res.status_code == 200, res
         assert len(res.json) == 1
         assert res.json[0]["id"] == cat["id"]
         assert res.json[0]["title"] == cat["title"]
 
-    def test_no_category_ok(self, as_user):
-        res = as_user.get("/api/categories/")
+    def test_no_category_ok(self, as_user_1):
+        res = as_user_1.get("/api/categories/")
         assert res.status_code == 200, res
         assert len(res.json) == 0
 

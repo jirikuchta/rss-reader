@@ -1,5 +1,3 @@
-import enum
-
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 
@@ -9,28 +7,22 @@ from werkzeug.security import generate_password_hash
 db = SQLAlchemy()
 
 
-class UserRole(enum.Enum):
-    ADMIN = "admin"
-    USER = "user"
-
-
 class User(UserMixin, db.Model):  # type: ignore
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False, unique=True)
     password = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum(UserRole), nullable=False, default=UserRole.USER)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        self.password = generate_password_hash(self.password, method="sha256")
+        self.set_password(self.password)
+
+    def set_password(self, password: str) -> None:
+        self.password = generate_password_hash(password, method="sha256")
 
     def to_json(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "role": self.role.value}
+        return {"id": self.id, "username": self.username}
 
 
 class Category(db.Model):  # type: ignore

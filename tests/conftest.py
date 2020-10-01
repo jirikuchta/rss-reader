@@ -4,7 +4,7 @@ import string
 from xml.etree import ElementTree as ET
 
 from rss_reader import create_app, db
-from rss_reader.models import User, UserRole
+from rss_reader.models import User
 from rss_reader.parser.common import NS
 
 from tests.mocks.feed_server import FeedServer
@@ -13,14 +13,12 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
 
 
 TestUsers = {
-    "admin": {
-        "username": "admin",
-        "password": "admin",
-        "role": UserRole.ADMIN},
-    "user": {
-        "username": "user",
-        "password": "user",
-        "role": UserRole.USER}}
+    "user1": {
+        "username": "user1",
+        "password": "user1"},
+    "user2": {
+        "username": "user2",
+        "password": "user2"}}
 
 
 @pytest.fixture(scope="session")
@@ -37,23 +35,25 @@ def reset(app, feed_server, randomize_feed):
 
 
 @pytest.fixture(scope="session")
-def as_admin(app):
-    client = app.test_client()
-    client.post("/login/", data={
-        "username": TestUsers["admin"]["username"],
-        "password": TestUsers["admin"]["password"]
-    }, follow_redirects=True)
-    return client
+def get_client(app):
+    def wrapper(username, password):
+        client = app.test_client()
+        client.post("/login/", data={
+            "username": username,
+            "password": password
+        }, follow_redirects=True)
+        return client
+    return wrapper
 
 
 @pytest.fixture(scope="session")
-def as_user(app):
-    client = app.test_client()
-    client.post("/login/", data={
-        "username": TestUsers["user"]["username"],
-        "password": TestUsers["user"]["password"]
-    }, follow_redirects=True)
-    return client
+def as_user_1(get_client):
+    return get_client(**TestUsers["user1"])
+
+
+@pytest.fixture(scope="session")
+def as_user_2(get_client):
+    return get_client(**TestUsers["user2"])
 
 
 @pytest.fixture(scope="session")
@@ -75,14 +75,13 @@ def randomize_feed():
 
 
 @pytest.fixture(scope="session")
-def create_user(as_admin):
-    def wrapper(username=None, password=None, role=None):
-        res = as_admin.post("/api/users/", json={
-            "username": username if username else generate_str(),
-            "password": password if password else generate_str(),
-            "role": role})
-        assert res.status_code == 201, res
-        return res.json
+def create_user(app):
+    def wrapper(username, password):
+        with app.app_context():
+            user = User(username=username, password=password)
+            db.session.add(user)
+            db.session.commit()
+            return user.id
     return wrapper
 
 
@@ -108,20 +107,6 @@ def create_category():
     return wrapper
 
 
-@pytest.fixture(scope="session")
-def admin_id(as_admin):
-    res = as_admin.get("api/users/current/")
-    assert res.status_code == 200, res
-    return res.json["id"]
-
-
-@pytest.fixture(scope="session")
-def user_id(as_user):
-    res = as_user.get("api/users/current/")
-    assert res.status_code == 200, res
-    return res.json["id"]
-
-
 @pytest.fixture(scope="function")
 def rand_str():
     return generate_str()
@@ -136,8 +121,8 @@ def create_db(app):
     with app.app_context():
         db.drop_all()
         db.create_all()
-        db.session.add(User(**TestUsers["admin"]))
-        db.session.add(User(**TestUsers["user"]))
+        db.session.add(User(**TestUsers["user1"]))
+        db.session.add(User(**TestUsers["user2"]))
         db.session.commit()
 
 

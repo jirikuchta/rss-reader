@@ -5,8 +5,6 @@ from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 
-from rss_reader.models import UserRole
-
 
 TReturnValue = Tuple[Any, int]
 TApiMethod = TypeVar('TApiMethod', bound=Callable[..., TReturnValue])
@@ -21,7 +19,6 @@ class ErrorType(Enum):
     ParserError = auto()
     Unauthorized = auto()
     Forbidden = auto()
-    LastAdmin = auto()
     NotFound = auto()
     AlreadyExists = auto()
 
@@ -34,7 +31,6 @@ Errors: Dict[ErrorType, Error] = {
     ErrorType.ParserError: Error(400, "parser_error"),
     ErrorType.Unauthorized: Error(401, "unauthorized"),
     ErrorType.Forbidden: Error(403, "forbidden"),
-    ErrorType.LastAdmin: Error(403, "last_admin"),
     ErrorType.NotFound: Error(404, "not_found"),
     ErrorType.AlreadyExists: Error(409, "already_exists")}
 
@@ -66,16 +62,6 @@ def require_login(func: TApiMethod) -> TApiMethod:
     def wrapper(*args, **kwargs) -> TReturnValue:
         if not current_user.is_authenticated:
             raise ClientError(ErrorType.Unauthorized)
-        return func(*args, **kwargs)
-    return cast(TApiMethod, wrapper)
-
-
-def require_admin_user(func: TApiMethod) -> TApiMethod:
-    @wraps(func)
-    @require_login
-    def wrapper(*args, **kwargs) -> TReturnValue:
-        if current_user.role != UserRole.ADMIN:
-            raise ClientError(ErrorType.Forbidden)
         return func(*args, **kwargs)
     return cast(TApiMethod, wrapper)
 

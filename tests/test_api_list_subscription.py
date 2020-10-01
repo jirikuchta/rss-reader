@@ -1,13 +1,13 @@
 class TestAPIListSubscriptions:
 
-    def test_ok(self, as_user, feed_server, create_subscription):
-        res = as_user.get("/api/subscriptions/")
+    def test_ok(self, as_user_1, feed_server, create_subscription):
+        res = as_user_1.get("/api/subscriptions/")
         assert res.status_code == 200
         assert len(res.json) == 0
 
-        create_subscription(as_user)
+        create_subscription(as_user_1)
 
-        res = as_user.get("/api/subscriptions/")
+        res = as_user_1.get("/api/subscriptions/")
         assert res.status_code == 200
         assert len(res.json) == 1
         assert res.json[0]["id"] is not None

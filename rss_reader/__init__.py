@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from rss_reader.models import db, User, UserRole
+from rss_reader.models import db, User
 
 
 def create_app():
@@ -57,9 +57,15 @@ def create_app():
 @with_appcontext
 def create_db():
     db.create_all()
-    if User.query.filter(User.role == UserRole.ADMIN).first() is None:
-        db.session.add(User(username="admin", password="admin",
-                            role=UserRole.ADMIN))
+    db.session.commit()
+
+
+@click.command("create-user")
+@click.argument("username")
+@click.argument("password")
+@with_appcontext
+def create_user(username: str, password: str) -> None:
+    db.session.add(User(username=username, password=password))
     db.session.commit()
 
 
