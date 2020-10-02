@@ -1,5 +1,6 @@
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 
 from werkzeug.security import generate_password_hash
 
@@ -47,24 +48,24 @@ class Subscription(db.Model):  # type: ignore
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, nullable=False)
-    feed_url = db.Column(db.String(255), nullable=False, index=True)
+    feed_url = db.Column(db.String(255), nullable=False)
     web_url = db.Column(db.String(255), nullable=False)
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     category_id = db.Column(
         db.Integer,
-        db.ForeignKey("category.id", ondelete="SET NULL"), nullable=True)
-    update_planned = db.Column(
-        db.Boolean,
-        index=True, nullable=False, default=False)
-    time_last_updated = db.Column(
+        db.ForeignKey("category.id", ondelete="SET NULL"))
+    time_updated = db.Column(
         db.DateTime,
-        index=True, nullable=True)
+        index=True, server_default=func.now())
 
     @classmethod
     def from_parser(cls, parser, **kwargs):
-        return cls(title=parser.title, web_url=parser.web_url, **kwargs)
+        return cls(
+            title=parser.title,
+            web_url=parser.web_url,
+            **kwargs)
 
     def to_json(self):
         return {
@@ -77,18 +78,20 @@ class Subscription(db.Model):  # type: ignore
 
 class Article(db.Model):  # type: ignore
     __tablename__ = "article"
-    __table_args__ = (db.UniqueConstraint("subscription_id", "guid"),)
+    __table_args__ = (db.UniqueConstraint("subscription_id", "hash"),)
 
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(255), nullable=False, index=True)
+    hash = db.Column(db.String(255), nullable=False)
     title = db.Column(db.Text, nullable=False)
     uri = db.Column(db.String(255), nullable=False)
     summary = db.Column(db.Text)
     content = db.Column(db.Text)
     comments_uri = db.Column(db.String(255))
     author = db.Column(db.String(255))
-    read = db.Column(db.DateTime, nullable=True, index=True)
-    starred = db.Column(db.DateTime, nullable=True, index=True)
+    time_published = db.Column(db.DateTime)
+    time_read = db.Column(db.DateTime, index=True)
+    time_starred = db.Column(db.DateTime, index=True)
     subscription_id = db.Column(
         db.Integer,
         db.ForeignKey("subscription.id", ondelete="CASCADE"), nullable=False)
@@ -100,6 +103,7 @@ class Article(db.Model):  # type: ignore
     def from_parser(cls, parser, **kwargs):
         return cls(
             guid=parser.id,
+            hash=parser.hash,
             title=parser.title,
             uri=parser.link,
             summary=parser.summary,
@@ -117,6 +121,4 @@ class Article(db.Model):  # type: ignore
             "content": self.content,
             "comments_uri": self.comments_uri,
             "author": self.author,
-            "subscription_id": self.subscription_id,
-            "read": self.read,
-            "starred": self.starred}
+            "subscription_id": self.subscription_id}

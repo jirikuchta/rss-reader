@@ -48,6 +48,7 @@ def create_app():
     app.register_blueprint(api)
 
     app.cli.add_command(create_db)
+    app.cli.add_command(create_user)
     app.cli.add_command(drop_db)
 
     return app

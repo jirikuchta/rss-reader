@@ -1,3 +1,4 @@
+from hashlib import md5
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
@@ -54,12 +55,9 @@ class RSSItemParser(FeedItemParser):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
-        self._link = self._get_link()
-        self._title = self._get_title()
         self._id = self._get_id()
-
-        guid = get_child_node_text(node, "guid")
-        self._id = self.link if guid is None else guid
+        self._title = self._get_title()
+        self._link = self._get_link()
 
     @property
     def id(self) -> str:
@@ -68,6 +66,10 @@ class RSSItemParser(FeedItemParser):
     @property
     def title(self) -> str:
         return self._title
+
+    @property
+    def hash(self):
+        return md5(ET.tostring(self._node)).hexdigest()
 
     @property
     def link(self) -> str:

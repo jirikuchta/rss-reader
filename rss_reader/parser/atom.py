@@ -1,3 +1,4 @@
+from hashlib import md5
 from typing import List, Optional
 from xml.etree import ElementTree as ET
 
@@ -31,10 +32,6 @@ class AtomParser(FeedParser["AtomItemParser"]):
         return self._web_url
 
     @property
-    def feed_url(self) -> Optional[str]:
-        return get_link_href_attr(self._node, ["self"])
-
-    @property
     def items(self) -> List["AtomItemParser"]:
         nodes = self._node.findall("entry")
         items = []  # type List["AtomItemParser"]
@@ -48,6 +45,10 @@ class AtomParser(FeedParser["AtomItemParser"]):
     @property
     def feed_type(self) -> FeedType:
         return FeedType.ATOM
+
+    @property
+    def feed_url(self) -> Optional[str]:
+        return get_link_href_attr(self._node, ["self"])
 
 
 class AtomItemParser(FeedItemParser):
@@ -73,6 +74,10 @@ class AtomItemParser(FeedItemParser):
     @property
     def id(self) -> str:
         return self._id
+
+    @property
+    def hash(self):
+        return md5(ET.tostring(self._node)).hexdigest()
 
     @property
     def title(self) -> str:

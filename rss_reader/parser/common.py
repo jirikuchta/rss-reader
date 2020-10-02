@@ -35,10 +35,6 @@ class FeedParser(ABC, Generic[TFeedItemParser]):
         pass
 
     @property
-    def feed_url(self) -> Optional[str]:
-        pass
-
-    @property
     def items(self) -> List[TFeedItemParser]:
         pass
 
@@ -46,11 +42,19 @@ class FeedParser(ABC, Generic[TFeedItemParser]):
     def feed_type(self) -> FeedType:
         pass
 
+    @property
+    def feed_url(self) -> Optional[str]:
+        pass
+
 
 class FeedItemParser(ABC):
 
     @property
     def id(self) -> str:
+        pass
+
+    @property
+    def hash(self) -> str:
         pass
 
     @property
