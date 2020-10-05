@@ -1,0 +1,8 @@
+on: [push]
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run pytest
+        run: docker-compose -f docker-compose.tests.yaml up
