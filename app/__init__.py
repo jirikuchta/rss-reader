@@ -7,22 +7,20 @@ from flask_login import LoginManager
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
-from rss_reader.models import db, User
+from app.models import db, User
 
 
 def create_app():
-    app = Flask(__name__,
-                static_folder="static/dist",
-                static_url_path="/static")
+    flask_app = Flask(__name__,
+                static_folder="static/dist", static_url_path="/static")
 
-    app.config["SECRET_KEY"] = str.encode(os.environ.get("SECRET_KEY"))
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    env = os.environ["FLASK_ENV"]
+    flask_app.config.from_object(f"app.config.{env.title()}")
 
-    db.init_app(app)
+    db.init_app(flask_app)
 
     # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#foreign-key-support
-    if os.environ.get("DATABASE_URI").startswith("sqlite"):
+    if flask_app.config.get("SQLALCHEMY_DATABASE_URI").startswith("sqlite"):
         @event.listens_for(Engine, "connect")
         def set_sqlite_pragma(dbapi_connection, connection_record):
             cursor = dbapi_connection.cursor()
@@ -30,28 +28,28 @@ def create_app():
             cursor.close()
 
     login_manager = LoginManager()
-    login_manager.init_app(app)
+    login_manager.init_app(flask_app)
     login_manager.login_view = "views.login"
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    from rss_reader.views import views
-    app.register_blueprint(views)
+    from app.views import views
+    flask_app.register_blueprint(views)
 
-    from rss_reader.api import api
-    import rss_reader.api.users  # noqa
-    import rss_reader.api.subscriptions  # noqa
-    import rss_reader.api.articles  # noqa
-    import rss_reader.api.categories  # noqa
-    app.register_blueprint(api)
+    from app.api import api
+    import app.api.users  # noqa
+    import app.api.subscriptions  # noqa
+    import app.api.articles  # noqa
+    import app.api.categories  # noqa
+    flask_app.register_blueprint(api)
 
-    app.cli.add_command(create_db)
-    app.cli.add_command(create_user)
-    app.cli.add_command(drop_db)
+    flask_app.cli.add_command(create_db)
+    flask_app.cli.add_command(create_user)
+    flask_app.cli.add_command(drop_db)
 
-    return app
+    return flask_app
 
 
 @click.command("create-db")

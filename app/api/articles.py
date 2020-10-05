@@ -1,9 +1,9 @@
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, Article
+from app.models import db, Article
 
-from rss_reader.api import api, TReturnValue, make_api_response, \
+from app.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType
 
 

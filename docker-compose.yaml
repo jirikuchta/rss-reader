@@ -1,25 +1,23 @@
 version: "3"
 services:
-  web:
+  app:
     build:
       context: .
-      dockerfile: ./docker/web/Dockerfile
+      dockerfile: ./docker/app.Dockerfile
     volumes:
-      - ./rss_reader:/rss_reader/
+      - ./app:/app/
     ports:
       - 5000:5000
     environment:
       FLASK_APP: "."
       FLASK_ENV: "development"
-      SECRET_KEY: "insecure"
-      DATABASE_URI: "sqlite:////rss_reader/rss_reader.db"
-  static:
+  static_dev:
     build:
       context: .
-      dockerfile: ./docker/static/Dockerfile
+      dockerfile: ./docker/static_dev.Dockerfile
     volumes:
-      - ./rss_reader/static/src:/rss_reader/src
-      - ./rss_reader/static/dist:/rss_reader/dist
+      - ./app/static/src:/app/src
+      - ./app/static/dist:/app/dist
     environment:
       SHELL: sh
     command: >

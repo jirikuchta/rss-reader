@@ -1,7 +1,7 @@
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from rss_reader.parser.common import NS
+from app.parser.common import NS
 
 from tests.mocks.atom_feed import MockAtomLink
 

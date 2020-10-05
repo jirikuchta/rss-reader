@@ -2,9 +2,9 @@ from typing import List
 from flask import request
 from flask_login import current_user
 
-from rss_reader.models import db, Category, Article, Subscription
+from app.models import db, Category, Article, Subscription
 
-from rss_reader.api import api, TReturnValue, make_api_response, \
+from app.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
 
 

@@ -3,9 +3,9 @@ import random
 import string
 from xml.etree import ElementTree as ET
 
-from rss_reader import create_app, db
-from rss_reader.models import User
-from rss_reader.parser.common import NS
+from app import create_app, db
+from app.models import User
+from app.parser.common import NS
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
