@@ -56,24 +56,24 @@ class AtomItemParser(FeedItemParser):
     def __init__(self, node: ET.Element) -> None:
         self._node = node
 
-        item_id = get_child_node_text(node, "id")
-        if item_id is None:
+        guid = get_child_node_text(node, "id")
+        if guid is None:
             raise_required_elm_missing_error("id", "entry")
-        self._id = item_id
+        self._guid = guid
 
         title = get_child_node_text(node, "title")
         if title is None:
             raise_required_elm_missing_error("title", "entry")
         self._title = title
 
-        link = get_link_href_attr(self._node, [None, "alternate"])
-        if link is None:
+        url = get_link_href_attr(self._node, [None, "alternate"])
+        if url is None:
             raise_required_elm_missing_error("link", "entry")
-        self._link = link
+        self._url = url
 
     @property
-    def id(self) -> str:
-        return self._id
+    def guid(self) -> str:
+        return self._guid
 
     @property
     def hash(self):
@@ -84,8 +84,8 @@ class AtomItemParser(FeedItemParser):
         return self._title
 
     @property
-    def link(self) -> str:
-        return self._link
+    def url(self) -> str:
+        return self._url
 
     @property
     def summary(self) -> Optional[str]:
@@ -101,13 +101,13 @@ class AtomItemParser(FeedItemParser):
         return get_child_node_content(self._node, "content")
 
     @property
-    def comments_link(self) -> Optional[str]:
-        comments_link = get_child_node_text(self._node, "comments")
+    def comments_url(self) -> Optional[str]:
+        comments_url = get_child_node_text(self._node, "comments")
 
-        if comments_link is None:
-            comments_link = get_link_href_attr(self._node, ["replies"])
+        if comments_url is None:
+            comments_url = get_link_href_attr(self._node, ["replies"])
 
-        return comments_link
+        return comments_url
 
     @property
     def author(self) -> Optional[str]:

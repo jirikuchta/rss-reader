@@ -1,4 +1,7 @@
+import logging
 import time
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def init():
@@ -10,16 +13,16 @@ def init():
             except Exception:
                 pass
         else:
-            print("waiting")
+            logging.info("waiting")
             time.sleep(2)
 
 
 def get_outdated_subscription():
-    print("get_outdated_subscription")
+    logging.info("get_outdated_subscription")
 
 
 def update_subscription() -> None:
-    print("update_subscription")
+    logging.info("update_subscription")
 
 
 if __name__ == "__main__":

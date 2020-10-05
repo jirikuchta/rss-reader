@@ -139,7 +139,7 @@ def mark_subscription_read(subscription_id: int) -> TReturnValue:
 
     Article.query \
         .filter_by(subscription_id=subscription.id) \
-        .update({Article.read: db.func.now()},
+        .update({Article.time_read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()

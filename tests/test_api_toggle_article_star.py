@@ -14,7 +14,7 @@ class TestAPIToggleArticleStar:
 
         res = as_user_1.get(f"/api/articles/{article_id}/")
         assert res.status_code == 200, res
-        assert res.json["starred"] is not None
+        assert res.json["time_starred"] is not None
 
         # unstar
         res = as_user_1.delete(f"api/articles/{article_id}/star/")
@@ -22,7 +22,7 @@ class TestAPIToggleArticleStar:
 
         res = as_user_1.get(f"/api/articles/{article_id}/")
         assert res.status_code == 200, res
-        assert res.json["starred"] is None
+        assert res.json["time_starred"] is None
 
     def test_not_found(self, as_user_1):
         res = as_user_1.put(f"api/articles/666/star/")

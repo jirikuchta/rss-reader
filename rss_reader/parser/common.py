@@ -50,7 +50,7 @@ class FeedParser(ABC, Generic[TFeedItemParser]):
 class FeedItemParser(ABC):
 
     @property
-    def id(self) -> str:
+    def guid(self) -> str:
         pass
 
     @property
@@ -62,7 +62,7 @@ class FeedItemParser(ABC):
         pass
 
     @property
-    def link(self) -> str:
+    def url(self) -> Optional[str]:
         pass
 
     @property
@@ -74,7 +74,7 @@ class FeedItemParser(ABC):
         pass
 
     @property
-    def comments_link(self) -> Optional[str]:
+    def comments_url(self) -> Optional[str]:
         pass
 
     @property

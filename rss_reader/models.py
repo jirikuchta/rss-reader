@@ -68,12 +68,8 @@ class Subscription(db.Model):  # type: ignore
             **kwargs)
 
     def to_json(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "feed_url": self.feed_url,
-            "web_url": self.web_url,
-            "category_id": self.category_id}
+        keys = ("id", "title", "feed_url", "web_url", "category_id",)
+        return {key: getattr(self, key) for key in keys}
 
 
 class Article(db.Model):  # type: ignore
@@ -84,10 +80,10 @@ class Article(db.Model):  # type: ignore
     guid = db.Column(db.String(255), nullable=False, index=True)
     hash = db.Column(db.String(255), nullable=False)
     title = db.Column(db.Text, nullable=False)
-    uri = db.Column(db.String(255), nullable=False)
+    url = db.Column(db.String(255))
     summary = db.Column(db.Text)
     content = db.Column(db.Text)
-    comments_uri = db.Column(db.String(255))
+    comments_url = db.Column(db.String(255))
     author = db.Column(db.String(255))
     time_published = db.Column(db.DateTime)
     time_read = db.Column(db.DateTime, index=True)
@@ -102,23 +98,18 @@ class Article(db.Model):  # type: ignore
     @classmethod
     def from_parser(cls, parser, **kwargs):
         return cls(
-            guid=parser.id,
+            guid=parser.guid,
             hash=parser.hash,
             title=parser.title,
-            uri=parser.link,
+            url=parser.url,
             summary=parser.summary,
             content=parser.content,
-            comments_uri=parser.comments_link,
+            comments_url=parser.comments_url,
             author=parser.author,
             **kwargs)
 
     def to_json(self):
-        return {
-            "id": self.id,
-            "title": self.title,
-            "uri": self.uri,
-            "summary": self.summary,
-            "content": self.content,
-            "comments_uri": self.comments_uri,
-            "author": self.author,
-            "subscription_id": self.subscription_id}
+        keys = ("id", "title", "url", "summary", "content", "comments_url",
+                "author", "subscription_id", "time_published", "time_read",
+                "time_starred",)
+        return {key: getattr(self, key) for key in keys}

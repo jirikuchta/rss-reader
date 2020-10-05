@@ -119,7 +119,7 @@ def mark_category_read(category_id: int) -> TReturnValue:
 
     Article.query \
         .filter(Article.subscription_id.in_(subscription_ids)) \
-        .update({Article.read: db.func.now()},
+        .update({Article.time_read: db.func.now()},
                 synchronize_session=False)
 
     db.session.commit()

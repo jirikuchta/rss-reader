@@ -55,13 +55,13 @@ class RSSItemParser(FeedItemParser):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
-        self._id = self._get_id()
+        self._guid = self._get_guid()
         self._title = self._get_title()
-        self._link = self._get_link()
+        self._url = self._get_url()
 
     @property
-    def id(self) -> str:
-        return self._id
+    def guid(self) -> str:
+        return self._guid
 
     @property
     def title(self) -> str:
@@ -72,8 +72,8 @@ class RSSItemParser(FeedItemParser):
         return md5(ET.tostring(self._node)).hexdigest()
 
     @property
-    def link(self) -> str:
-        return self._link
+    def url(self) -> Optional[str]:
+        return self._url
 
     @property
     def summary(self) -> Optional[str]:
@@ -90,7 +90,7 @@ class RSSItemParser(FeedItemParser):
         return content
 
     @property
-    def comments_link(self) -> Optional[str]:
+    def comments_url(self) -> Optional[str]:
         return get_child_node_text(self._node, "comments")
 
     @property
@@ -118,44 +118,42 @@ class RSSItemParser(FeedItemParser):
         values = [get_node_text(node) for node in nodes]
         return [item for item in values if item is not None]
 
-    def _get_link(self) -> str:
-        link = get_child_node_text(self._node, "link")
-        if link is not None:
-            return link
+    def _get_url(self) -> str:
+        value = get_child_node_text(self._node, "link")
+        if value:
+            return value
 
         guid_node = find_child(self._node, "guid")
         if guid_node is not None:
             if get_node_attr(guid_node, "isPermalink") == "true":
-                link = get_node_text(guid_node)
-                if link is not None:
-                    return link
+                value = get_node_text(guid_node)
+        if value:
+            return value
 
-        link = get_link_href_attr(self._node, [None, "alternate"],
-                                  tag_name=f"{{{ NS['atom'] }}}link")
-        if link is not None:
-            return link
-
-        raise ParserError("Cannot parse item link.")
+        value = get_link_href_attr(self._node, [None, "alternate"],
+                                   tag_name=f"{{{ NS['atom'] }}}link")
+        if value:
+            return value
 
     def _get_title(self) -> str:
-        title = get_child_node_text(self._node, "title")
+        value = get_child_node_text(self._node, "title")
 
-        if title is None:
-            title = get_child_node_text(self._node, "description")
+        if value is None:
+            value = get_child_node_text(self._node, "description")
 
-        if title is None:
-            title = get_child_node_text(self._node, "content:encoded")
+        if value is None:
+            value = get_child_node_text(self._node, "content:encoded")
 
-        if title is None:
+        if value is None:
             raise ParserError("Cannot parse item title.")
 
-        return title
+        return value
 
-    def _get_id(self) -> str:
+    def _get_guid(self) -> str:
         value = get_child_node_text(self._node, "guid")
 
         if value is None:
-            value = self.link
+            value = self._get_url()
 
         if value is None:
             raise ParserError("Cannot parse item id.")

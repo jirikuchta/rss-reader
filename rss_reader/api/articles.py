@@ -22,7 +22,7 @@ def _get_article(article_id: int, raise_if_not_found: bool = True) -> Article:
 @require_login
 def list_articles() -> TReturnValue:
     articles = Article.query.filter_by(
-        user_id=current_user.id, read=None).all()
+        user_id=current_user.id, time_read=None).all()
     return [article.to_json() for article in articles], 200
 
 
@@ -39,7 +39,7 @@ def get_article(article_id: int) -> TReturnValue:
 def toggle_article_read(article_id: int) -> TReturnValue:
     article = _get_article(article_id)
 
-    article.read = db.func.now() if request.method == "PUT" else None
+    article.time_read = db.func.now() if request.method == "PUT" else None
     db.session.commit()
 
     return None, 204
@@ -51,7 +51,7 @@ def toggle_article_read(article_id: int) -> TReturnValue:
 def toggle_article_star(article_id: int) -> TReturnValue:
     article = _get_article(article_id)
 
-    article.starred = db.func.now() if request.method == "PUT" else None
+    article.time_starred = db.func.now() if request.method == "PUT" else None
     db.session.commit()
 
     return None, 204

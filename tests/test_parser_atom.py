@@ -67,7 +67,7 @@ class TestParserAtom:
 
 class TestParserAtomItem:
 
-    def test_id(self) -> None:
+    def test_guid(self) -> None:
         item = MockAtomFeedItem(item_id=None, title="",
                                 link=MockAtomLink(href=""))
 
@@ -75,7 +75,7 @@ class TestParserAtomItem:
             AtomItemParser(item.build())
 
         item.item_id = "foo"
-        assert AtomItemParser(item.build()).id == "foo"
+        assert AtomItemParser(item.build()).guid == "foo"
 
     def test_title(self) -> None:
         item = MockAtomFeedItem(item_id="", title=None,
@@ -87,17 +87,17 @@ class TestParserAtomItem:
         item.title = "<b> bar<b/> "
         assert AtomItemParser(item.build()).title == "bar"
 
-    def test_link(self) -> None:
+    def test_url(self) -> None:
         item = MockAtomFeedItem(item_id="", title="", link=None)
 
         with pytest.raises(ParserError):
             AtomItemParser(item.build())
 
         item.link = MockAtomLink(href="foo")
-        assert AtomItemParser(item.build()).link == "foo"
+        assert AtomItemParser(item.build()).url == "foo"
 
         item.link = MockAtomLink(href="foo", rel="alternate")
-        assert AtomItemParser(item.build()).link == "foo"
+        assert AtomItemParser(item.build()).url == "foo"
 
         item.link = MockAtomLink(href="foo", rel="enclosure")
         with pytest.raises(ParserError):
@@ -123,16 +123,16 @@ class TestParserAtomItem:
         item.content = "<b> foo</b> "
         assert AtomItemParser(item.build()).content == "<b> foo</b>"
 
-    def test_comments_link(self) -> None:
+    def test_comments_url(self) -> None:
         item = MockAtomFeedItem(item_id="", title="",
                                 link=MockAtomLink(href=""))
-        assert AtomItemParser(item.build()).comments_link is None
+        assert AtomItemParser(item.build()).comments_url is None
 
         item.comments = MockAtomLink(href="foo", rel="replies")
-        assert AtomItemParser(item.build()).comments_link == "foo"
+        assert AtomItemParser(item.build()).comments_url == "foo"
 
         item.comments = "bar"
-        assert AtomItemParser(item.build()).comments_link == "bar"
+        assert AtomItemParser(item.build()).comments_url == "bar"
 
     def test_author(self) -> None:
         item = MockAtomFeedItem(item_id="", title="",

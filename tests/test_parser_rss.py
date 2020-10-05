@@ -53,7 +53,7 @@ class TestParserRSS:
 
 class TestParserRSSItem:
 
-    def test_id(self) -> None:
+    def test_guid(self) -> None:
         item = MockRSSFeedItem(title="", link=None, guid=None)
 
         with pytest.raises(ParserError):
@@ -61,16 +61,16 @@ class TestParserRSSItem:
 
         item.link = ""
         item.guid = MockRSSFeedItemGUID("foo")
-        assert RSSItemParser(item.build()).id == "foo"
+        assert RSSItemParser(item.build()).guid == "foo"
 
         item.guid = None
         item.link = "bar"
-        assert RSSItemParser(item.build()).id == "bar"
+        assert RSSItemParser(item.build()).guid == "bar"
 
         item.guid = None
         item.link = None
         item.atom_links = [MockAtomLink(href="foo")]
-        assert RSSItemParser(item.build()).id == "foo"
+        assert RSSItemParser(item.build()).guid == "foo"
 
     def test_title(self) -> None:
         item = MockRSSFeedItem(title=None, link="",
@@ -91,40 +91,36 @@ class TestParserRSSItem:
         item.content_encoded = "<b>foobar</b>"
         assert RSSItemParser(item.build()).title == "foobar"
 
-    def test_link(self) -> None:
+    def test_url(self) -> None:
         item = MockRSSFeedItem(title="", link=None,
                                guid=MockRSSFeedItemGUID(""))
-
-        with pytest.raises(ParserError):
-            RSSItemParser(item.build())
+        assert RSSItemParser(item.build()).url is None
 
         item.link = "foo"
-        assert RSSItemParser(item.build()).link == "foo"
+        assert RSSItemParser(item.build()).url == "foo"
 
         item.link = None
         item.guid = MockRSSFeedItemGUID("foo", isPermalink=True)
-        assert RSSItemParser(item.build()).link == "foo"
+        assert RSSItemParser(item.build()).url == "foo"
 
         item.link = None
         item.guid = MockRSSFeedItemGUID("foo", isPermalink=False)
-        with pytest.raises(ParserError):
-            RSSItemParser(item.build())
+        assert RSSItemParser(item.build()).url is None
 
         item.link = None
         item.guid.isPermalink = False
         item.atom_links = [MockAtomLink(href="foo", rel=None)]
-        assert RSSItemParser(item.build()).link == "foo"
+        assert RSSItemParser(item.build()).url == "foo"
 
         item.link = None
         item.guid.isPermalink = False
         item.atom_links = [MockAtomLink(href="foo", rel="alternate")]
-        assert RSSItemParser(item.build()).link == "foo"
+        assert RSSItemParser(item.build()).url == "foo"
 
         item.link = None
         item.guid.isPermalink = False
         item.atom_links = [MockAtomLink(href="foo", rel="enclosure")]
-        with pytest.raises(ParserError):
-            RSSItemParser(item.build())
+        assert RSSItemParser(item.build()).url is None
 
     def test_summary(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))
@@ -148,12 +144,12 @@ class TestParserRSSItem:
         item.description = "<b>bar</b> "
         assert RSSItemParser(item.build()).content == "<b>bar</b>"
 
-    def test_comments_link(self) -> None:
+    def test_comments_url(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))
-        assert RSSItemParser(item.build()).comments_link is None
+        assert RSSItemParser(item.build()).comments_url is None
 
         item.comments = "foo"
-        assert RSSItemParser(item.build()).comments_link == "foo"
+        assert RSSItemParser(item.build()).comments_url == "foo"
 
     def test_author(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))
