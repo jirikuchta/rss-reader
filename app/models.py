@@ -74,7 +74,7 @@ class Subscription(db.Model):  # type: ignore
 
 class Article(db.Model):  # type: ignore
     __tablename__ = "article"
-    __table_args__ = (db.UniqueConstraint("subscription_id", "hash"),)
+    __table_args__ = (db.UniqueConstraint("subscription_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(255), nullable=False, index=True)
@@ -85,7 +85,9 @@ class Article(db.Model):  # type: ignore
     content = db.Column(db.Text)
     comments_url = db.Column(db.String(255))
     author = db.Column(db.String(255))
-    time_published = db.Column(db.DateTime)
+    time_published = db.Column(
+        db.DateTime,
+        nullable=False, server_default=func.now())
     time_read = db.Column(db.DateTime, index=True)
     time_starred = db.Column(db.DateTime, index=True)
     subscription_id = db.Column(
@@ -106,6 +108,7 @@ class Article(db.Model):  # type: ignore
             content=parser.content,
             comments_url=parser.comments_url,
             author=parser.author,
+            time_published=parser.time_published,
             **kwargs)
 
     def to_json(self):

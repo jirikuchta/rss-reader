@@ -42,6 +42,7 @@ class MockAtomFeedItem:
             content: Optional[str] = None,
             comments: Optional[Union["MockAtomLink", str]] = None,
             author: Optional["MockAtomAuthor"] = None,
+            published: Optional[str] = None,
             enclosures: Optional[List["MockAtomLink"]] = None,
             categories: Optional[List[str]] = None) -> None:
         self.item_id = item_id
@@ -51,6 +52,7 @@ class MockAtomFeedItem:
         self.content = content
         self.comments = comments
         self.author = author
+        self.published = published
         self.enclosures = [] if enclosures is None else enclosures
         self.categories = [] if categories is None else categories
 
@@ -62,19 +64,23 @@ class MockAtomFeedItem:
             id_node.text = self.item_id
 
         if self.title is not None:
-            title_node = ET.SubElement(root, "title")
-            title_node.text = self.title
+            title = ET.SubElement(root, "title")
+            title.text = self.title
 
         if self.summary is not None:
-            summary_node = ET.SubElement(root, "summary")
-            summary_node.text = self.summary
+            summary = ET.SubElement(root, "summary")
+            summary.text = self.summary
 
         if self.content is not None:
-            content_node = ET.SubElement(root, "content")
-            content_node.text = self.content
+            content = ET.SubElement(root, "content")
+            content.text = self.content
 
         if self.author is not None:
             root.append(self.author.build())
+
+        if self.published is not None:
+            published = ET.SubElement(root, "published")
+            published.text = self.published
 
         if self.link is not None:
             root.append(self.link.build())
@@ -83,8 +89,8 @@ class MockAtomFeedItem:
             if isinstance(self.comments, MockAtomLink):
                 root.append(self.comments.build())
             else:
-                comments_node = ET.SubElement(root, "comments")
-                comments_node.text = self.comments
+                comments = ET.SubElement(root, "comments")
+                comments.text = self.comments
 
         for enclosure in self.enclosures:
             root.append(enclosure.build())

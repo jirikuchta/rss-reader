@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from app.parser.common import ParserError, FeedType, Enclosure
 from app.parser.rss import RSSParser, RSSItemParser
@@ -165,6 +166,15 @@ class TestParserRSSItem:
         item.author = None
         item.dc_creator = "bar"
         assert RSSItemParser(item.build()).author == "bar"
+
+    @pytest.mark.parametrize("value,expected", [
+        (None, None),
+        ("Mon, 5 Oct 2020 16:30:15 +0000", datetime(2020, 10, 5, 16, 30, 15)),
+        ("Mon, 5 Oct 2020 16:30:15 GMT", datetime(2020, 10, 5, 16, 30, 15))])
+    def test_time_published(self, value, expected) -> None:
+        item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""),
+                               pubdate=value)
+        assert RSSItemParser(item.build()).time_published == expected
 
     def test_enclosures(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))

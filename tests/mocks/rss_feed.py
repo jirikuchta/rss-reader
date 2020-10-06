@@ -52,6 +52,7 @@ class MockRSSFeedItem:
             content_encoded: Optional[str] = None,
             comments: Optional[str] = None,
             author: Optional[str] = None,
+            pubdate: Optional[str] = None,
             dc_creator: Optional[str] = None,
             enclosures: List["MockRSSFeedItemEnclosure"] = None,
             categories: List[str] = None,
@@ -63,6 +64,7 @@ class MockRSSFeedItem:
         self.content_encoded = content_encoded
         self.comments = comments
         self.author = author
+        self.pubdate = pubdate
         self.dc_creator = dc_creator
         self.enclosures = [] if enclosures is None else enclosures
         self.categories = [] if categories is None else categories
@@ -98,6 +100,10 @@ class MockRSSFeedItem:
         if self.author is not None:
             author = ET.SubElement(root, "author")
             author.text = self.author
+
+        if self.pubdate is not None:
+            pubdate = ET.SubElement(root, "pubDate")
+            pubdate.text = self.pubdate
 
         if self.dc_creator is not None:
             dc_creator = ET.SubElement(root, f"{{{ NS['dc'] }}}creator")

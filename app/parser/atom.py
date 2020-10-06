@@ -1,3 +1,4 @@
+from datetime import datetime
 from hashlib import md5
 from typing import List, Optional
 from xml.etree import ElementTree as ET
@@ -5,7 +6,7 @@ from xml.etree import ElementTree as ET
 from app.parser.common import FeedType, FeedParser, FeedItemParser, \
     Enclosure, raise_required_elm_missing_error, find_children, \
     get_child_node_text, get_child_node_content, format_author, \
-    get_link_href_attr, find_links_by_rel_attr, get_node_attr
+    get_link_href_attr, find_links_by_rel_attr, get_node_attr, parse_date_str
 
 
 class AtomParser(FeedParser["AtomItemParser"]):
@@ -122,6 +123,19 @@ class AtomItemParser(FeedItemParser):
                 authors.append(author)
 
         return None if len(authors) == 0 else ", ".join(authors)
+
+    @property
+    def time_published(self) -> Optional[datetime]:
+        date_str = get_child_node_text(self._node, "published")
+
+        if not date_str:
+            return
+
+        valid_formats = (
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%S.%f%z")
+
+        return parse_date_str(date_str, valid_formats)
 
     @property
     def enclosures(self) -> List[Enclosure]:

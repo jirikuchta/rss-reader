@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 
 from app.parser.common import ParserError, FeedType, Enclosure
 from app.parser.atom import AtomParser, AtomItemParser
@@ -147,6 +148,16 @@ class TestParserAtomItem:
 
         item.author = MockAtomAuthor(name=None, email="bar")
         assert AtomItemParser(item.build()).author == "bar"
+
+    @pytest.mark.parametrize("value,expected", [
+        (None, None),
+        ("2003-12-13T18:30:02+0000", datetime(2003, 12, 13, 18, 30, 2)),
+        ("2003-12-13T18:30:02.01+0000",
+         datetime(2003, 12, 13, 18, 30, 2, 10000))])
+    def test_time_published(self, value, expected) -> None:
+        item = MockAtomFeedItem(item_id="", title="",
+                                link=MockAtomLink(href=""), published=value)
+        assert AtomItemParser(item.build()).time_published == expected
 
     def test_enclosures(self) -> None:
         item = MockAtomFeedItem(item_id="", title="",

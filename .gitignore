@@ -2,4 +2,4 @@ __pycache__/
 node_modules/
 .build/
 .mypy_cache/
-rss_reader/rss_reader.db
+app/rss_reader.db

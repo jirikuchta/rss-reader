@@ -21,8 +21,9 @@ def _get_article(article_id: int, raise_if_not_found: bool = True) -> Article:
 @make_api_response
 @require_login
 def list_articles() -> TReturnValue:
-    articles = Article.query.filter_by(
-        user_id=current_user.id, time_read=None).all()
+    articles = Article.query\
+        .filter_by(user_id=current_user.id, time_read=None)\
+        .order_by(Article.time_published.desc()).all()
     return [article.to_json() for article in articles], 200
 
 

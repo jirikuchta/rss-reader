@@ -126,8 +126,9 @@ def delete_subscription(subscription_id: int) -> TReturnValue:
 @require_login
 def list_subscription_articles(subscription_id: int) -> TReturnValue:
     subscription = _get_subscription(subscription_id)
-    articles = Article.query.filter_by(
-        subscription_id=subscription.id).all()
+    articles = Article.query\
+        .filter_by(subscription_id=subscription.id)\
+        .order_by(Article.time_published.desc()).all()
     return [article.to_json() for article in articles], 200
 
 

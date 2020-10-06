@@ -104,8 +104,9 @@ def list_category_articles(category_id: int) -> TReturnValue:
     category = _get_category(category_id)
     subscription_ids = [s.id for s in _get_category_subscriptions(category)]
 
-    articles = Article.query.filter(
-        Article.subscription_id.in_(subscription_ids)).all()
+    articles = Article.query\
+        .filter(Article.subscription_id.in_(subscription_ids))\
+        .order_by(Article.time_published.desc()).all()
 
     return [article.to_json() for article in articles], 200
 

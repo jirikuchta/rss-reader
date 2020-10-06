@@ -1,3 +1,4 @@
+from datetime import datetime
 from hashlib import md5
 from typing import Optional, List
 from xml.etree import ElementTree as ET
@@ -6,7 +7,7 @@ from app.parser.common import NS, ParserError, FeedType, \
     FeedParser, FeedItemParser, Enclosure, get_child_node_text, \
     get_child_node_content, format_author, find_children, get_node_text, \
     find_child, get_node_attr, get_link_href_attr, \
-    raise_required_elm_missing_error
+    raise_required_elm_missing_error, parse_date_str
 
 
 class RSSParser(FeedParser["RSSItemParser"]):
@@ -98,6 +99,19 @@ class RSSItemParser(FeedItemParser):
         author = get_child_node_text(self._node, "author")
         dc_creator = get_child_node_text(self._node, "dc:creator")
         return format_author(dc_creator, author)
+
+    @property
+    def time_published(self) -> Optional[datetime]:
+        date_str = get_child_node_text(self._node, "pubDate")
+
+        if date_str is None:
+            return
+
+        valid_formats = (
+            "%a, %d %b %Y %H:%M:%S %z",
+            "%a, %d %b %Y %H:%M:%S %Z")
+
+        return parse_date_str(date_str, valid_formats)
 
     @property
     def enclosures(self) -> List[Enclosure]:

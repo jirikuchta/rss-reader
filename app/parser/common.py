@@ -1,4 +1,6 @@
+import logging
 from abc import ABC
+from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
 from typing import Optional, List, TypeVar, Generic, NoReturn, Union
@@ -82,6 +84,10 @@ class FeedItemParser(ABC):
         pass
 
     @property
+    def time_published(self) -> Optional[datetime]:
+        pass
+
+    @property
     def enclosures(self) -> Optional[List["Enclosure"]]:
         pass
 
@@ -124,7 +130,7 @@ class Enclosure:
 class MLParser(HTMLParser):
 
     @staticmethod
-    def to_text(html: str) -> str:
+    def parse_text(html: str) -> str:
         parser = MLParser()
         parser.feed(html)
         return "".join(parser.data).strip()
@@ -166,7 +172,8 @@ def find_links_by_rel_attr(parent: ET.Element,
 
 
 def get_node_text(node: ET.Element) -> Optional[str]:
-    return MLParser.to_text(node.text) if node.text is not None else None
+    parsed_text = MLParser.parse_text(node.text)
+    return parsed_text if parsed_text else node.text
 
 
 def get_node_attr(node: ET.Element, attr: str,
@@ -206,3 +213,13 @@ def get_link_href_attr(parent: ET.Element,
 
 def raise_required_elm_missing_error(elm: str, parent: str) -> NoReturn:
     raise ParserError(f"Missing required <{elm}> sub-element of <{parent}>.")
+
+
+def parse_date_str(date_str: str,
+                   valid_formats: List[str]) -> Optional[datetime]:
+    for date_format in valid_formats:
+        try:
+            return datetime.utcfromtimestamp(
+                datetime.strptime(date_str, date_format).timestamp())
+        except ValueError:
+            pass
