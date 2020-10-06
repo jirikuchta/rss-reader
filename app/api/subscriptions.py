@@ -36,8 +36,7 @@ def create_subscription() -> TReturnValue:
         raise ClientError(ErrorType.ParserError)
 
     already_subscribed = bool(Subscription.query.filter_by(
-        feed_url=parser.feed_url or feed_url,
-        user_id=current_user.id).first())
+        feed_url=feed_url, user_id=current_user.id).first())
     if already_subscribed:
         raise ClientError(ErrorType.AlreadyExists)
 

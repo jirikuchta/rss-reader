@@ -47,10 +47,6 @@ class AtomParser(FeedParser["AtomItemParser"]):
     def feed_type(self) -> FeedType:
         return FeedType.ATOM
 
-    @property
-    def feed_url(self) -> Optional[str]:
-        return get_link_href_attr(self._node, ["self"])
-
 
 class AtomItemParser(FeedItemParser):
 
@@ -129,11 +125,11 @@ class AtomItemParser(FeedItemParser):
         date_str = get_child_node_text(self._node, "published")
 
         if not date_str:
-            return
+            return None
 
-        valid_formats = (
+        valid_formats = [
             "%Y-%m-%dT%H:%M:%S%z",
-            "%Y-%m-%dT%H:%M:%S.%f%z")
+            "%Y-%m-%dT%H:%M:%S.%f%z"]
 
         return parse_date_str(date_str, valid_formats)
 

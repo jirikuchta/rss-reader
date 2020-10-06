@@ -1,5 +1,4 @@
-import logging
-from abc import ABC
+from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from enum import Enum
 from html.parser import HTMLParser
@@ -26,74 +25,85 @@ class FeedType(Enum):
 TFeedItemParser = TypeVar("TFeedItemParser", bound="FeedItemParser")
 
 
-class FeedParser(ABC, Generic[TFeedItemParser]):
+class FeedParser(Generic[TFeedItemParser], metaclass=ABCMeta):
 
     @property
+    @abstractmethod
     def title(self) -> str:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def web_url(self) -> str:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def items(self) -> List[TFeedItemParser]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def feed_type(self) -> FeedType:
-        pass
+        raise NotImplementedError
+
+
+class FeedItemParser(metaclass=ABCMeta):
 
     @property
-    def feed_url(self) -> Optional[str]:
-        pass
-
-
-class FeedItemParser(ABC):
-
-    @property
+    @abstractmethod
     def guid(self) -> str:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def hash(self) -> str:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def title(self) -> str:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def url(self) -> Optional[str]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def summary(self) -> Optional[str]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def content(self) -> Optional[str]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def comments_url(self) -> Optional[str]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def author(self) -> Optional[str]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def time_published(self) -> Optional[datetime]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def enclosures(self) -> Optional[List["Enclosure"]]:
-        pass
+        raise NotImplementedError
 
     @property
+    @abstractmethod
     def categories(self) -> Optional[List[str]]:
-        pass
+        raise NotImplementedError
 
 
 class Enclosure:
@@ -172,8 +182,12 @@ def find_links_by_rel_attr(parent: ET.Element,
 
 
 def get_node_text(node: ET.Element) -> Optional[str]:
-    parsed_text = MLParser.parse_text(node.text)
-    return parsed_text if parsed_text else node.text
+    node_text = node.text
+
+    if node_text:
+        parsed_text = MLParser.parse_text(node_text)
+
+    return parsed_text if parsed_text else node_text
 
 
 def get_node_attr(node: ET.Element, attr: str,
@@ -223,3 +237,4 @@ def parse_date_str(date_str: str,
                 datetime.strptime(date_str, date_format).timestamp())
         except ValueError:
             pass
+    return None

@@ -105,11 +105,11 @@ class RSSItemParser(FeedItemParser):
         date_str = get_child_node_text(self._node, "pubDate")
 
         if date_str is None:
-            return
+            return None
 
-        valid_formats = (
+        valid_formats = [
             "%a, %d %b %Y %H:%M:%S %z",
-            "%a, %d %b %Y %H:%M:%S %Z")
+            "%a, %d %b %Y %H:%M:%S %Z"]
 
         return parse_date_str(date_str, valid_formats)
 
@@ -132,7 +132,7 @@ class RSSItemParser(FeedItemParser):
         values = [get_node_text(node) for node in nodes]
         return [item for item in values if item is not None]
 
-    def _get_url(self) -> str:
+    def _get_url(self) -> Optional[str]:
         value = get_child_node_text(self._node, "link")
         if value:
             return value
@@ -148,6 +148,8 @@ class RSSItemParser(FeedItemParser):
                                    tag_name=f"{{{ NS['atom'] }}}link")
         if value:
             return value
+
+        return None
 
     def _get_title(self) -> str:
         value = get_child_node_text(self._node, "title")
