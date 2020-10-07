@@ -1,4 +1,3 @@
-import os
 import click
 
 from flask import Flask
@@ -7,15 +6,15 @@ from flask_login import LoginManager
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
+from app.config import get_config
 from app.models import db, User
 
 
 def create_app():
     flask_app = Flask(__name__,
-                static_folder="static/dist", static_url_path="/static")
+                      static_folder="static/dist", static_url_path="/static")
 
-    env = os.environ["FLASK_ENV"]
-    flask_app.config.from_object(f"app.config.{env.title()}")
+    flask_app.config.from_object(get_config())
 
     db.init_app(flask_app)
 

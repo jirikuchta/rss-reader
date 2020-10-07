@@ -43,14 +43,6 @@ class TestParserAtom:
         feed.links = [MockAtomLink(href="foo", rel="alternate")]
         assert AtomParser(feed.build()).web_url == "foo"
 
-    def test_feed_url(self) -> None:
-        feed = MockAtomFeed(title="", links=[MockAtomLink(href="")])
-        assert AtomParser(feed.build()).feed_url is None
-
-        feed.links = [MockAtomLink(href=""),
-                      MockAtomLink(href="foo", rel="self")]
-        assert AtomParser(feed.build()).feed_url == "foo"
-
     def test_items(self) -> None:
         feed = MockAtomFeed(title="", links=[MockAtomLink(href="")])
         assert len(AtomParser(feed.build()).items) == 0

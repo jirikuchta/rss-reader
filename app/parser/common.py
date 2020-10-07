@@ -182,12 +182,8 @@ def find_links_by_rel_attr(parent: ET.Element,
 
 
 def get_node_text(node: ET.Element) -> Optional[str]:
-    node_text = node.text
-
-    if node_text:
-        parsed_text = MLParser.parse_text(node_text)
-
-    return parsed_text if parsed_text else node_text
+    parsed_text = MLParser.parse_text(node.text)
+    return parsed_text if parsed_text else node.text
 
 
 def get_node_attr(node: ET.Element, attr: str,

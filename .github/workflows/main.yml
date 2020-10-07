@@ -5,4 +5,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run pytest
-        run: docker-compose -f docker-compose.tests.yaml up
+        run: docker-compose -f docker-compose.tests.yaml up --exit-code-from tests
