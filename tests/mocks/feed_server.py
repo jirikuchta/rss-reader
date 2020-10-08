@@ -1,9 +1,9 @@
-# https://gist.github.com/eruvanos/f6f62edb368a20aaa880e12976620db8
-
 import requests
 from flask import Flask
 from threading import Thread
 from xml.etree import ElementTree as ET
+
+# https://gist.github.com/eruvanos/f6f62edb368a20aaa880e12976620db8
 
 
 class FeedServer(Thread):

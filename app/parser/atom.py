@@ -1,3 +1,6 @@
+# Atom format specification
+# https://tools.ietf.org/html/rfc4287
+
 from datetime import datetime
 from hashlib import md5
 from typing import List, Optional

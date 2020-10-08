@@ -115,12 +115,12 @@ class Enclosure:
         if url is None:
             url = get_node_attr(node, "url")
         if url is None:
-            raise ParserError("Failed to parser enclosure url.")
+            raise ParserError("Failed to parse enclosure url.")
         self._url = url
 
         enc_type = get_node_attr(node, "type")
         if enc_type is None:
-            raise ParserError("Failed to parser enclosure type.")
+            raise ParserError("Failed to parse enclosure type.")
         self._type = enc_type
 
     @property
@@ -182,7 +182,9 @@ def find_links_by_rel_attr(parent: ET.Element,
 
 
 def get_node_text(node: ET.Element) -> Optional[str]:
-    parsed_text = MLParser.parse_text(node.text)
+    parsed_text = None
+    if node.text:
+        parsed_text = MLParser.parse_text(node.text)
     return parsed_text if parsed_text else node.text
 
 

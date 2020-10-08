@@ -1,12 +1,12 @@
+import os
 import click
 
 from flask import Flask
 from flask.cli import with_appcontext
-from flask_login import LoginManager
-from sqlalchemy import event
-from sqlalchemy.engine import Engine
+from flask_login import LoginManager  # type: ignore
+from sqlalchemy import event  # type: ignore
+from sqlalchemy.engine import Engine  # type: ignore
 
-from app.config import get_config
 from app.models import db, User
 
 
@@ -14,7 +14,12 @@ def create_app():
     flask_app = Flask(__name__,
                       static_folder="static/dist", static_url_path="/static")
 
-    flask_app.config.from_object(get_config())
+    flask_app.config.from_pyfile("config.default.cfg")
+    flask_app.config.from_envvar("RSS_READER_CONFIG_FILE", silent=True)
+    for k, v in flask_app.config.items():
+        flask_app.config[k] = os.getenv(k, default=v)
+
+    flask_app.logger.error(flask_app.config)
 
     db.init_app(flask_app)
 
@@ -38,10 +43,10 @@ def create_app():
     flask_app.register_blueprint(views)
 
     from app.api import api
-    import app.api.users  # noqa
-    import app.api.subscriptions  # noqa
-    import app.api.articles  # noqa
-    import app.api.categories  # noqa
+    import app.api.users  # noqa: F401
+    import app.api.subscriptions  # noqa: F401
+    import app.api.articles  # noqa: F401
+    import app.api.categories  # noqa: F401
     flask_app.register_blueprint(api)
 
     flask_app.cli.add_command(create_db)

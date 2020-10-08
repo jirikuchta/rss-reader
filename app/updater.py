@@ -1,16 +1,11 @@
 import logging
 import time
 
-from config import get_config
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 def init():
-    cfg = get_config()
-
-    logging.info(cfg)
-
     while True:
         subscription = get_outdated_subscription()
         if subscription:

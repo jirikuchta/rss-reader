@@ -1,6 +1,6 @@
-from flask_login import UserMixin
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import func
+from flask_login import UserMixin  # type: ignore
+from flask_sqlalchemy import SQLAlchemy  # type: ignore
+from sqlalchemy import func  # type: ignore
 
 from werkzeug.security import generate_password_hash
 

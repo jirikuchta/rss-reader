@@ -1,3 +1,6 @@
+# RSS 2.0 specification
+# https://www.rssboard.org/rss-specification
+
 from datetime import datetime
 from hashlib import md5
 from typing import Optional, List

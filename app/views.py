@@ -1,5 +1,5 @@
 from flask import Blueprint, request, redirect, url_for, render_template
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required  # type: ignore
 from typing import Union
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers import Response
