@@ -18,26 +18,25 @@ def index() -> str:
 
 @views.route("/login/", methods=["GET", "POST"])
 def login() -> Union[Response, str]:
+
+    def render_error(error: str):
+        return render_template("login.html", data=request.form, error=error)
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         remember = True if request.form.get("remember") else False
-        error = None
 
         if not username:
-            error = "Please enter username."
+            return render_error("Please enter username.")
 
         if not password:
-            error = "Please enter password."
+            return render_error("Please enter password.")
 
         user = User.query.filter_by(username=username).first()
 
         if not user or not check_password_hash(user.password, password):
-            error = "Unknown username or invalid password."
-
-        if error is not None:
-            return render_template("login.html", data=request.form,
-                                   error=error)
+            return render_error("Unknown username or invalid password.")
 
         login_user(user, remember=remember)
 
@@ -54,24 +53,22 @@ def logout() -> Response:
 
 @views.route("/signup/", methods=["GET", "POST"])
 def signup() -> Union[Response, str]:
+
+    def render_error(error: str):
+        return render_template("signup.html", data=request.form, error=error)
+
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
 
         if not username:
-            return render_template("signup.html",
-                                   error="Username is required.",
-                                   data=request.form)
+            return render_error("Username is required.")
 
         if not password:
-            return render_template("signup.html",
-                                   error="Password is required.",
-                                   data=request.form)
+            return render_error("Password is required.")
 
         if User.query.filter_by(username=username).first():
-            return render_template("signup.html",
-                                   error="That username is taken.",
-                                   data=request.form)
+            return render_error("That username is taken.")
 
         user = User(username=username, password=password)
 

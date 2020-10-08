@@ -19,8 +19,6 @@ def create_app():
     for k, v in flask_app.config.items():
         flask_app.config[k] = os.getenv(k, default=v)
 
-    flask_app.logger.error(flask_app.config)
-
     db.init_app(flask_app)
 
     # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#foreign-key-support
