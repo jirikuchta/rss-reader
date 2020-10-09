@@ -1,11 +1,28 @@
+from flask import Flask
 from flask_login import UserMixin  # type: ignore
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
-from sqlalchemy import func  # type: ignore
+from sqlalchemy import func, event, engine  # type: ignore
 
 from werkzeug.security import generate_password_hash
 
 
 db = SQLAlchemy()
+
+
+def init(flask_app: Flask) -> None:
+    db.init_app(flask_app)
+
+    # https://docs.sqlalchemy.org/en/13/dialects/sqlite.html#foreign-key-support
+    if flask_app.config.get("SQLALCHEMY_DATABASE_URI", "").startswith("sqlite"):
+        @event.listens_for(engine.Engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON;")
+            cursor.close()
+
+    with flask_app.app_context():
+        db.create_all()
+        db.session.commit()
 
 
 class User(UserMixin, db.Model):  # type: ignore

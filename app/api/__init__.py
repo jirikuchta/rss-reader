@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from collections import namedtuple
-from flask import Blueprint, jsonify, make_response, Response
+from flask import Flask, Blueprint, jsonify, make_response, Response
 from flask_login import current_user  # type: ignore
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
@@ -10,6 +10,14 @@ TReturnValue = Tuple[Any, int]
 TApiMethod = TypeVar('TApiMethod', bound=Callable[..., TReturnValue])
 
 api = Blueprint("api", __name__, url_prefix="/api")
+
+
+def init(flask_app: Flask) -> None:
+    import app.api.articles  # noqa: F401
+    import app.api.categories  # noqa: F401
+    import app.api.subscriptions  # noqa: F401
+    import app.api.users  # noqa: F401
+    flask_app.register_blueprint(api)
 
 
 class ErrorType(Enum):
