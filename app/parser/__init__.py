@@ -1,7 +1,7 @@
 import urllib.request
 from xml.etree import ElementTree as ET
 
-from app.parser.common import FeedParser
+from app.parser.common import FeedParser, FeedItemParser  # noqa: F401
 from app.parser.atom import AtomParser
 from app.parser.rss import RSSParser
 

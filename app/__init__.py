@@ -5,6 +5,7 @@ from flask import Flask
 from flask.cli import with_appcontext
 from flask_login import LoginManager  # type: ignore
 
+import app.logger  # noqa: F401
 from app.models import db, User, init as init_db
 from app.views import init as init_views
 from app.api import init as init_api
@@ -16,11 +17,7 @@ def create_app():
         static_folder="static/dist",
         static_url_path="/static")
 
-    flask_app.config.from_pyfile("config.default.cfg")
-    flask_app.config.from_envvar("RSS_READER_CONFIG_FILE", silent=True)
-    for k, v in flask_app.config.items():
-        flask_app.config[k] = os.getenv(k, default=v)
-
+    init_app_config(flask_app)
     init_db(flask_app)
     init_login_manager(flask_app)
     init_api(flask_app)
@@ -31,6 +28,13 @@ def create_app():
     flask_app.cli.add_command(drop_db)
 
     return flask_app
+
+
+def init_app_config(flask_app: Flask) -> None:
+    flask_app.config.from_pyfile("config.default.cfg")
+    flask_app.config.from_envvar("RSS_READER_CONFIG_FILE", silent=True)
+    for k, v in flask_app.config.items():
+        flask_app.config[k] = os.getenv(k, default=v)
 
 
 def init_login_manager(flask_app: Flask) -> None:

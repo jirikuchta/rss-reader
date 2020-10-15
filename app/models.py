@@ -5,6 +5,8 @@ from sqlalchemy import func, event, engine  # type: ignore
 
 from werkzeug.security import generate_password_hash
 
+from app.parser import FeedParser, FeedItemParser
+
 
 db = SQLAlchemy()
 
@@ -78,7 +80,7 @@ class Subscription(db.Model):  # type: ignore
         index=True, server_default=func.now())
 
     @classmethod
-    def from_parser(cls, parser, **kwargs):
+    def from_parser(cls, parser: FeedParser, **kwargs):
         return cls(
             title=parser.title,
             web_url=parser.web_url,
@@ -115,7 +117,7 @@ class Article(db.Model):  # type: ignore
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     @classmethod
-    def from_parser(cls, parser, **kwargs):
+    def from_parser(cls, parser: FeedItemParser, **kwargs):
         return cls(
             guid=parser.guid,
             hash=parser.hash,

@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from collections import namedtuple
-from flask import Flask, Blueprint, jsonify, make_response, Response
-from flask_login import current_user  # type: ignore
+from flask import Flask, Blueprint, jsonify, make_response, request, Response
+from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 
@@ -17,6 +17,17 @@ def init(flask_app: Flask) -> None:
     import app.api.categories  # noqa: F401
     import app.api.subscriptions  # noqa: F401
     import app.api.users  # noqa: F401
+
+    def before_request():
+        flask_app.logger.info("%s %s", request.method, request.full_path, extra={"uid": current_user.id})
+
+    def after_request(response: Response):
+        flask_app.logger.info("%s %s", request.method, request.full_path, extra={"uid": current_user.id})
+        return response
+
+    api.before_request(before_request)
+    api.after_request(after_request)
+
     flask_app.register_blueprint(api)
 
 
