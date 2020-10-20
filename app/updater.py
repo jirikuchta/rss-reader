@@ -24,7 +24,7 @@ def init():
                     pass
             else:
                 logging.info("waiting")
-                time.sleep(2)
+                time.sleep(60)
 
 
 def get_outdated_subscription():

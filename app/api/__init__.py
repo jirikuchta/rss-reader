@@ -1,6 +1,10 @@
+import string
+import random
+from datetime import datetime
 from enum import Enum, auto
 from collections import namedtuple
-from flask import Flask, Blueprint, jsonify, make_response, request, Response
+from flask import Flask, Blueprint, jsonify, make_response, g, request, \
+    Response
 from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
@@ -12,6 +16,11 @@ TApiMethod = TypeVar('TApiMethod', bound=Callable[..., TReturnValue])
 api = Blueprint("api", __name__, url_prefix="/api")
 
 
+def generate_request_id():
+    chars = string.ascii_lowercase + string.digits
+    return ''.join(random.choices(chars, k=8))
+
+
 def init(flask_app: Flask) -> None:
     import app.api.articles  # noqa: F401
     import app.api.categories  # noqa: F401
@@ -19,10 +28,22 @@ def init(flask_app: Flask) -> None:
     import app.api.users  # noqa: F401
 
     def before_request():
-        flask_app.logger.info("%s %s", request.method, request.full_path, extra={"uid": current_user.id})
+        g.req_id = generate_request_id()
+        g.req_start_time = datetime.utcnow().timestamp()
+        flask_app.logger.info(
+            "API request: %s %s", request.method, request.full_path)
 
     def after_request(response: Response):
-        flask_app.logger.info("%s %s", request.method, request.full_path, extra={"uid": current_user.id})
+        flask_app.logger.info("API response: %d %s",
+                              response.status_code, response.get_data().decode()[:1000])
+
+        now = datetime.utcnow().timestamp()
+        req_duration_sec = round(now - g.req_start_time, 3)
+        flask_app.logger.info("Took %fs", req_duration_sec)
+
+        g.req_id = None
+        g.req_start_time = None
+
         return response
 
     api.before_request(before_request)

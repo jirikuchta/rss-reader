@@ -1,5 +1,6 @@
+import time
 from typing import List
-from flask import request, current_app
+from flask import request
 from flask_login import current_user  # type: ignore
 
 from app.models import db, Category, Article, Subscription
@@ -50,6 +51,7 @@ def create_category() -> TReturnValue:
 @make_api_response
 @require_login
 def list_categories() -> TReturnValue:
+    time.sleep(5)
     categories = Category.query.filter_by(
         user_id=current_user.id).all()
     return [category.to_json() for category in categories], 200
