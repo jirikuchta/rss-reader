@@ -5,11 +5,8 @@ services:
       context: .
       dockerfile: ./docker/tests.Dockerfile
     volumes:
-      - ./app:/app
+      - ./rss_reader:/rss_reader
       - ./tests:/tests
-    ports:
-      - 5000:5000
     environment:
       FLASK_ENV: testing
-      SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
-
+      DATABASE_URI: "sqlite:////:memory:"

@@ -31,17 +31,17 @@ class TestAPISubscribe:
     def test_parser_error(self, as_user_1, feed_server):
         feed_server.feed = MockRSSFeed(title=None, link=None)  # invalid feed
         res = as_user_1.post("/api/subscriptions/",
-                           json={"feed_url": feed_server.url})
+                             json={"feed_url": feed_server.url})
         assert res.status_code == 400, res
         assert res.json["error"]["code"] == "parser_error"
 
     def test_already_exists(self, as_user_1, feed_server):
         res = as_user_1.post("/api/subscriptions/",
-                           json={"feed_url": feed_server.url})
+                             json={"feed_url": feed_server.url})
         assert res.status_code == 201, res
 
         res = as_user_1.post("/api/subscriptions/",
-                           json={"feed_url": feed_server.url})
+                             json={"feed_url": feed_server.url})
         assert res.status_code == 409, res
         assert res.json["error"]["code"] == "already_exists"
 

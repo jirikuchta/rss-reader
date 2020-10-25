@@ -1,11 +1,10 @@
-import time
 from typing import List
-from flask import request
+from flask import request, current_app
 from flask_login import current_user  # type: ignore
 
-from app.models import db, Category, Article, Subscription
+from rss_reader.models import db, Category, Article, Subscription
 
-from app.api import api, TReturnValue, make_api_response, \
+from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ClientError, ErrorType, MissingFieldError
 
 
@@ -51,7 +50,8 @@ def create_category() -> TReturnValue:
 @make_api_response
 @require_login
 def list_categories() -> TReturnValue:
-    time.sleep(5)
+    current_app.logger.info("fasdfasfasfdasfasfd")
+    current_app.logger.debug("fasdfasfasfdasfasfd")
     categories = Category.query.filter_by(
         user_id=current_user.id).all()
     return [category.to_json() for category in categories], 200

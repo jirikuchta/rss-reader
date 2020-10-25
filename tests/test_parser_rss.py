@@ -1,8 +1,8 @@
 import pytest
 from datetime import datetime
 
-from app.parser.common import ParserError, FeedType, Enclosure
-from app.parser.rss import RSSParser, RSSItemParser
+from rss_reader.parser.common import ParserError, FeedType, Enclosure
+from rss_reader.parser.rss import RSSParser, RSSItemParser
 
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
     MockRSSFeedItemEnclosure, MockRSSFeedItemGUID, MockAtomLink

@@ -5,4 +5,4 @@ node_modules/
 
 *.db
 *.cfg
-!/app/config.default.cfg
+!/rss_reader/config.default.cfg

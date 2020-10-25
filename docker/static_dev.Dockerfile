@@ -1,7 +1,7 @@
 FROM node:12-alpine
 
-COPY /app/static /app
+COPY /rss_reader/static /rss_reader
 
-WORKDIR /app
+WORKDIR /rss_reader
 
 RUN npm install --loglevel=error

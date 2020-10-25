@@ -1,10 +1,10 @@
 from flask import request
 from flask_login import current_user  # type: ignore
 
-from app.models import db, Subscription, Category, Article
-from app.parser import parse
+from rss_reader.models import db, Subscription, Category, Article
+from rss_reader.parser import parse
 
-from app.api import api, TReturnValue, make_api_response, \
+from rss_reader.api import api, TReturnValue, make_api_response, \
     require_login, ErrorType, ClientError, MissingFieldError, InvalidFieldError
 
 

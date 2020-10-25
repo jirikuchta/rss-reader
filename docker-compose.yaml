@@ -1,11 +1,11 @@
 version: "3"
 services:
-  app:
+  rss_reader:
     build:
       context: .
-      dockerfile: ./docker/app.Dockerfile
+      dockerfile: ./docker/rss_reader.Dockerfile
     volumes:
-      - ./app:/app/
+      - ./rss_reader:/rss_reader/
     ports:
       - 5000:5000
     environment:
@@ -15,8 +15,8 @@ services:
       context: .
       dockerfile: ./docker/static_dev.Dockerfile
     volumes:
-      - ./app/static/src:/app/src
-      - ./app/static/dist:/app/dist
+      - ./rss_reader/static/src:/rss_reader/src
+      - ./rss_reader/static/dist:/rss_reader/dist
     environment:
       SHELL: sh
     command: >

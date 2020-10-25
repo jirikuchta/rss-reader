@@ -11,6 +11,7 @@ class FeedServer(Thread):
         super().__init__()
         self._port = port
         self._app = Flask(__name__)
+
         self._url = f"http://localhost:{port}"
 
         self.feed = feed

@@ -21,25 +21,25 @@ def generate_request_id():
     return ''.join(random.choices(chars, k=8))
 
 
-def init(flask_app: Flask) -> None:
-    import app.api.articles  # noqa: F401
-    import app.api.categories  # noqa: F401
-    import app.api.subscriptions  # noqa: F401
-    import app.api.users  # noqa: F401
+def init(app: Flask) -> None:
+    import rss_reader.api.articles  # noqa: F401
+    import rss_reader.api.categories  # noqa: F401
+    import rss_reader.api.subscriptions  # noqa: F401
+    import rss_reader.api.users  # noqa: F401
 
     def before_request():
         g.req_id = generate_request_id()
         g.req_start_time = datetime.utcnow().timestamp()
-        flask_app.logger.info(
+        app.logger.info(
             "API request: %s %s", request.method, request.full_path)
 
     def after_request(response: Response):
-        flask_app.logger.info("API response: %d %s",
-                              response.status_code, response.get_data().decode()[:1000])
+        app.logger.info("API response: %d", response.status_code)
+        app.logger.debug("%s", response.get_data().decode())
 
         now = datetime.utcnow().timestamp()
         req_duration_sec = round(now - g.req_start_time, 3)
-        flask_app.logger.info("Took %fs", req_duration_sec)
+        app.logger.info("Took %fs", req_duration_sec)
 
         g.req_id = None
         g.req_start_time = None
@@ -49,7 +49,7 @@ def init(flask_app: Flask) -> None:
     api.before_request(before_request)
     api.after_request(after_request)
 
-    flask_app.register_blueprint(api)
+    app.register_blueprint(api)
 
 
 class ErrorType(Enum):

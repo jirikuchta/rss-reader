@@ -4,14 +4,14 @@ from typing import Union
 from werkzeug.security import check_password_hash
 from werkzeug.wrappers import Response
 
-from app.models import db, User
+from rss_reader.models import db, User
 
 
 views = Blueprint("views", __name__)
 
 
-def init(flask_app: Flask) -> None:
-    flask_app.register_blueprint(views)
+def init(app: Flask) -> None:
+    app.register_blueprint(views)
 
 
 @views.route("/")
