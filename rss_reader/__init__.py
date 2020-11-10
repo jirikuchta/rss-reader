@@ -1,7 +1,7 @@
 import os
 import click
 
-from flask import Flask
+from flask import Flask, g
 from flask.cli import with_appcontext
 from flask_login import LoginManager  # type: ignore
 
@@ -49,7 +49,10 @@ def init_login_manager(app: Flask) -> None:
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        g.skip_logger_uid_resolving = True
+        user = User.query.get(int(user_id))
+        g.skip_logger_uid_resolving = False
+        return user
 
 
 @click.command("create-db")

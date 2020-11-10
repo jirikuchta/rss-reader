@@ -25,7 +25,7 @@ def init():
             else:
                 app.logger.info("waiting")
                 app.logger.debug("debug")
-                time.sleep(2)
+                time.sleep(10)
 
 
 def get_outdated_subscription():

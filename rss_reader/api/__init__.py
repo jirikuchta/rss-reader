@@ -38,7 +38,7 @@ def init(app: Flask) -> None:
         app.logger.debug("%s", response.get_data().decode())
 
         now = datetime.utcnow().timestamp()
-        req_duration_sec = round(now - g.req_start_time, 3)
+        req_duration_sec = now - g.req_start_time
         app.logger.info("Took %fs", req_duration_sec)
 
         g.req_id = None
