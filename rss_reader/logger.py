@@ -1,18 +1,45 @@
+import string
+import random
+from datetime import datetime
 import logging
 from logging.config import dictConfig
-from flask import Flask, g, has_request_context
+from flask import Flask, g, has_request_context, request, Response, current_app
 from flask_login import current_user
+
+
+def generate_request_id():
+    chars = string.ascii_lowercase + string.digits
+    return ''.join(random.choices(chars, k=8))
+
+
+def before_request():
+    g.req_id = generate_request_id()
+    g.req_start_time = datetime.utcnow().timestamp()
+
+    current_app.logger.info(
+        "Request: %s %s%s, data: %s, uid: %s",
+        request.method, request.full_path,
+        request.query_string.decode(), request.data.decode() or None,
+        current_user.id if current_user.is_authenticated else "-")
+
+
+def after_request(response: Response):
+    now = datetime.utcnow().timestamp()
+    req_duration_sec = now - g.req_start_time
+    current_app.logger.info(
+        "Response: status: %d, time: %fs",
+        response.status_code, req_duration_sec)
+
+    g.req_id = None
+    g.req_start_time = None
+
+    return response
 
 
 class ContextFilter(logging.Filter):
 
     def filter(self, record):
-        record.uid = "-"
-        record.rid = "-"
-        if has_request_context():
-            record.rid = g.get("req_id", "-")
-            if not g.get("skip_logger_uid_resolving", False) and current_user.is_authenticated:
-                record.uid = current_user.id
+        record.rid = g.get("req_id", "-") if has_request_context() else "-"
         return True
 
 
@@ -21,8 +48,7 @@ def init(app: Flask):
         "version": 1,
         "formatters": {"default": {
             "datefmt": "%Y/%m/%d %H:%M:%S",
-            "format": "%(asctime)s [pid:%(process)d,uid:%(uid)s,rid:%(rid)s] "
-                      "%(levelname)s: %(message)s "
+            "format": "%(asctime)s [%(rid)s] %(levelname)s: %(message)s "
                       "{%(filename)s.%(funcName)s():%(lineno)d}",
         }},
         "filters": {

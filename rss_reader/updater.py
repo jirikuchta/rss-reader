@@ -25,7 +25,7 @@ def init():
             else:
                 app.logger.info("waiting")
                 app.logger.debug("debug")
-                time.sleep(10)
+                time.sleep(app.config["UPDATER_RUN_INTERVAL"])
 
 
 def get_outdated_subscription():

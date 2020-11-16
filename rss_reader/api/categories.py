@@ -50,8 +50,6 @@ def create_category() -> TReturnValue:
 @make_api_response
 @require_login
 def list_categories() -> TReturnValue:
-    current_app.logger.info("fasdfasfasfdasfasfd")
-    current_app.logger.debug("fasdfasfasfdasfasfd")
     categories = Category.query.filter_by(
         user_id=current_user.id).all()
     return [category.to_json() for category in categories], 200

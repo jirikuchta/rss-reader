@@ -1,13 +1,11 @@
-import string
-import random
-from datetime import datetime
 from enum import Enum, auto
 from collections import namedtuple
-from flask import Flask, Blueprint, jsonify, make_response, g, request, \
-    Response
+from flask import Flask, Blueprint, jsonify, make_response, Response
 from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
+
+from rss_reader.logger import before_request, after_request
 
 
 TReturnValue = Tuple[Any, int]
@@ -16,35 +14,11 @@ TApiMethod = TypeVar('TApiMethod', bound=Callable[..., TReturnValue])
 api = Blueprint("api", __name__, url_prefix="/api")
 
 
-def generate_request_id():
-    chars = string.ascii_lowercase + string.digits
-    return ''.join(random.choices(chars, k=8))
-
-
 def init(app: Flask) -> None:
     import rss_reader.api.articles  # noqa: F401
     import rss_reader.api.categories  # noqa: F401
     import rss_reader.api.subscriptions  # noqa: F401
     import rss_reader.api.users  # noqa: F401
-
-    def before_request():
-        g.req_id = generate_request_id()
-        g.req_start_time = datetime.utcnow().timestamp()
-        app.logger.info(
-            "API request: %s %s", request.method, request.full_path)
-
-    def after_request(response: Response):
-        app.logger.info("API response: %d", response.status_code)
-        app.logger.debug("%s", response.get_data().decode())
-
-        now = datetime.utcnow().timestamp()
-        req_duration_sec = now - g.req_start_time
-        app.logger.info("Took %fs", req_duration_sec)
-
-        g.req_id = None
-        g.req_start_time = None
-
-        return response
 
     api.before_request(before_request)
     api.after_request(after_request)

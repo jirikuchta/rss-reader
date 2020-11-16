@@ -5,12 +5,16 @@ from werkzeug.security import check_password_hash
 from werkzeug.wrappers import Response
 
 from rss_reader.models import db, User
+from rss_reader.logger import before_request, after_request
 
 
 views = Blueprint("views", __name__)
 
 
 def init(app: Flask) -> None:
+    views.before_request(before_request)
+    views.after_request(after_request)
+
     app.register_blueprint(views)
 
 
