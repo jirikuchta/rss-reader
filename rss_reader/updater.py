@@ -23,8 +23,6 @@ def init():
                 except Exception:
                     pass
             else:
-                app.logger.info("waiting")
-                app.logger.debug("debug")
                 time.sleep(app.config["UPDATER_RUN_INTERVAL"])
 
 

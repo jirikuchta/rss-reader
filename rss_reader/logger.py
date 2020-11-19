@@ -26,9 +26,9 @@ def before_request():
 def after_request(response: Response):
     now = datetime.utcnow().timestamp()
     req_duration_sec = now - g.req_start_time
-    current_app.logger.info(
-        "Response: status: %d, time: %fs",
-        response.status_code, req_duration_sec)
+    current_app.logger.info("Response: status: %d, time: %fs",
+                            response.status_code, req_duration_sec)
+    current_app.logger.debug("Response data: %s", response.data.decode())
 
     g.req_id = None
     g.req_start_time = None

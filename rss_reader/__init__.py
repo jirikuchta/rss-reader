@@ -28,6 +28,10 @@ def create_app():
     app.cli.add_command(create_user)
     app.cli.add_command(drop_db)
 
+    app.logger.info("Started successfully.")
+    app.logger.debug("Application config: \n" +
+                     "\n".join([f"{k}: {app.config[k]}" for k in app.config]))
+
     return app
 
 
