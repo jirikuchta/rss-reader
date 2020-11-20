@@ -3,8 +3,8 @@ import random
 import string
 from xml.etree import ElementTree as ET
 
-from rss_reader import create_app, db
-from rss_reader.models import User
+from rss_reader import create_app
+from rss_reader.models import db, User
 from rss_reader.parser.common import NS
 
 from tests.mocks.feed_server import FeedServer
@@ -140,4 +140,4 @@ def generate_feed():
             link=f"http://{generate_str()}",
             guid=MockRSSFeedItemGUID(value=generate_str()),
             description=generate_str(100))
-            for i in range(random.randrange(1, 10))])
+            for i in range(random.randrange(10, 20))])

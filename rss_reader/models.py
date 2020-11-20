@@ -107,6 +107,9 @@ class Article(db.Model):  # type: ignore
     time_published = db.Column(
         db.DateTime,
         nullable=False, server_default=func.now())
+    time_created = db.Column(
+        db.DateTime,
+        nullable=False, server_default=func.now(), index=True)
     time_read = db.Column(db.DateTime, index=True)
     time_starred = db.Column(db.DateTime, index=True)
     subscription_id = db.Column(
