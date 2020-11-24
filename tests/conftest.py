@@ -131,7 +131,10 @@ def generate_str(length=8):
         string.ascii_lowercase + string.digits, k=length))
 
 
-def generate_feed():
+def generate_feed(items_count: int = None):
+    min = items_count if items_count is not None else 10
+    max = items_count + 1 if items_count is not None else 20
+
     return MockRSSFeed(
         title=generate_str(),
         link=f"http://{generate_str()}",
@@ -140,4 +143,4 @@ def generate_feed():
             link=f"http://{generate_str()}",
             guid=MockRSSFeedItemGUID(value=generate_str()),
             description=generate_str(100))
-            for i in range(random.randrange(10, 20))])
+            for i in range(random.randrange(min, max))])
