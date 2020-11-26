@@ -1,5 +1,5 @@
 from typing import List
-from flask import request, current_app
+from flask import request
 from flask_login import current_user  # type: ignore
 
 from rss_reader.models import db, Category, Article, Subscription

@@ -1,5 +1,5 @@
 import pytest
-from rss_reader.updater.purge import purge_old_articles
+from rss_reader.updater import purge_old_articles
 
 
 FEED_ARTICLE_COUNT = 5
