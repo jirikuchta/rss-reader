@@ -62,6 +62,29 @@ class TestPurge:
                 "subscription_id": subscription_id
             }) == FEED_ARTICLE_COUNT
 
+    def test_do_not_purge_starred(self, app, as_user_1, create_subscription):
+        article_id = as_user_1.get("/api/articles/").json[0]["id"]
+
+        res = as_user_1.put(f"/api/articles/{article_id}/star/")
+        assert res.status_code == 204, res
+
+        with app.app_context():
+            assert purge_old_articles({
+                "max_age_days": -1,
+                "purge_unread": True,
+                "subscription_id": None
+            }) == FEED_ARTICLE_COUNT - 1
+
+        res = as_user_1.delete(f"/api/articles/{article_id}/star/")
+        assert res.status_code == 204, res
+
+        with app.app_context():
+            assert purge_old_articles({
+                "max_age_days": -1,
+                "purge_unread": True,
+                "subscription_id": None
+            }) == 1
+
 
 class TestUpdate:
     pass
