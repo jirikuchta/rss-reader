@@ -1,5 +1,5 @@
 import pytest
-from rss_reader.updater import purge_old_articles
+from rss_reader.updater.purge import purge_old_articles
 
 
 FEED_ARTICLE_COUNT = 5
@@ -20,13 +20,13 @@ def create_subscription(as_user_1, updater_feed_server):
     return res.json
 
 
-class TestPurge:
+class TestOldArticlesPurge:
 
     @pytest.mark.parametrize("max_age_days,expected_count", [
         (60, 0),
         (-1, FEED_ARTICLE_COUNT)])
-    def test_purge_expired(self, max_age_days, expected_count, app,
-                           create_subscription):
+    def test_purge_max_age_days(self, max_age_days, expected_count, app,
+                                create_subscription):
         with app.app_context():
             assert purge_old_articles({
                 "max_age_days": max_age_days,
@@ -84,7 +84,3 @@ class TestPurge:
                 "purge_unread": True,
                 "subscription_id": None
             }) == 1
-
-
-class TestUpdate:
-    pass
