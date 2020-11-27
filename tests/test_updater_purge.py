@@ -32,7 +32,7 @@ class TestOldArticlesPurge:
                 "max_age_days": max_age_days,
                 "purge_unread": True,
                 "subscription_id": None
-            }) == expected_count
+            })["total_count"] == expected_count
 
     @pytest.mark.parametrize("purge_unread,expected_count", [
         (False, 0),
@@ -44,7 +44,7 @@ class TestOldArticlesPurge:
                 "max_age_days": -1,
                 "purge_unread": purge_unread,
                 "subscription_id": None
-            }) == expected_count
+            })["total_count"] == expected_count
 
     def test_purge_subscription_id(self, app, as_user_1, create_subscription):
         subscription_id = as_user_1.get("/api/subscriptions/").json[0]["id"]
@@ -54,13 +54,13 @@ class TestOldArticlesPurge:
                 "max_age_days": -1,
                 "purge_unread": True,
                 "subscription_id": 666
-            }) == 0
+            })["total_count"] == 0
 
             assert purge_old_articles({
                 "max_age_days": -1,
                 "purge_unread": True,
                 "subscription_id": subscription_id
-            }) == FEED_ARTICLE_COUNT
+            })["total_count"] == FEED_ARTICLE_COUNT
 
     def test_do_not_purge_starred(self, app, as_user_1, create_subscription):
         article_id = as_user_1.get("/api/articles/").json[0]["id"]
@@ -73,14 +73,4 @@ class TestOldArticlesPurge:
                 "max_age_days": -1,
                 "purge_unread": True,
                 "subscription_id": None
-            }) == FEED_ARTICLE_COUNT - 1
-
-        res = as_user_1.delete(f"/api/articles/{article_id}/star/")
-        assert res.status_code == 204, res
-
-        with app.app_context():
-            assert purge_old_articles({
-                "max_age_days": -1,
-                "purge_unread": True,
-                "subscription_id": None
-            }) == 1
+            })["total_count"] == FEED_ARTICLE_COUNT - 1

@@ -42,7 +42,11 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
     }
 
     for subscription in subscriptions:
-        update_subscription(subscription)
+        try:
+            update_subscription(subscription)
+            result["succeeded"].append(subscription.id)
+        except Exception:
+            result["failed"].append(subscription.id)
 
     app.logger.info("Subscriptions update finished: %s", json.dumps(result))
 
@@ -55,7 +59,11 @@ class PurgeOptions(TypedDict):
     subscription_id: Optional[int]
 
 
-def purge_old_articles(options: PurgeOptions) -> int:
+class PurgeResult(TypedDict):
+    total_count: int
+
+
+def purge_old_articles(options: PurgeOptions) -> PurgeResult:
     app.logger.info("Old articles purging started: %s", json.dumps(options))
 
     min_time_created = datetime.now() - timedelta(days=options["max_age_days"])
@@ -71,11 +79,12 @@ def purge_old_articles(options: PurgeOptions) -> int:
     if options["purge_unread"] is False:
         filters.append(Article.time_read.isnot(None))
 
-    count = Article.query.filter(*filters).delete()
+    result: PurgeResult = {
+        "total_count": Article.query.filter(*filters).delete()
+    }
 
     db.session.commit()
 
-    app.logger.info("Old articles purging finished: "
-                    "articles_deleted_count: %d", count)
+    app.logger.info("Old articles purging finished: %s", json.dumps(result))
 
-    return count
+    return result
