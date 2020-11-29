@@ -45,7 +45,9 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
         try:
             update_subscription(subscription)
             result["succeeded"].append(subscription.id)
-        except Exception:
+        except Exception as e:
+            app.logger.warning("Failed to update subscription: id=%d, err=%s",
+                               subscription.id, e)
             result["failed"].append(subscription.id)
 
     app.logger.info("Subscriptions update finished: %s", json.dumps(result))

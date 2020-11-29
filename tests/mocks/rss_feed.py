@@ -45,9 +45,9 @@ class MockRSSFeedItem:
 
     def __init__(
             self,
-            title: Optional[str],
             link: Optional[str],
             guid: Optional["MockRSSFeedItemGUID"],
+            title: Optional[str] = None,
             description: Optional[str] = None,
             content_encoded: Optional[str] = None,
             comments: Optional[str] = None,

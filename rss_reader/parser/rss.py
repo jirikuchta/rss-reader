@@ -41,14 +41,8 @@ class RSSParser(FeedParser["RSSItemParser"]):
 
     @property
     def items(self) -> List["RSSItemParser"]:
-        nodes = self._node.findall("item")
-        items = []  # type List["RSSItemParser"]
-        for node in nodes:
-            try:
-                items.append(RSSItemParser(node))
-            except Exception:
-                pass  # TODO: log
-        return items
+        return [RSSItemParser(node)
+                for node in self._node.findall("item")]
 
     @property
     def feed_type(self) -> FeedType:
@@ -60,7 +54,6 @@ class RSSItemParser(FeedItemParser):
     def __init__(self, node: ET.Element) -> None:
         self._node = node
         self._guid = self._get_guid()
-        self._title = self._get_title()
         self._url = self._get_url()
 
     @property
@@ -68,12 +61,20 @@ class RSSItemParser(FeedItemParser):
         return self._guid
 
     @property
-    def title(self) -> str:
-        return self._title
-
-    @property
     def hash(self):
         return md5(ET.tostring(self._node)).hexdigest()
+
+    @property
+    def title(self) -> Optional[str]:
+        title = get_child_node_text(self._node, "title")
+
+        if title is None:
+            title = get_child_node_text(self._node, "description")
+
+        if title is None:
+            title = get_child_node_text(self._node, "content:encoded")
+
+        return title
 
     @property
     def url(self) -> Optional[str]:
@@ -118,16 +119,8 @@ class RSSItemParser(FeedItemParser):
 
     @property
     def enclosures(self) -> List[Enclosure]:
-        nodes = find_children(self._node, "enclosure")
-        enclosures = []  # type: List[Enclosure]
-
-        for node in nodes:
-            try:
-                enclosures.append(Enclosure(node))
-            except Exception:
-                pass  # TODO: log
-
-        return enclosures
+        return [Enclosure(node)
+                for node in find_children(self._node, "enclosure")]
 
     @property
     def categories(self) -> List[str]:
@@ -153,20 +146,6 @@ class RSSItemParser(FeedItemParser):
             return value
 
         return None
-
-    def _get_title(self) -> str:
-        value = get_child_node_text(self._node, "title")
-
-        if value is None:
-            value = get_child_node_text(self._node, "description")
-
-        if value is None:
-            value = get_child_node_text(self._node, "content:encoded")
-
-        if value is None:
-            raise ParserError("Cannot parse item title.")
-
-        return value
 
     def _get_guid(self) -> str:
         value = get_child_node_text(self._node, "guid")

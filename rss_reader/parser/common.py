@@ -62,7 +62,7 @@ class FeedItemParser(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def title(self) -> str:
+    def title(self) -> Optional[str]:
         raise NotImplementedError
 
     @property

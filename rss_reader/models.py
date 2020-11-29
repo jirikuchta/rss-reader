@@ -55,6 +55,9 @@ class Category(db.Model):  # type: ignore
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
+    def __str__(self):
+        return f"Category: id={self.id}, user_id={self.user_id}"
+
     def to_json(self):
         return {
             "id": self.id,
@@ -79,6 +82,11 @@ class Subscription(db.Model):  # type: ignore
         db.DateTime,
         index=True, server_default=func.now())
 
+    def __str__(self):
+        return (
+            f"Subscription: id={self.id}, user_id={self.user_id}, "
+            f"feed_url={self.feed_url}")
+
     @classmethod
     def from_parser(cls, parser: FeedParser, **kwargs):
         return cls(
@@ -98,7 +106,7 @@ class Article(db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(255), nullable=False, index=True)
     hash = db.Column(db.String(255), nullable=False)
-    title = db.Column(db.Text, nullable=False)
+    title = db.Column(db.Text)
     url = db.Column(db.String(255))
     summary = db.Column(db.Text)
     content = db.Column(db.Text)
@@ -119,19 +127,25 @@ class Article(db.Model):  # type: ignore
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
+    def __str__(self):
+        return (
+            f"Article: id={self.id}, user_id={self.user_id}, "
+            f"guid={self.guid}, subscription_id={self.subscription_id}")
+
     @classmethod
     def from_parser(cls, parser: FeedItemParser, **kwargs):
-        return cls(
-            guid=parser.guid,
-            hash=parser.hash,
-            title=parser.title,
-            url=parser.url,
-            summary=parser.summary,
-            content=parser.content,
-            comments_url=parser.comments_url,
-            author=parser.author,
-            time_published=parser.time_published,
-            **kwargs)
+        return cls().update(parser, **kwargs)
+
+    def update(self, parser: FeedItemParser, **kwargs):
+        parser_attrs = ["guid", "hash", "title", "url", "summary", "content",
+                        "comments_url", "author", "time_published"]
+        for attr in parser_attrs:
+            setattr(self, attr, getattr(parser, attr))
+
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+        return self
 
     def to_json(self):
         keys = ("id", "title", "url", "summary", "content", "comments_url",

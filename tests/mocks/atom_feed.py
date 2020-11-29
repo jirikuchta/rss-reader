@@ -36,8 +36,8 @@ class MockAtomFeedItem:
     def __init__(
             self,
             item_id: Optional[str],
-            title: Optional[str],
             link: Optional["MockAtomLink"],
+            title: Optional[str] = None,
             summary: Optional[str] = None,
             content: Optional[str] = None,
             comments: Optional[Union["MockAtomLink", str]] = None,

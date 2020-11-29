@@ -37,14 +37,8 @@ class AtomParser(FeedParser["AtomItemParser"]):
 
     @property
     def items(self) -> List["AtomItemParser"]:
-        nodes = self._node.findall("entry")
-        items = []  # type List["AtomItemParser"]
-        for node in nodes:
-            try:
-                items.append(AtomItemParser(node))
-            except Exception:
-                pass  # TODO: log
-        return items
+        return [AtomItemParser(node)
+                for node in self._node.findall("entry")]
 
     @property
     def feed_type(self) -> FeedType:
@@ -61,11 +55,6 @@ class AtomItemParser(FeedItemParser):
             raise_required_elm_missing_error("id", "entry")
         self._guid = guid
 
-        title = get_child_node_text(node, "title")
-        if title is None:
-            raise_required_elm_missing_error("title", "entry")
-        self._title = title
-
         url = get_link_href_attr(self._node, [None, "alternate"])
         if url is None:
             raise_required_elm_missing_error("link", "entry")
@@ -80,12 +69,12 @@ class AtomItemParser(FeedItemParser):
         return md5(ET.tostring(self._node)).hexdigest()
 
     @property
-    def title(self) -> str:
-        return self._title
-
-    @property
     def url(self) -> str:
         return self._url
+
+    @property
+    def title(self) -> Optional[str]:
+        return get_child_node_text(self._node, "title")
 
     @property
     def summary(self) -> Optional[str]:
@@ -138,15 +127,8 @@ class AtomItemParser(FeedItemParser):
 
     @property
     def enclosures(self) -> List[Enclosure]:
-        enclosures = []
-
-        for node in find_links_by_rel_attr(self._node, ["enclosure"]):
-            try:
-                enclosures.append(Enclosure(node))
-            except Exception:
-                pass  # TODO: log
-
-        return enclosures
+        return [Enclosure(node)
+                for node in find_links_by_rel_attr(self._node, ["enclosure"])]
 
     @property
     def categories(self) -> List[str]:
