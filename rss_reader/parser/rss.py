@@ -6,14 +6,14 @@ from hashlib import md5
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from rss_reader.parser.common import NS, ParserError, FeedType, \
+from rss_reader.parser.common import NS, ParserError, FeedType, Repr, \
     FeedParser, FeedItemParser, Enclosure, get_child_node_text, \
     get_child_node_content, format_author, find_children, get_node_text, \
     find_child, get_node_attr, get_link_href_attr, \
     raise_required_elm_missing_error, parse_date_str
 
 
-class RSSParser(FeedParser["RSSItemParser"]):
+class RSSParser(Repr, FeedParser["RSSItemParser"]):
 
     def __init__(self, node: ET.Element) -> None:
         channel_node = node.find("channel")
@@ -41,15 +41,20 @@ class RSSParser(FeedParser["RSSItemParser"]):
 
     @property
     def items(self) -> List["RSSItemParser"]:
-        return [RSSItemParser(node)
-                for node in self._node.findall("item")]
+        items: List["RSSItemParser"] = []
+        for node in self._node.findall("item"):
+            try:
+                items.append(RSSItemParser(node))
+            except Exception:
+                pass  # TODO: log
+        return items
 
     @property
     def feed_type(self) -> FeedType:
         return FeedType.RSS
 
 
-class RSSItemParser(FeedItemParser):
+class RSSItemParser(Repr, FeedItemParser):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
@@ -65,14 +70,14 @@ class RSSItemParser(FeedItemParser):
         return md5(ET.tostring(self._node)).hexdigest()
 
     @property
-    def title(self) -> Optional[str]:
+    def title(self) -> str:
         title = get_child_node_text(self._node, "title")
 
         if title is None:
-            title = get_child_node_text(self._node, "description")
+            title = self.summary
 
         if title is None:
-            title = get_child_node_text(self._node, "content:encoded")
+            title = "(no title)"
 
         return title
 
@@ -119,8 +124,13 @@ class RSSItemParser(FeedItemParser):
 
     @property
     def enclosures(self) -> List[Enclosure]:
-        return [Enclosure(node)
-                for node in find_children(self._node, "enclosure")]
+        enclosures: List[Enclosure] = []
+        for node in find_children(self._node, "enclosure"):
+            try:
+                enclosures.append(Enclosure(node))
+            except Exception:
+                pass  # TODO: log
+        return enclosures
 
     @property
     def categories(self) -> List[str]:

@@ -7,12 +7,12 @@ from typing import List, Optional
 from xml.etree import ElementTree as ET
 
 from rss_reader.parser.common import FeedType, FeedParser, FeedItemParser, \
-    Enclosure, raise_required_elm_missing_error, find_children, \
+    Repr, Enclosure, raise_required_elm_missing_error, find_children, \
     get_child_node_text, get_child_node_content, format_author, \
     get_link_href_attr, find_links_by_rel_attr, get_node_attr, parse_date_str
 
 
-class AtomParser(FeedParser["AtomItemParser"]):
+class AtomParser(Repr, FeedParser["AtomItemParser"]):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
@@ -37,15 +37,20 @@ class AtomParser(FeedParser["AtomItemParser"]):
 
     @property
     def items(self) -> List["AtomItemParser"]:
-        return [AtomItemParser(node)
-                for node in self._node.findall("entry")]
+        items: List[AtomItemParser] = []
+        for node in self._node.findall("entry"):
+            try:
+                items.append(AtomItemParser(node))
+            except Exception:
+                pass  # TODO: log
+        return items
 
     @property
     def feed_type(self) -> FeedType:
         return FeedType.ATOM
 
 
-class AtomItemParser(FeedItemParser):
+class AtomItemParser(Repr, FeedItemParser):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node
@@ -73,8 +78,9 @@ class AtomItemParser(FeedItemParser):
         return self._url
 
     @property
-    def title(self) -> Optional[str]:
-        return get_child_node_text(self._node, "title")
+    def title(self) -> str:
+        title = get_child_node_text(self._node, "title")
+        return title if title else self.url
 
     @property
     def summary(self) -> Optional[str]:
@@ -127,8 +133,13 @@ class AtomItemParser(FeedItemParser):
 
     @property
     def enclosures(self) -> List[Enclosure]:
-        return [Enclosure(node)
-                for node in find_links_by_rel_attr(self._node, ["enclosure"])]
+        enclosures: List[Enclosure] = []
+        for node in find_links_by_rel_attr(self._node, ["enclosure"]):
+            try:
+                enclosures.append(Enclosure(node))
+            except Exception:
+                pass  # TODO: log
+        return enclosures
 
     @property
     def categories(self) -> List[str]:

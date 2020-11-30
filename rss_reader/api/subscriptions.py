@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app as app
 from flask_login import current_user  # type: ignore
 
 from rss_reader.models import db, Subscription, Category, Article
@@ -30,6 +30,13 @@ def create_subscription() -> TReturnValue:
     if not feed_url:
         raise MissingFieldError("feed_url")
 
+    category_id = request.json.get("category_id")
+    if category_id:
+        category_exists = bool(Category.query.filter_by(
+            id=category_id, user_id=current_user.id).first())
+        if not category_exists:
+            raise InvalidFieldError("category_id", msg=f"category not found")
+
     try:
         parser = parse(feed_url)
     except Exception:
@@ -40,24 +47,26 @@ def create_subscription() -> TReturnValue:
     if already_subscribed:
         raise ClientError(ErrorType.AlreadyExists)
 
-    category_id = request.json.get("category_id")
-    if category_id:
-        category_exists = bool(Category.query.filter_by(
-            id=category_id, user_id=current_user.id).first())
-        if not category_exists:
-            raise InvalidFieldError("category_id", msg=f"category not found")
-
     subscription = Subscription.from_parser(
-        parser,
-        feed_url=feed_url, user_id=current_user.id, category_id=category_id)
-
+        parser, feed_url=feed_url, user_id=current_user.id,
+        category_id=category_id)
     db.session.add(subscription)
     db.session.flush()
 
+    app.logger.info("Subscription created: %s", subscription)
+    app.logger.debug(repr(subscription))
+
     for item in parser.items:
-        db.session.add(Article.from_parser(
-            item,
-            subscription_id=subscription.id, user_id=current_user.id))
+        app.logger.info("Creating article for feed item %s", item)
+        app.logger.debug(repr(item))
+
+        article = Article.from_parser(
+            item, subscription_id=subscription.id, user_id=current_user.id)
+        db.session.add(article)
+        db.session.flush()
+
+        app.logger.info("Article created: %s", article)
+        app.logger.debug(repr(article))
 
     db.session.commit()
 

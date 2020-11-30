@@ -9,18 +9,19 @@ from rss_reader.models import db, Subscription, Article
 
 
 class Result(TypedDict):
-    new_articles_count: int
-    updated_articles_count: int
-    skipped_articles_count: int
+    new_items: int
+    updated_items: int
+    skipped_items: int
 
 
 def update_subscription(subscription: Subscription) -> Result:
     app.logger.info("Updating subscription: %s", subscription)
+    app.logger.debug(repr(subscription))
 
     result: Result = {
-        "new_articles_count": 0,
-        "updated_articles_count": 0,
-        "skipped_articles_count": 0
+        "new_items": 0,
+        "updated_items": 0,
+        "skipped_items": 0
     }
 
     parser = parse(subscription.feed_url)
@@ -28,27 +29,47 @@ def update_subscription(subscription: Subscription) -> Result:
         Article.subscription_id == subscription.id).all()
 
     for item in parser.items:
+        app.logger.info("Processing feed item: %s", item)
+        app.logger.debug(repr(item))
+
         article = next(filter(lambda a: a.guid == item.guid, articles), None)
 
         if article:
+            app.logger.info("Matching article found: %s", article)
+            app.logger.debug(repr(article))
+
             if article.hash == item.hash:
-                app.logger.info("Skipping existing article %s", item.guid)
+                app.logger.info("Article is up-to-date, nothing to be done.")
+                result["skipped_items"] += 1
             else:
-                app.logger.info("Updating article %s", item.guid)
+                app.logger.info("Feed item has changed, updating article.")
+
                 article.update(item)
-                app.logger.debug("Article updated: %s", article)
+
+                app.logger.info("Article updated: %s", article)
+                app.logger.debug(repr(article))
+
+                result["updated_items"] += 1
         else:
-            app.logger.info("Creating new article %s", item.guid)
-            db.session.add(Article.from_parser(
-                item,
-                subscription_id=subscription.id, user_id=subscription.user_id))
-            app.logger.debug("Article created: %s", article)
+            app.logger.info("No matching article found, creating new one.")
+
+            article = Article.from_parser(
+                item, subscription_id=subscription.id,
+                user_id=subscription.user_id)
+
+            db.session.add(article)
+            db.session.flush()
+
+            app.logger.info("Article created: %s", article)
+            app.logger.debug(repr(article))
+
+            result["new_items"] += 1
 
     subscription.time_updated = datetime.now()
 
     db.session.commit()
 
     app.logger.info("Subscription updated: %s", subscription)
-    app.logger.debug("Subscription updated: %s", json.dumps(result))
+    app.logger.debug(json.dumps(result))
 
     return result

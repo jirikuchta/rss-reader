@@ -25,6 +25,16 @@ class FeedType(Enum):
 TFeedItemParser = TypeVar("TFeedItemParser", bound="FeedItemParser")
 
 
+class Repr:
+    def __str__(self):
+        return f"<{type(self).__name__} {self.__dict__}>"
+
+    def __repr__(self):
+        return (
+            f"<{type(self).__name__}("
+            f"ElementTree.fromString({ET.tostring(self._node)}))>")
+
+
 class FeedParser(Generic[TFeedItemParser], metaclass=ABCMeta):
 
     @property
@@ -62,7 +72,7 @@ class FeedItemParser(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def title(self) -> Optional[str]:
+    def title(self) -> str:
         raise NotImplementedError
 
     @property
@@ -106,7 +116,7 @@ class FeedItemParser(metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class Enclosure:
+class Enclosure(Repr):
 
     def __init__(self, node: ET.Element) -> None:
         self._node = node

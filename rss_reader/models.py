@@ -27,7 +27,15 @@ def init(app: Flask) -> None:
         db.session.commit()
 
 
-class User(UserMixin, db.Model):  # type: ignore
+class Repr:
+    def __str__(self):
+        return f"<{type(self).__name__} {self.id}>"
+
+    def __repr__(self):
+        return f"<{type(self).__name__} {self.__dict__}>"
+
+
+class User(Repr, UserMixin, db.Model):  # type: ignore
     __tablename__ = "user"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -45,7 +53,7 @@ class User(UserMixin, db.Model):  # type: ignore
         return {"id": self.id, "username": self.username}
 
 
-class Category(db.Model):  # type: ignore
+class Category(Repr, db.Model):  # type: ignore
     __tablename__ = "category"
     __table_args__ = (db.UniqueConstraint("user_id", "title"),)
 
@@ -55,16 +63,13 @@ class Category(db.Model):  # type: ignore
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
-    def __str__(self):
-        return f"Category: id={self.id}, user_id={self.user_id}"
-
     def to_json(self):
         return {
             "id": self.id,
             "title": self.title}
 
 
-class Subscription(db.Model):  # type: ignore
+class Subscription(Repr, db.Model):  # type: ignore
     __tablename__ = "subscription"
     __table_args__ = (db.UniqueConstraint("user_id", "feed_url"),)
 
@@ -82,11 +87,6 @@ class Subscription(db.Model):  # type: ignore
         db.DateTime,
         index=True, server_default=func.now())
 
-    def __str__(self):
-        return (
-            f"Subscription: id={self.id}, user_id={self.user_id}, "
-            f"feed_url={self.feed_url}")
-
     @classmethod
     def from_parser(cls, parser: FeedParser, **kwargs):
         return cls(
@@ -99,14 +99,14 @@ class Subscription(db.Model):  # type: ignore
         return {key: getattr(self, key) for key in keys}
 
 
-class Article(db.Model):  # type: ignore
+class Article(Repr, db.Model):  # type: ignore
     __tablename__ = "article"
     __table_args__ = (db.UniqueConstraint("subscription_id", "guid"),)
 
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(255), nullable=False, index=True)
     hash = db.Column(db.String(255), nullable=False)
-    title = db.Column(db.Text)
+    title = db.Column(db.Text, nullable=False)
     url = db.Column(db.String(255))
     summary = db.Column(db.Text)
     content = db.Column(db.Text)
@@ -127,11 +127,6 @@ class Article(db.Model):  # type: ignore
         db.Integer,
         db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
-    def __str__(self):
-        return (
-            f"Article: id={self.id}, user_id={self.user_id}, "
-            f"guid={self.guid}, subscription_id={self.subscription_id}")
-
     @classmethod
     def from_parser(cls, parser: FeedItemParser, **kwargs):
         return cls().update(parser, **kwargs)
@@ -144,6 +139,8 @@ class Article(db.Model):  # type: ignore
 
         for key in kwargs:
             setattr(self, key, kwargs[key])
+
+        self.time_read = None
 
         return self
 

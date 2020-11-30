@@ -42,10 +42,9 @@ class TestParserRSS:
         assert len(parser.items) == 1
         assert type(parser.items[0]) is RSSItemParser
 
-        # invalid item
+        # skip invalid item
         feed.items = [MockRSSFeedItem(link=None, guid=None)]
-        with pytest.raises(ParserError):
-            RSSParser(feed.build()).items
+        assert len(RSSParser(feed.build()).items) == 0
 
     def test_no_channel_error(self) -> None:
         feed = MockRSSFeed(title="", link="", channel=False)
@@ -77,7 +76,7 @@ class TestParserRSSItem:
     def test_title(self) -> None:
         item = MockRSSFeedItem(title=None, link="",
                                guid=MockRSSFeedItemGUID(""))
-        assert RSSItemParser(item.build()).title is None
+        assert RSSItemParser(item.build()).title is not None
 
         item.title = " <b> foo </b><br/> "
         assert RSSItemParser(item.build()).title == "foo"
@@ -183,9 +182,9 @@ class TestParserRSSItem:
         assert len(RSSItemParser(item.build()).enclosures) == 1
         assert type(RSSItemParser(item.build()).enclosures[0]) is Enclosure
 
+        # skip invalid enclosure
         item.enclosures = [MockRSSFeedItemEnclosure(url=None, type_attr=None)]
-        with pytest.raises(ParserError):
-            RSSItemParser(item.build()).enclosures
+        assert len(RSSItemParser(item.build()).enclosures) == 0
 
     def test_categories(self) -> None:
         item = MockRSSFeedItem(title="", link="", guid=MockRSSFeedItemGUID(""))

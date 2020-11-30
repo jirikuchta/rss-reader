@@ -53,10 +53,9 @@ class TestParserAtom:
         assert len(parser.items) == 1
         assert type(parser.items[0]) is AtomItemParser
 
-        # invalid item
+        # skip invalid items
         feed.items = [MockAtomFeedItem(item_id=None, link=None)]
-        with pytest.raises(ParserError):
-            AtomParser(feed.build()).items
+        assert len(AtomParser(feed.build()).items) == 0
 
 
 class TestParserAtomItem:
@@ -74,7 +73,7 @@ class TestParserAtomItem:
     def test_title(self) -> None:
         item = MockAtomFeedItem(item_id="", title=None,
                                 link=MockAtomLink(href=""))
-        assert AtomItemParser(item.build()).title is None
+        assert AtomItemParser(item.build()).title is not None
 
         item.title = "<b> bar<b/> "
         assert AtomItemParser(item.build()).title == "bar"
@@ -163,11 +162,10 @@ class TestParserAtomItem:
         assert AtomItemParser(item.build()).enclosures[0].type == "bar"
         assert AtomItemParser(item.build()).enclosures[0].length == 1234
 
-        # invalid enclosure
+        # skip invalid enclosure
         item.enclosures = [
             MockAtomLink(href=None, rel="enclosure", type_attr=None)]
-        with pytest.raises(ParserError):
-            AtomItemParser(item.build()).enclosures
+        assert len(AtomItemParser(item.build()).enclosures) == 0
 
     def test_categories(self) -> None:
         item = MockAtomFeedItem(item_id="", title="",
