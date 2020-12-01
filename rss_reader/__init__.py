@@ -1,10 +1,9 @@
 import os
 
 from flask import Flask
-from flask_login import LoginManager  # type: ignore
 
 from rss_reader.logger import init as init_logger
-from rss_reader.models import User, init as init_db
+from rss_reader.models import init as init_db
 from rss_reader.views import init as init_views
 from rss_reader.api import init as init_api
 
@@ -18,7 +17,6 @@ def create_app():
     init_config(app)
     init_logger(app)
     init_db(app)
-    init_login_manager(app)
     init_views(app)
     init_api(app)
 
@@ -37,13 +35,3 @@ def init_config(app: Flask) -> None:
 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SQLALCHEMY_DATABASE_URI"] = app.config["DATABASE_URI"]
-
-
-def init_login_manager(app: Flask) -> None:
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = "views.login"
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))

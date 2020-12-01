@@ -4,21 +4,12 @@ import string
 from xml.etree import ElementTree as ET
 
 from rss_reader import create_app
-from rss_reader.models import db, User
+from rss_reader.models import db
 from rss_reader.parser.common import NS
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
     MockRSSFeedItemGUID
-
-
-TestUsers = {
-    "user1": {
-        "username": "user1",
-        "password": "user1"},
-    "user2": {
-        "username": "user2",
-        "password": "user2"}}
 
 
 @pytest.fixture(scope="session")
@@ -28,37 +19,15 @@ def app():
     return app
 
 
+@pytest.fixture(scope="session")
+def client(app):
+    return app.test_client()
+
+
 @pytest.fixture(scope="function", autouse=True)
 def reset(app, feed_server, randomize_feed):
     create_db(app)
     feed_server.feed = randomize_feed()
-
-
-@pytest.fixture(scope="session")
-def get_client(app):
-    def wrapper(username, password):
-        client = app.test_client()
-        client.post("/login/", data={
-            "username": username,
-            "password": password
-        }, follow_redirects=True)
-        return client
-    return wrapper
-
-
-@pytest.fixture(scope="session")
-def as_user_1(get_client):
-    return get_client(**TestUsers["user1"])
-
-
-@pytest.fixture(scope="session")
-def as_user_2(get_client):
-    return get_client(**TestUsers["user2"])
-
-
-@pytest.fixture(scope="session")
-def as_anonymous(app):
-    return app.test_client()
 
 
 @pytest.fixture(scope="session")
@@ -75,19 +44,8 @@ def randomize_feed():
 
 
 @pytest.fixture(scope="session")
-def create_user(app):
-    def wrapper(username, password):
-        with app.app_context():
-            user = User(username=username, password=password)
-            db.session.add(user)
-            db.session.commit()
-            return user.id
-    return wrapper
-
-
-@pytest.fixture(scope="session")
-def create_subscription(feed_server):
-    def wrapper(client, category_id=None):
+def create_subscription(client, feed_server):
+    def wrapper(category_id=None):
         res = client.post("/api/subscriptions/", json={
             "feed_url": feed_server.url,
             "category_id": category_id})
@@ -97,8 +55,8 @@ def create_subscription(feed_server):
 
 
 @pytest.fixture(scope="session")
-def create_category():
-    def wrapper(client, title=None):
+def create_category(client):
+    def wrapper(title=None):
         if title is None:
             title = generate_str()
         res = client.post("/api/categories/", json={"title": title})
@@ -121,8 +79,6 @@ def create_db(app):
     with app.app_context():
         db.drop_all()
         db.create_all()
-        db.session.add(User(**TestUsers["user1"]))
-        db.session.add(User(**TestUsers["user2"]))
         db.session.commit()
 
 

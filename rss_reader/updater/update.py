@@ -54,8 +54,7 @@ def update_subscription(subscription: Subscription) -> Result:
             app.logger.info("No matching article found, creating new one.")
 
             article = Article.from_parser(
-                item, subscription_id=subscription.id,
-                user_id=subscription.user_id)
+                item, subscription_id=subscription.id)
 
             db.session.add(article)
             db.session.flush()

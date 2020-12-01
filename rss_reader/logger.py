@@ -4,7 +4,6 @@ from datetime import datetime
 import logging
 from logging.config import dictConfig
 from flask import Flask, g, has_request_context, request, Response, current_app
-from flask_login import current_user
 
 
 def generate_request_id():
@@ -17,10 +16,9 @@ def before_request():
     g.req_start_time = datetime.utcnow().timestamp()
 
     current_app.logger.info(
-        "Request: %s %s%s, data: %s, uid: %s",
+        "Request: %s %s%s, data: %s",
         request.method, request.full_path,
-        request.query_string.decode(), request.data.decode() or None,
-        current_user.id if current_user.is_authenticated else "-")
+        request.query_string.decode(), request.data.decode() or None)
 
 
 def after_request(response: Response):

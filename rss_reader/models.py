@@ -1,9 +1,6 @@
 from flask import Flask
-from flask_login import UserMixin  # type: ignore
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from sqlalchemy import func, event, engine  # type: ignore
-
-from werkzeug.security import generate_password_hash
 
 from rss_reader.parser import FeedParser, FeedItemParser
 
@@ -35,33 +32,11 @@ class Repr:
         return f"<{type(self).__name__} {self.__dict__}>"
 
 
-class User(Repr, UserMixin, db.Model):  # type: ignore
-    __tablename__ = "user"
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(255), nullable=False, unique=True)
-    password = db.Column(db.String(255), nullable=False)
-
-    def __init__(self, **kwargs):
-        super(User, self).__init__(**kwargs)
-        self.set_password(self.password)
-
-    def set_password(self, password: str) -> None:
-        self.password = generate_password_hash(password, method="sha256")
-
-    def to_json(self):
-        return {"id": self.id, "username": self.username}
-
-
 class Category(Repr, db.Model):  # type: ignore
     __tablename__ = "category"
-    __table_args__ = (db.UniqueConstraint("user_id", "title"),)
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text, nullable=False)
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+    title = db.Column(db.Text, nullable=False, unique=True)
 
     def to_json(self):
         return {
@@ -71,15 +46,12 @@ class Category(Repr, db.Model):  # type: ignore
 
 class Subscription(Repr, db.Model):  # type: ignore
     __tablename__ = "subscription"
-    __table_args__ = (db.UniqueConstraint("user_id", "feed_url"),)
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, nullable=False)
-    feed_url = db.Column(db.String(255), nullable=False)
+    feed_url = db.Column(db.String(255), nullable=False, unique=True)
     web_url = db.Column(db.String(255), nullable=False)
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+
     category_id = db.Column(
         db.Integer,
         db.ForeignKey("category.id", ondelete="SET NULL"))
@@ -123,9 +95,6 @@ class Article(Repr, db.Model):  # type: ignore
     subscription_id = db.Column(
         db.Integer,
         db.ForeignKey("subscription.id", ondelete="CASCADE"), nullable=False)
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
 
     @classmethod
     def from_parser(cls, parser: FeedItemParser, **kwargs):

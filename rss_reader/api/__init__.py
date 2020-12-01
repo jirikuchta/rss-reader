@@ -1,7 +1,6 @@
 from enum import Enum, auto
 from collections import namedtuple
 from flask import Flask, Blueprint, jsonify, make_response, Response
-from flask_login import current_user
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 
@@ -18,7 +17,6 @@ def init(app: Flask) -> None:
     import rss_reader.api.articles  # noqa: F401
     import rss_reader.api.categories  # noqa: F401
     import rss_reader.api.subscriptions  # noqa: F401
-    import rss_reader.api.users  # noqa: F401
 
     api.before_request(before_request)
     api.after_request(after_request)
@@ -31,8 +29,6 @@ class ErrorType(Enum):
     MissingField = auto()
     InvalidField = auto()
     ParserError = auto()
-    Unauthorized = auto()
-    Forbidden = auto()
     NotFound = auto()
     AlreadyExists = auto()
 
@@ -43,8 +39,6 @@ Errors: Dict[ErrorType, Error] = {
     ErrorType.MissingField: Error(400, "missing_field"),
     ErrorType.InvalidField: Error(400, "invalid_field"),
     ErrorType.ParserError: Error(400, "parser_error"),
-    ErrorType.Unauthorized: Error(401, "unauthorized"),
-    ErrorType.Forbidden: Error(403, "forbidden"),
     ErrorType.NotFound: Error(404, "not_found"),
     ErrorType.AlreadyExists: Error(409, "already_exists")}
 
@@ -69,15 +63,6 @@ class InvalidFieldError(ClientError):
     def __init__(self, field: str, **kwargs) -> None:
         super().__init__(ErrorType.InvalidField, **kwargs)
         self.data["error"]["field"] = field
-
-
-def require_login(func: TApiMethod) -> TApiMethod:
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> TReturnValue:
-        if not current_user.is_authenticated:
-            raise ClientError(ErrorType.Unauthorized)
-        return func(*args, **kwargs)
-    return cast(TApiMethod, wrapper)
 
 
 def make_api_response(func: TApiMethod) -> TApiMethod:

@@ -13,9 +13,9 @@ def updater_feed_server(feed_server, randomize_feed):
 
 
 @pytest.fixture(scope="function")
-def create_subscription(as_user_1, updater_feed_server):
-    res = as_user_1.post("/api/subscriptions/",
-                         json={"feed_url": updater_feed_server.url})
+def create_subscription(client, updater_feed_server):
+    res = client.post("/api/subscriptions/",
+                      json={"feed_url": updater_feed_server.url})
     assert res.status_code == 201, res
     return res.json
 
@@ -46,8 +46,8 @@ class TestOldArticlesPurge:
                 "subscription_id": None
             })["total_count"] == expected_count
 
-    def test_purge_subscription_id(self, app, as_user_1, create_subscription):
-        subscription_id = as_user_1.get("/api/subscriptions/").json[0]["id"]
+    def test_purge_subscription_id(self, app, client, create_subscription):
+        subscription_id = client.get("/api/subscriptions/").json[0]["id"]
 
         with app.app_context():
             assert purge_old_articles({
@@ -62,10 +62,10 @@ class TestOldArticlesPurge:
                 "subscription_id": subscription_id
             })["total_count"] == FEED_ARTICLE_COUNT
 
-    def test_do_not_purge_starred(self, app, as_user_1, create_subscription):
-        article_id = as_user_1.get("/api/articles/").json[0]["id"]
+    def test_do_not_purge_starred(self, app, client, create_subscription):
+        article_id = client.get("/api/articles/").json[0]["id"]
 
-        res = as_user_1.put(f"/api/articles/{article_id}/star/")
+        res = client.put(f"/api/articles/{article_id}/star/")
         assert res.status_code == 204, res
 
         with app.app_context():
