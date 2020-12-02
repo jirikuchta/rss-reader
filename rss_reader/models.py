@@ -102,9 +102,12 @@ class Article(Repr, db.Model):  # type: ignore
 
     def update(self, parser: FeedItemParser, **kwargs):
         parser_attrs = ["guid", "hash", "title", "url", "summary", "content",
-                        "comments_url", "author", "time_published"]
+                        "comments_url", "author"]
         for attr in parser_attrs:
             setattr(self, attr, getattr(parser, attr))
+
+        if getattr(parser, "time_published") is not None:
+            setattr(self, "time_published", getattr(parser, "time_published"))
 
         for key in kwargs:
             setattr(self, key, kwargs[key])

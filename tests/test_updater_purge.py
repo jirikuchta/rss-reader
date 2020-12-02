@@ -17,7 +17,6 @@ def create_subscription(client, updater_feed_server):
     res = client.post("/api/subscriptions/",
                       json={"feed_url": updater_feed_server.url})
     assert res.status_code == 201, res
-    return res.json
 
 
 class TestOldArticlesPurge:

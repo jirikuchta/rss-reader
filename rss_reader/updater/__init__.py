@@ -1,11 +1,12 @@
 import json
 from datetime import datetime, timedelta
-from typing import Optional, TypedDict, List
+from typing import Optional, TypedDict, List, Dict
 
 from flask import current_app as app
 
 from rss_reader.models import db, Subscription, Article
-from rss_reader.updater.update import update_subscription
+from rss_reader.updater.update import update_subscription, \
+    Result as SubscriptionUpdateResult
 
 
 class UpdateOptions(TypedDict):
@@ -15,8 +16,9 @@ class UpdateOptions(TypedDict):
 
 class UpdateResult(TypedDict):
     total_count: int
-    succeeded: List[int]
-    failed: List[int]
+    succeeded_ids: List[int]
+    failed_ids: List[int]
+    results: Dict[int, SubscriptionUpdateResult]
 
 
 def update_subscriptions(options: UpdateOptions) -> UpdateResult:
@@ -38,18 +40,20 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
 
     result: UpdateResult = {
         "total_count": len(subscriptions),
-        "succeeded": [],
-        "failed": []
+        "succeeded_ids": [],
+        "failed_ids": [],
+        "results": {}
     }
 
     for subscription in subscriptions:
         try:
-            update_subscription(subscription)
-            result["succeeded"].append(subscription.id)
+            res = update_subscription(subscription)
+            result["results"][subscription.id] = res
+            result["succeeded_ids"].append(subscription.id)
         except Exception as e:
             app.logger.warning("Failed to update subscription: %s, err=%s",
                                subscription, e)
-            result["failed"].append(subscription.id)
+            result["succeeded_ids"].append(subscription.id)
 
     app.logger.info("Subscriptions update finished: %s", json.dumps(result))
 
