@@ -1,8 +1,15 @@
 async function api(method, uri, data = null) {
     let init = { method: method };
     if (data) {
-        init.body = JSON.stringify(data);
-        init.headers = new Headers({ "Content-Type": "application/json" });
+        if (method == "GET") {
+            let params = new URLSearchParams();
+            Object.keys(data).forEach(k => params.append(k, data[k]));
+            uri += `?${params.toString()}`;
+        }
+        else {
+            init.body = JSON.stringify(data);
+            init.headers = new Headers({ "Content-Type": "application/json" });
+        }
     }
     let res = await fetch(uri, init);
     let body = res.status != 204 ? await res.json() : null;
@@ -190,10 +197,10 @@ async function list$2(entity) {
     let res;
     if (entity) {
         if (isSubscription(entity)) {
-            res = await api("GET", `/api/subscriptions/${entity['id']}/articles/`);
+            res = await api("GET", `/api/articles/`, { "subscription_id": entity.id });
         }
         else {
-            res = await api("GET", `/api/categories/${entity['id']}/articles/`);
+            res = await api("GET", `/api/articles/`, { "category_id": entity.id });
         }
     }
     else {

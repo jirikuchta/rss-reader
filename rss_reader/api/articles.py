@@ -1,6 +1,6 @@
 from flask import request
 
-from rss_reader.models import db, Article
+from rss_reader.models import db, Article, Subscription
 
 from rss_reader.api import api, TReturnValue, make_api_response, \
     ClientError, ErrorType
@@ -18,9 +18,36 @@ def get_article_or_raise(article_id: int) -> Article:
 @api.route("/articles/", methods=["GET"])
 @make_api_response
 def list_articles() -> TReturnValue:
+    subscription_id = request.args.get("subscription_id")
+    category_id = request.args.get("category_id")
+    starred = request.args.get("starred", False)
+    include_read = request.args.get("include_read", False)
+    limit = int(request.args.get("limit", 20))
+    page = int(request.args.get("page", 1))
+
+    filters = []
+
+    if subscription_id is not None:
+        filters.append(Article.subscription_id == int(subscription_id))
+
+    if category_id is not None and subscription_id is None:
+        subscriptions_query = db.session.query(Subscription.id).filter(
+            Subscription.category_id == category_id)
+        filters.append(Article.subscription_id.in_(subscriptions_query))
+
+    if starred:
+        filters.append(Article.time_starred.isnot(None))
+
+    if not include_read:
+        filters.append(Article.time_read.is_(None))
+
     articles = Article.query\
-        .filter_by(time_read=None)\
-        .order_by(Article.time_published.desc()).all()
+        .filter(*filters)\
+        .order_by(Article.time_published.desc())\
+        .limit(limit)\
+        .offset((page-1)*limit)\
+        .all()
+
     return [article.to_json() for article in articles], 200
 
 

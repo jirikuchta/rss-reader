@@ -92,19 +92,6 @@ def delete_category(category_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/categories/<int:category_id>/articles/", methods=["GET"])
-@make_api_response
-def list_category_articles(category_id: int) -> TReturnValue:
-    category = get_category_or_raise(category_id)
-    subscription_ids = [s.id for s in list_subscriptions(category)]
-
-    articles = Article.query\
-        .filter(Article.subscription_id.in_(subscription_ids))\
-        .order_by(Article.time_published.desc()).all()
-
-    return [article.to_json() for article in articles], 200
-
-
 @api.route("/categories/<int:category_id>/read/", methods=["PUT"])
 @make_api_response
 def mark_category_read(category_id: int) -> TReturnValue:

@@ -117,16 +117,6 @@ def delete_subscription(subscription_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/subscriptions/<int:subscription_id>/articles/", methods=["GET"])
-@make_api_response
-def list_subscription_articles(subscription_id: int) -> TReturnValue:
-    subscription = get_subscription_or_raise(subscription_id)
-    articles = Article.query\
-        .filter_by(subscription_id=subscription.id)\
-        .order_by(Article.time_published.desc()).all()
-    return [article.to_json() for article in articles], 200
-
-
 @api.route("/subscriptions/<int:subscription_id>/read/", methods=["PUT"])
 @make_api_response
 def mark_subscription_read(subscription_id: int) -> TReturnValue:

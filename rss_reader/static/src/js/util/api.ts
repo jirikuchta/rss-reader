@@ -16,8 +16,14 @@ export async function api(method: METHODS, uri: string, data: any = null) {
 	let init: RequestInit = {method: method};
 
 	if (data) {
-		init.body = JSON.stringify(data);
-		init.headers = new Headers({"Content-Type": "application/json"});
+		if (method == "GET") {
+			let params = new URLSearchParams();
+			Object.keys(data).forEach(k => params.append(k, data[k]));
+			uri += `?${params.toString()}`;
+		} else {
+			init.body = JSON.stringify(data);
+			init.headers = new Headers({"Content-Type": "application/json"});
+		}
 	}
 
 	let res = await fetch(uri, init);
