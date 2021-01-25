@@ -7,7 +7,8 @@ export type ArticleId = number;
 export interface Article {
 	id: ArticleId;
 	subscriptionId: SubscriptionId;
-	title?: string;
+	title: string;
+	content?: string;
 	summary?: string;
 	uri: string;
 }

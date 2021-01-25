@@ -210,24 +210,44 @@ async function list$2(entity) {
 }
 
 let node$1;
-let selectedNavItem;
 function init$2() {
     build();
     return node$1;
 }
+async function build(article) {
+    node$1 ? clear(node$1) : node$1 = node("section", { "id": "detail" });
+    if (!article) {
+        return;
+    }
+    let frag = fragment();
+    let header = node("header", {}, "", frag);
+    let content = node("div", {}, "", frag);
+    let title = node("h1", {}, "", header);
+    node("a", { href: article.uri, target: "_blank", rel: "noopener noreferrer" }, article.title, title);
+    content.innerHTML = article.content || article.summary || "";
+    node$1.appendChild(frag);
+}
+
+let node$2;
+let selectedNavItem;
+function init$3() {
+    build$1();
+    return node$2;
+}
 function setSelectedNavItem(item) {
     selectedNavItem = item;
-    build();
+    build$1();
 }
-async function build() {
-    node$1 ? clear(node$1) : node$1 = node("section", { "id": "list" });
+async function build$1() {
+    node$2 ? clear(node$2) : node$2 = node("section", { "id": "list" });
     let items = await list$2(selectedNavItem);
-    items && items.forEach(article => node$1.appendChild(buildItem(article)));
+    items && items.forEach(article => node$2.appendChild(buildItem(article)));
 }
 function buildItem(article) {
     let node$1 = node("article");
     node$1.appendChild(node("h3", {}, article.title));
     article.summary && node$1.appendChild(node("p", {}, article.summary));
+    node$1.addEventListener("click", _ => build(article));
     return node$1;
 }
 
@@ -579,23 +599,23 @@ async function confirm(text, ok, cancel) {
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
 
 const SELECTED_CSS_CLASS = "is-selected";
-let node$2;
-function init$3() {
-    build$1();
+let node$3;
+function init$4() {
+    build$2();
     // FIXME: may cause two consecutive builds
-    subscribe("subscriptions-changed", build$1);
-    subscribe("categories-changed", build$1);
-    return node$2;
+    subscribe("subscriptions-changed", build$2);
+    subscribe("categories-changed", build$2);
+    return node$3;
 }
-async function build$1() {
-    node$2 ? clear(node$2) : node$2 = node("nav");
-    let header = node("header", {}, "", node$2);
+async function build$2() {
+    node$3 ? clear(node$3) : node$3 = node("nav");
+    let header = node("header", {}, "", node$3);
     node("h3", {}, "Subscriptions", header);
     let btn = button({ icon: "plus-circle" }, "", header);
     btn.addEventListener("click", e => editSubscription());
     list$1()
-        .forEach(cat => node$2.appendChild(buildCategory(cat)));
-    let uncategorized = node("ul", {}, "", node$2);
+        .forEach(cat => node$3.appendChild(buildCategory(cat)));
+    let uncategorized = node("ul", {}, "", node$3);
     list()
         .filter(s => s.category_id == null)
         .forEach(s => uncategorized.appendChild(buildItem$1(s)));
@@ -634,7 +654,7 @@ function buildItem$1(entity) {
 }
 function selectItem(itemNode, entity) {
     var _a;
-    (_a = node$2.querySelector(`.${SELECTED_CSS_CLASS}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS);
+    (_a = node$3.querySelector(`.${SELECTED_CSS_CLASS}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS);
     itemNode.classList.add(SELECTED_CSS_CLASS);
     setSelectedNavItem(entity);
 }
@@ -685,22 +705,13 @@ async function deleteCategory(category) {
     }
 }
 
-let node$3;
-function init$4() {
-    build$2();
-    return node$3;
-}
-async function build$2() {
-    node$3 ? clear(node$3) : node$3 = node("section", { "id": "detail" });
-}
-
 let node$4 = document.querySelector("main");
 async function init$5() {
-    let navNode = init$3();
-    let listNode = init$2();
+    let navNode = init$4();
+    let listNode = init$3();
     node$4.appendChild(navNode);
     node$4.appendChild(listNode);
-    node$4.appendChild(init$4());
+    node$4.appendChild(init$2());
     new Resizer(navNode, "sidebar-width");
     new Resizer(listNode, "articles-width");
 }
