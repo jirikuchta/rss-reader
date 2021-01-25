@@ -67,7 +67,7 @@ class Subscription(Repr, db.Model):  # type: ignore
             **kwargs)
 
     def to_json(self):
-        keys = ("id", "title", "feed_url", "web_url", "category_id",)
+        keys = ("id", "title", "feed_url", "web_url", "category_id")
         return {key: getattr(self, key) for key in keys}
 
 

@@ -10,19 +10,23 @@ export interface Article {
 	title: string;
 	content?: string;
 	summary?: string;
-	uri: string;
+	url: string;
 }
 
 export async function list(entity?: Subscription | Category) {
 	let res: ApiResponse;
 	if (entity) {
 		if (isSubscription(entity)) {
-			res = await api("GET", `/api/articles/`, {"subscription_id": entity.id});
+			res = await api("GET", "/api/articles/", {"subscription_id": entity.id});
 		} else {
-			res = await api("GET", `/api/articles/`, {"category_id": entity.id});
+			res = await api("GET", "/api/articles/", {"category_id": entity.id});
 		}
 	} else {
-		res = await api("GET", `/api/articles/`);
+		res = await api("GET", "/api/articles/");
 	}
 	return res.data as Article[];
+}
+
+export async function toggle_read(article: Article) {
+	await api("PUT", `/api/articles/${article.id}/read/`);
 }

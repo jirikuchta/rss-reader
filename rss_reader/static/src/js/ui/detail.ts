@@ -17,7 +17,7 @@ export async function build(article?: Article) {
 	let content = html.node("div", {}, "", frag);
 
 	let title = html.node("h1", {}, "", header);
-	html.node("a", {href: article.uri, target: "_blank", rel: "noopener noreferrer"}, article.title, title);
+	html.node("a", {href: article.url, target: "_blank", rel: "noopener noreferrer"}, article.title, title);
 
 	content.innerHTML = article.content || article.summary || "";
 

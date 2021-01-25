@@ -5,6 +5,9 @@ import { Article } from "data/articles";
 import { build as buildDetail } from "ui/detail";
 import * as html from "util/html";
 
+const SELECTED_CSS_CLASS = "is-selected";
+const READ_CSS_CLASS = "is-read";
+
 let node:HTMLElement;
 let selectedNavItem: Category | Subscription;
 
@@ -28,6 +31,16 @@ function buildItem(article: Article) {
 	let node = html.node("article");
 	node.appendChild(html.node("h3", {}, article.title));
 	article.summary && node.appendChild(html.node("p", {}, article.summary));
-	node.addEventListener("click", _ => buildDetail(article))
+	node.addEventListener("click", _ => selectItem(node, article));
 	return node;
+}
+
+async function selectItem(itemNode: HTMLElement, article: Article) {
+	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
+	itemNode.classList.add(SELECTED_CSS_CLASS);
+
+	buildDetail(article);
+
+	await articles.toggle_read(article);
+	itemNode.classList.add(READ_CSS_CLASS);
 }

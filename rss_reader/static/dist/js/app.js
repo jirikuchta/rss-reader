@@ -197,16 +197,19 @@ async function list$2(entity) {
     let res;
     if (entity) {
         if (isSubscription(entity)) {
-            res = await api("GET", `/api/articles/`, { "subscription_id": entity.id });
+            res = await api("GET", "/api/articles/", { "subscription_id": entity.id });
         }
         else {
-            res = await api("GET", `/api/articles/`, { "category_id": entity.id });
+            res = await api("GET", "/api/articles/", { "category_id": entity.id });
         }
     }
     else {
-        res = await api("GET", `/api/articles/`);
+        res = await api("GET", "/api/articles/");
     }
     return res.data;
+}
+async function toggle_read(article) {
+    await api("PUT", `/api/articles/${article.id}/read/`);
 }
 
 let node$1;
@@ -223,11 +226,13 @@ async function build(article) {
     let header = node("header", {}, "", frag);
     let content = node("div", {}, "", frag);
     let title = node("h1", {}, "", header);
-    node("a", { href: article.uri, target: "_blank", rel: "noopener noreferrer" }, article.title, title);
+    node("a", { href: article.url, target: "_blank", rel: "noopener noreferrer" }, article.title, title);
     content.innerHTML = article.content || article.summary || "";
     node$1.appendChild(frag);
 }
 
+const SELECTED_CSS_CLASS = "is-selected";
+const READ_CSS_CLASS = "is-read";
 let node$2;
 let selectedNavItem;
 function init$3() {
@@ -247,8 +252,16 @@ function buildItem(article) {
     let node$1 = node("article");
     node$1.appendChild(node("h3", {}, article.title));
     article.summary && node$1.appendChild(node("p", {}, article.summary));
-    node$1.addEventListener("click", _ => build(article));
+    node$1.addEventListener("click", _ => selectItem(node$1, article));
     return node$1;
+}
+async function selectItem(itemNode, article) {
+    var _a;
+    (_a = node$2.querySelector(`.${SELECTED_CSS_CLASS}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS);
+    itemNode.classList.add(SELECTED_CSS_CLASS);
+    build(article);
+    await toggle_read(article);
+    itemNode.classList.add(READ_CSS_CLASS);
 }
 
 function id() {
@@ -598,7 +611,7 @@ async function confirm(text, ok, cancel) {
 }
 window.addEventListener("keydown", e => e.keyCode == 27 && (current$1 === null || current$1 === void 0 ? void 0 : current$1.close()));
 
-const SELECTED_CSS_CLASS = "is-selected";
+const SELECTED_CSS_CLASS$1 = "is-selected";
 let node$3;
 function init$4() {
     build$2();
@@ -644,7 +657,7 @@ function buildItem$1(entity) {
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
     }
-    node$1.addEventListener("click", e => selectItem(node$1, entity));
+    node$1.addEventListener("click", e => selectItem$1(node$1, entity));
     let btn = button({ className: "plain btn-dots", icon: "dots-horizontal" }, "", node$1);
     btn.addEventListener("click", e => {
         e.stopPropagation();
@@ -652,10 +665,10 @@ function buildItem$1(entity) {
     });
     return node$1;
 }
-function selectItem(itemNode, entity) {
+function selectItem$1(itemNode, entity) {
     var _a;
-    (_a = node$3.querySelector(`.${SELECTED_CSS_CLASS}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS);
-    itemNode.classList.add(SELECTED_CSS_CLASS);
+    (_a = node$3.querySelector(`.${SELECTED_CSS_CLASS$1}`)) === null || _a === void 0 ? void 0 : _a.classList.remove(SELECTED_CSS_CLASS$1);
+    itemNode.classList.add(SELECTED_CSS_CLASS$1);
     setSelectedNavItem(entity);
 }
 function showItemPopup(entity, target) {

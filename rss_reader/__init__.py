@@ -11,6 +11,7 @@ from rss_reader.api import init as init_api
 def create_app():
     app = Flask(
         __name__,
+        template_folder="",
         static_folder="static/dist",
         static_url_path="/static")
 
