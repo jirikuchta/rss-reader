@@ -1,7 +1,4 @@
-import os
 from typing import List, Tuple, Optional
-from urllib import request
-from urllib.error import URLError
 from html.parser import HTMLParser
 
 
@@ -40,33 +37,3 @@ class FaviconParser(HTMLParser):
                 if k == "rel" and v and "icon" in v.split(" "):
                     return True
         return False
-
-
-def favicon(web_url: str) -> None:
-    web_url = web_url.strip("/")
-
-    try:
-        file = request.urlopen(f"{web_url}/favicon.ico").read()
-    except URLError:
-        try:
-            with request.urlopen(web_url) as response:
-                charset = response.headers.get_content_charset("utf-8")
-                html = response.read().decode(charset)
-
-            icon_href = FaviconParser.parse(html)
-
-            if not icon_href:
-                return None
-
-            if not icon_href.startswith("http"):
-                icon_href = f"{web_url}/{icon_href.strip('/')}"
-
-            file = request.urlopen(icon_href).read()
-
-        except Exception:
-            pass
-
-    if file:
-        print("===============================")
-        with open(os.path.join("/rss_reader", "00000001.ico"), "wb") as f:
-            f.write(file)

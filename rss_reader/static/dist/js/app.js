@@ -644,6 +644,7 @@ function buildCategory(category) {
 function buildItem$1(entity) {
     let node$1 = node("li");
     if (isSubscription(entity)) {
+        node$1.appendChild(node("img", { src: `/feed-icon/${entity.id}/` }));
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
     }

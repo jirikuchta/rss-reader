@@ -26,7 +26,10 @@ def after_request(response: Response):
     req_duration_sec = now - g.req_start_time
     current_app.logger.info("Response: status: %d, time: %fs",
                             response.status_code, req_duration_sec)
-    current_app.logger.debug("Response data: %s", response.data.decode())
+    try:
+        current_app.logger.debug("Response data: %s", response.data.decode())
+    except UnicodeError:
+        pass  # feed icon response probably
 
     g.req_id = None
     g.req_start_time = None

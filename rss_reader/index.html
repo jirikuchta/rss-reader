@@ -2,10 +2,10 @@
 <html>
 	<head>
 		<title>{% block title %}{% endblock %}</title>
-		<link rel="stylesheet" type="text/css" href="/static/css/app.css" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/app.css') }}" />
 	</head>
 	<body>
 		<main></main>
-		<script src="/static/js/app.js"></script>
+		<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 	</body>
 </html>

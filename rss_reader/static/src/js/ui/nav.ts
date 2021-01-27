@@ -58,6 +58,7 @@ function buildItem(entity: Category | Subscription) {
 	let node = html.node("li");
 
 	if (isSubscription(entity)) {
+		node.appendChild(html.node("img", {src: `/feed-icon/${entity.id}/`}));
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
 		node.appendChild(html.node("span", {className: "count"}, "50"));
 	} else {

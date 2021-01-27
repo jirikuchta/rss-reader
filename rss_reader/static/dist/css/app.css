@@ -175,6 +175,10 @@ nav li.category.is-collapsed ~ li {
 nav li.category ~ li {
   padding-left: 48px;
 }
+nav li img {
+  width: 16px;
+  margin-right: 8px;
+}
 nav li .title {
   flex-grow: 1;
   white-space: nowrap;

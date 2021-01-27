@@ -3,7 +3,6 @@ from flask import request, current_app as app
 
 from rss_reader.models import db, Subscription, Category, Article
 from rss_reader.parser import parse
-from rss_reader.utils import favicon
 
 from rss_reader.api import api, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
@@ -74,7 +73,6 @@ def create_subscription() -> TReturnValue:
 @api.route("/subscriptions/", methods=["GET"])
 @make_api_response
 def list_subscriptions() -> TReturnValue:
-    favicon("https://www.reddit.com")
     subscriptions = Subscription.query.all()
     return [subscription.to_json() for subscription in subscriptions], 200
 
