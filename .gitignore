@@ -4,5 +4,7 @@ node_modules/
 .mypy_cache/
 
 *.db
+*.sqlite
+*.cache
 *.cfg
 !/rss_reader/config.default.cfg

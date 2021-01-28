@@ -1,11 +1,10 @@
+from base64 import b64decode
 from io import BytesIO
 from urllib import request
-from flask import Flask, Blueprint, render_template, Response, abort
-
+from flask import Flask, Blueprint, render_template, abort, Response
 from rss_reader.logger import before_request, after_request
 from rss_reader.models import Subscription
 from rss_reader.parser import parse_web_favicon_url
-
 
 views = Blueprint("views", __name__)
 
@@ -24,12 +23,16 @@ def index() -> str:
 
 @views.route("/feed-icon/<int:subscription_id>/")
 def feed_icon(subscription_id: int) -> Response:
-    icon = None
+    # 1px transparent GIF as default
+    icon = b64decode(
+        "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==")
+
     subscription = Subscription.query.get(subscription_id)
-    web_url = subscription.web_url.strip("/")
 
     if not subscription:
         abort(404)
+
+    web_url = subscription.web_url.strip("/")
 
     try:
         with request.urlopen(f"{web_url}/favicon.ico") as res:
@@ -42,12 +45,5 @@ def feed_icon(subscription_id: int) -> Response:
                     icon = res.read()
         except Exception:
             pass
-    finally:
-        if not icon:
-            abort(404)
 
-        res = Response(BytesIO(icon), mimetype="image/x-icon")
-        # res.cache_control.max_age = 300
-        # res.cache_control.public = True
-
-        return res
+    return Response(BytesIO(icon), mimetype="image/x-icon")

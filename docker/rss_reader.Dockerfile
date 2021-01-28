@@ -1,7 +1,6 @@
 FROM python:3.8-slim-buster
 
-RUN apt-get update && apt-get install -y build-essential python-dev
-
+RUN apt-get update && apt-get install -y build-essential python-dev libpcre3-dev
 COPY rss_reader /rss_reader
 COPY requirements.txt /requirements.txt
 
