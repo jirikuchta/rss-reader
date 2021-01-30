@@ -264,6 +264,17 @@ async function selectItem(itemNode, article) {
     itemNode.classList.add(READ_CSS_CLASS);
 }
 
+function subscription_icon(subscription) {
+    let node$1 = node("span", { className: "subscription-icon" });
+    let img = new Image();
+    img.onload = () => {
+        img.width == 1 && (node$1.dataset.content = "K");
+        img.width > 1 && node$1.appendChild(img);
+    };
+    img.src = `/feed-icon/${subscription.id}/`;
+    return node$1;
+}
+
 function id() {
     return `i${Math.random().toString(36).substr(2, 9)}`;
 }
@@ -644,7 +655,7 @@ function buildCategory(category) {
 function buildItem$1(entity) {
     let node$1 = node("li");
     if (isSubscription(entity)) {
-        node$1.appendChild(node("img", { src: `/feed-icon/${entity.id}/` }));
+        node$1.appendChild(subscription_icon(entity));
         node$1.appendChild(node("span", { className: "title" }, entity.title));
         node$1.appendChild(node("span", { className: "count" }, "50"));
     }

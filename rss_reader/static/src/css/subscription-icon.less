@@ -1,0 +1,26 @@
+.subscription-icon {
+	@width: 16px;
+	@height: 16px;
+
+	display: flex;
+	align-items: center;
+
+	img {
+		width: @width;
+		height: @height;
+	}
+
+	&:empty::before {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		content: attr(data-content);
+		width: @width;
+		height: @height;
+		text-align: center;
+		font-size: .8rem;
+		font-weight: bold;
+		background: #E1E1E1;
+		color: var(--color-grey);
+	}
+}

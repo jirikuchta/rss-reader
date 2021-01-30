@@ -7,6 +7,7 @@ import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
 import * as list from "ui/list";
+import { subscription_icon } from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
@@ -58,7 +59,7 @@ function buildItem(entity: Category | Subscription) {
 	let node = html.node("li");
 
 	if (isSubscription(entity)) {
-		node.appendChild(html.node("img", {src: `/feed-icon/${entity.id}/`}));
+		node.appendChild(subscription_icon(entity as Subscription));
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
 		node.appendChild(html.node("span", {className: "count"}, "50"));
 	} else {

@@ -175,8 +175,7 @@ nav li.category.is-collapsed ~ li {
 nav li.category ~ li {
   padding-left: 48px;
 }
-nav li img {
-  width: 16px;
+nav li .subscription-icon {
   margin-right: 8px;
 }
 nav li .title {
@@ -315,4 +314,25 @@ body.with-dialog::after {
 }
 .popup-menu > button .icon {
   margin-right: 8px;
+}
+.subscription-icon {
+  display: flex;
+  align-items: center;
+}
+.subscription-icon img {
+  width: 16px;
+  height: 16px;
+}
+.subscription-icon:empty::before {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  content: attr(data-content);
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background: #E1E1E1;
+  color: var(--color-grey);
 }
