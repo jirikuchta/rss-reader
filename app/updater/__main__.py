@@ -1,15 +1,13 @@
-#!/usr/bin/env python3
-
 import argparse
 import time
 from typing import Optional
 
 from flask import Flask
 
-from rss_reader import init_config
-from rss_reader.logger import init as init_logger
-from rss_reader.models import init as init_db
-from rss_reader.updater import purge_old_articles, update_subscriptions
+from lib.config import init as init_config
+from lib.logger import init as init_logger
+from models import init as init_db
+from updater import purge_old_articles, update_subscriptions
 
 
 def main(loop: bool = False, subscription_id: Optional[int] = None):

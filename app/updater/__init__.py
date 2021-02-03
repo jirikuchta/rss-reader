@@ -4,8 +4,8 @@ from typing import Optional, TypedDict, List, Dict
 
 from flask import current_app as app
 
-from rss_reader.models import db, Subscription, Article
-from rss_reader.updater.update import update_subscription, \
+from models import db, Subscription, Article
+from updater.update import update_subscription, \
     Result as SubscriptionUpdateResult
 
 

@@ -1,8 +1,7 @@
 from flask import request
 
-from rss_reader.models import db, Article, Subscription
-
-from rss_reader.api import api, TReturnValue, make_api_response, \
+from models import db, Article, Subscription
+from api import api_bp, TReturnValue, make_api_response, \
     ClientError, ErrorType
 
 
@@ -15,7 +14,7 @@ def get_article_or_raise(article_id: int) -> Article:
     return article
 
 
-@api.route("/articles/", methods=["GET"])
+@api_bp.route("/articles/", methods=["GET"])
 @make_api_response
 def list_articles() -> TReturnValue:
     subscription_id = request.args.get("subscription_id")
@@ -51,13 +50,13 @@ def list_articles() -> TReturnValue:
     return [article.to_json() for article in articles], 200
 
 
-@api.route("/articles/<int:article_id>/", methods=["GET"])
+@api_bp.route("/articles/<int:article_id>/", methods=["GET"])
 @make_api_response
 def get_article(article_id: int) -> TReturnValue:
     return get_article_or_raise(article_id).to_json(), 200
 
 
-@api.route("/articles/<int:article_id>/read/", methods=["PUT", "DELETE"])
+@api_bp.route("/articles/<int:article_id>/read/", methods=["PUT", "DELETE"])
 @make_api_response
 def toggle_article_read(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
@@ -68,7 +67,7 @@ def toggle_article_read(article_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/articles/<int:article_id>/star/", methods=["PUT", "DELETE"])
+@api_bp.route("/articles/<int:article_id>/star/", methods=["PUT", "DELETE"])
 @make_api_response
 def toggle_article_star(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)

@@ -1,11 +1,10 @@
 from typing import Optional
 from flask import request, current_app as app
 
-from rss_reader.models import db, Subscription, Category, Article
-from rss_reader.parser import parse
-
-from rss_reader.api import api, TReturnValue, make_api_response, ErrorType, \
+from models import db, Subscription, Category, Article
+from api import api_bp, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
+from lib.parser import parse
 
 
 def get_subscription_or_raise(subscription_id: int) -> Subscription:
@@ -23,7 +22,7 @@ def raise_for_invalid_category_id(category_id: Optional[int]) -> None:
             raise InvalidFieldError("category_id", msg=f"category not found")
 
 
-@api.route("/subscriptions/", methods=["POST"])
+@api_bp.route("/subscriptions/", methods=["POST"])
 @make_api_response
 def create_subscription() -> TReturnValue:
     if request.json is None:
@@ -70,20 +69,20 @@ def create_subscription() -> TReturnValue:
     return subscription.to_json(), 201
 
 
-@api.route("/subscriptions/", methods=["GET"])
+@api_bp.route("/subscriptions/", methods=["GET"])
 @make_api_response
 def list_subscriptions() -> TReturnValue:
     subscriptions = Subscription.query.all()
     return [subscription.to_json() for subscription in subscriptions], 200
 
 
-@api.route("/subscriptions/<int:subscription_id>/", methods=["GET"])
+@api_bp.route("/subscriptions/<int:subscription_id>/", methods=["GET"])
 @make_api_response
 def get_subscription(subscription_id: int) -> TReturnValue:
     return get_subscription_or_raise(subscription_id).to_json(), 200
 
 
-@api.route("/subscriptions/<int:subscription_id>/", methods=["PATCH"])
+@api_bp.route("/subscriptions/<int:subscription_id>/", methods=["PATCH"])
 @make_api_response
 def update_subscription(subscription_id: int) -> TReturnValue:
     subscription = get_subscription_or_raise(subscription_id)
@@ -106,7 +105,7 @@ def update_subscription(subscription_id: int) -> TReturnValue:
     return subscription.to_json(), 200
 
 
-@api.route("/subscriptions/<int:subscription_id>/", methods=["DELETE"])
+@api_bp.route("/subscriptions/<int:subscription_id>/", methods=["DELETE"])
 @make_api_response
 def delete_subscription(subscription_id: int) -> TReturnValue:
     subscription = get_subscription_or_raise(subscription_id)
@@ -117,7 +116,7 @@ def delete_subscription(subscription_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/subscriptions/<int:subscription_id>/read/", methods=["PUT"])
+@api_bp.route("/subscriptions/<int:subscription_id>/read/", methods=["PUT"])
 @make_api_response
 def mark_subscription_read(subscription_id: int) -> TReturnValue:
     subscription = get_subscription_or_raise(subscription_id)

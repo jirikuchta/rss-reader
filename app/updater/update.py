@@ -1,11 +1,10 @@
 import json
 from datetime import datetime
 from typing import TypedDict
-
 from flask import current_app as app
 
-from rss_reader.parser import parse
-from rss_reader.models import db, Subscription, Article
+from models import db, Subscription, Article
+from lib.parser import parse
 
 
 class Result(TypedDict):

@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from sqlalchemy import func, event, engine  # type: ignore
 
-from rss_reader.parser import FeedParser, FeedItemParser
+from lib.parser import FeedParser, FeedItemParser
 
 
 db = SQLAlchemy()

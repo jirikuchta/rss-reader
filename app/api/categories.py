@@ -1,9 +1,8 @@
 from typing import List
 from flask import request
 
-from rss_reader.models import db, Category, Article, Subscription
-
-from rss_reader.api import api, TReturnValue, make_api_response, \
+from models import db, Category, Article, Subscription
+from api import api_bp, TReturnValue, make_api_response, \
     ClientError, ErrorType, MissingFieldError
 
 
@@ -26,7 +25,7 @@ def list_subscriptions(category: Category) -> List[Subscription]:
     return Subscription.query.filter_by(category_id=category.id).all()
 
 
-@api.route("/categories/", methods=["POST"])
+@api_bp.route("/categories/", methods=["POST"])
 @make_api_response
 def create_category() -> TReturnValue:
     if request.json is None:
@@ -47,20 +46,20 @@ def create_category() -> TReturnValue:
     return category.to_json(), 201
 
 
-@api.route("/categories/", methods=["GET"])
+@api_bp.route("/categories/", methods=["GET"])
 @make_api_response
 def list_categories() -> TReturnValue:
     categories = Category.query.all()
     return [category.to_json() for category in categories], 200
 
 
-@api.route("/categories/<int:category_id>/", methods=["GET"])
+@api_bp.route("/categories/<int:category_id>/", methods=["GET"])
 @make_api_response
 def get_category(category_id: int) -> TReturnValue:
     return get_category_or_raise(category_id).to_json(), 200
 
 
-@api.route("/categories/<int:category_id>/", methods=["PATCH"])
+@api_bp.route("/categories/<int:category_id>/", methods=["PATCH"])
 @make_api_response
 def update_category(category_id: int) -> TReturnValue:
     category = get_category_or_raise(category_id)
@@ -81,7 +80,7 @@ def update_category(category_id: int) -> TReturnValue:
     return category.to_json(), 200
 
 
-@api.route("/categories/<int:category_id>/", methods=["DELETE"])
+@api_bp.route("/categories/<int:category_id>/", methods=["DELETE"])
 @make_api_response
 def delete_category(category_id: int) -> TReturnValue:
     category = get_category_or_raise(category_id)
@@ -92,7 +91,7 @@ def delete_category(category_id: int) -> TReturnValue:
     return None, 204
 
 
-@api.route("/categories/<int:category_id>/read/", methods=["PUT"])
+@api_bp.route("/categories/<int:category_id>/read/", methods=["PUT"])
 @make_api_response
 def mark_category_read(category_id: int) -> TReturnValue:
     category = get_category_or_raise(category_id)

@@ -1,7 +1,7 @@
 from typing import Optional, List, Union
 from xml.etree import ElementTree as ET
 
-from rss_reader.parser.common import NS
+from parser.common import NS
 
 
 class MockAtomFeed:

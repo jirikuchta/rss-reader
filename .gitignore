@@ -1,10 +1,7 @@
 __pycache__/
 node_modules/
-.build/
 .mypy_cache/
 
 *.db
 *.sqlite
 *.cache
-*.cfg
-!/rss_reader/config.default.cfg

@@ -1,11 +1,13 @@
 version: "3"
 services:
-  rss_reader:
+  app:
     build:
       context: .
-      dockerfile: ./docker/rss_reader.Dockerfile
+      dockerfile: ./docker/app.Dockerfile
     volumes:
-      - ./rss_reader:/rss_reader/
+      - ./app:/rss_reader/app
+      - ./templates:/rss_reader/templates
+      - ./static:/rss_reader/static
     ports:
       - 5000:5000
     environment:
@@ -14,13 +16,15 @@ services:
       # RSS_READER_FEED_ICONS_CACHE: 1
       # RSS_READER_FEED_ICONS_CACHE: 0
       # RSS_READER_FEED_ICONS_CACHE: /rss_reader/feed-icons.cache
-  static_dev:
+  static:
     build:
       context: .
-      dockerfile: ./docker/static_dev.Dockerfile
+      dockerfile: ./docker/static.Dockerfile
     volumes:
-      - ./rss_reader/static/src:/rss_reader/src
-      - ./rss_reader/static/dist:/rss_reader/dist
+      - ./static/css:/rss_reader/css
+      - ./static/js:/rss_reader/js
+      - ./static/app.css:/rss_reader/app.css
+      - ./static/app.js:/rss_reader/app.js
     environment:
       SHELL: sh
     command: >

@@ -2,10 +2,10 @@ import urllib.request
 from typing import Optional
 from xml.etree import ElementTree as ET
 
-from rss_reader.parser.common import FeedParser, FeedItemParser  # noqa: F401
-from rss_reader.parser.favicon import FaviconParser  # noqa: F401
-from rss_reader.parser.atom import AtomParser
-from rss_reader.parser.rss import RSSParser
+from .common import FeedParser, FeedItemParser  # noqa: F401
+from .favicon import FaviconParser  # noqa: F401
+from .atom import AtomParser
+from .rss import RSSParser
 
 
 def parse(feed_url: str) -> FeedParser:

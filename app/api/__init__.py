@@ -4,24 +4,24 @@ from flask import Flask, Blueprint, jsonify, make_response, Response
 from functools import wraps
 from typing import TypeVar, Callable, cast, Tuple, Any, Dict
 
-from rss_reader.logger import before_request, after_request
+from lib.logger import before_request, after_request
 
 
 TReturnValue = Tuple[Any, int]
 TApiMethod = TypeVar('TApiMethod', bound=Callable[..., TReturnValue])
 
-api = Blueprint("api", __name__, url_prefix="/api")
+api_bp = Blueprint("api", __name__, url_prefix="/api")
 
 
 def init(app: Flask) -> None:
-    import rss_reader.api.articles  # noqa: F401
-    import rss_reader.api.categories  # noqa: F401
-    import rss_reader.api.subscriptions  # noqa: F401
+    import api.articles  # noqa: F401
+    import api.categories  # noqa: F401
+    import api.subscriptions  # noqa: F401
 
-    api.before_request(before_request)
-    api.after_request(after_request)
+    api_bp.before_request(before_request)
+    api_bp.after_request(after_request)
 
-    app.register_blueprint(api)
+    app.register_blueprint(api_bp)
 
 
 class ErrorType(Enum):

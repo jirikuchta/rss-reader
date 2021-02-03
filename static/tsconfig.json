@@ -1,10 +1,10 @@
 {
 	"compilerOptions": {
-		"baseUrl": "src/js",
+		"baseUrl": "js",
 		"strict": true,
 		"noUnusedLocals": true,
 		"target": "es2018",
 		"incremental": true,
-		"outDir": "src/js/.build"
+		"outDir": ".build"
 	}
 }

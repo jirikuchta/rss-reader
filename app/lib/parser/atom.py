@@ -6,7 +6,7 @@ from hashlib import md5
 from typing import List, Optional
 from xml.etree import ElementTree as ET
 
-from rss_reader.parser.common import FeedType, FeedParser, FeedItemParser, \
+from .common import FeedType, FeedParser, FeedItemParser, \
     Repr, Enclosure, raise_required_elm_missing_error, find_children, \
     get_child_node_text, get_child_node_content, format_author, \
     get_link_href_attr, find_links_by_rel_attr, get_node_attr, parse_date_str

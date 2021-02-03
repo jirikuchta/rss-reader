@@ -2,9 +2,11 @@ from base64 import b64decode
 from io import BytesIO
 from urllib import request
 from flask import Flask, Blueprint, render_template, abort, Response
-from rss_reader.logger import before_request, after_request
-from rss_reader.models import Subscription
-from rss_reader.parser import parse_web_favicon_url
+
+from models import Subscription
+from lib.logger import before_request, after_request
+from lib.parser import parse_web_favicon_url
+
 
 views = Blueprint("views", __name__)
 
