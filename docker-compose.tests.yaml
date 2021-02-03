@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./docker/tests.Dockerfile
     volumes:
-      - ./rss_reader:/rss_reader
+      - ./app:/rss_reader
       - ./tests:/tests
     environment:
       FLASK_ENV: testing
