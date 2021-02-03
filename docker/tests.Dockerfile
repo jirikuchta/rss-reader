@@ -9,4 +9,6 @@ COPY requirements.txt /requirements.txt
 RUN pip install -r requirements.txt
 RUN pip install pytest requests
 
-CMD ["pytest", "-v", "--color=yes", "tests"]
+WORKDIR rss_reader
+
+CMD ["python", "-m", "pytest", "-v", "--color=yes", "/tests"]

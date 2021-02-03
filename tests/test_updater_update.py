@@ -1,5 +1,6 @@
 import pytest
-from rss_reader.updater import update_subscriptions
+
+from updater import update_subscriptions
 
 from tests.mocks.rss_feed import MockRSSFeedItem, MockRSSFeedItemGUID
 

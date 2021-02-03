@@ -3,9 +3,9 @@ import random
 import string
 from xml.etree import ElementTree as ET
 
-from rss_reader import create_app
-from rss_reader.models import db
-from rss_reader.parser.common import NS
+from app import app as rss_reader_app
+from models import db
+from lib.parser.common import NS
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
@@ -14,9 +14,8 @@ from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
 
 @pytest.fixture(scope="session")
 def app():
-    app = create_app()
-    create_db(app)
-    return app
+    create_db(rss_reader_app)
+    return rss_reader_app
 
 
 @pytest.fixture(scope="session")
