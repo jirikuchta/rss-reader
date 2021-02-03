@@ -23,8 +23,8 @@ services:
     volumes:
       - ./static/css:/rss_reader/css
       - ./static/js:/rss_reader/js
-      - ./static/app.css:/rss_reader/app.css
-      - ./static/app.js:/rss_reader/app.js
+      - ./static/app.min.css:/rss_reader/app.min.css
+      - ./static/app.min.js:/rss_reader/app.min.js
     environment:
       SHELL: sh
     command: >

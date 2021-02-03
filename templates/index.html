@@ -4,10 +4,10 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<title>{% block title %}{% endblock %}</title>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='app.css') }}" />
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='app.min.css') }}" />
 	</head>
 	<body>
 		<main></main>
-		<script src="{{ url_for('static', filename='app.js') }}"></script>
+		<script src="{{ url_for('static', filename='app.min.js') }}"></script>
 	</body>
 </html>
