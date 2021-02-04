@@ -7,7 +7,7 @@ export default function build(subscription: Subscription) {
 
 	let img = new Image();
 	img.onload = () => {
-		img.width == 1 && (node.dataset.content = "K");
+		img.width == 1 && (node.dataset.content = subscription.title[0]);
 		img.width > 1 && node.appendChild(img);
 	};
 	img.src = `/feed-icon/${subscription.id}/`;

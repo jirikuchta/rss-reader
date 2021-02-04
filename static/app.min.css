@@ -266,7 +266,16 @@ nav li:hover .count {
   color: var(--color-text);
 }
 #detail > div {
-  margin: 24px;
+  width: 768px;
+  max-width: calc(100% - 48px);
+  margin: 24px auto;
+}
+#detail > div figure,
+#detail > div img {
+  display: block;
+  margin: auto;
+  max-width: 100%;
+  height: auto !important;
 }
 #dialog {
   width: 480px;
