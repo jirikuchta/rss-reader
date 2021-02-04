@@ -222,15 +222,34 @@ nav li:hover .count {
 #list article:hover {
   background-color: var(--color-hover);
 }
+#list article header {
+  display: flex;
+  align-items: center;
+}
+#list article .subscription-icon {
+  margin-right: 8px;
+}
 #list article h3,
+#list article h6,
 #list article p {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+#list article h6 {
+  font-weight: normal;
+}
+#list article h3,
+#list article p {
+  font-size: 1.4rem;
+}
 #list article.is-read:not(.is-selected) h3,
+#list article.is-read:not(.is-selected) h6,
 #list article.is-read:not(.is-selected) p {
   color: var(--color-grey);
+}
+#list article.is-read:not(.is-selected) .subscription-icon {
+  opacity: 0.5;
 }
 #list article.is-selected {
   border-left-color: var(--color-active);

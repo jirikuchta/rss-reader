@@ -6,7 +6,7 @@ export type ArticleId = number;
 
 export interface Article {
 	id: ArticleId;
-	subscriptionId: SubscriptionId;
+	subscription_id: SubscriptionId;
 	title: string;
 	content?: string;
 	summary?: string;

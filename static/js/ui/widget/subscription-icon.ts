@@ -2,7 +2,7 @@ import * as html from "util/html";
 
 import { Subscription } from "data/subscriptions";
 
-export function subscription_icon(subscription: Subscription) {
+export default function build(subscription: Subscription) {
 	let node = html.node("span", {className: "subscription-icon"});
 
 	let img = new Image();

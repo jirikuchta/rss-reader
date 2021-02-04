@@ -1,8 +1,11 @@
 import { Category } from "data/categories";
-import { Subscription } from "data/subscriptions";
+import { Subscription, get as getSubscription } from "data/subscriptions";
 import * as articles from "data/articles";
 import { Article } from "data/articles";
 import { build as buildDetail } from "ui/detail";
+import subscriptionIcon from "ui/widget/subscription-icon";
+
+
 import * as html from "util/html";
 
 const SELECTED_CSS_CLASS = "is-selected";
@@ -28,10 +31,18 @@ async function build() {
 }
 
 function buildItem(article: Article) {
+	let subscription = getSubscription(article.subscription_id);
+
 	let node = html.node("article");
-	node.appendChild(html.node("h3", {}, article.title));
-	article.summary && node.appendChild(html.node("p", {}, article.summary));
 	node.addEventListener("click", _ => selectItem(node, article));
+
+	let header = html.node("header", {}, "", node);
+	header.appendChild(subscriptionIcon(subscription));
+	header.appendChild(html.node("h6", {}, subscription.title));
+
+	node.appendChild(html.node("h3", {}, article.title));
+	node.appendChild(html.node("p", {}, article.summary));
+
 	return node;
 }
 

@@ -26,6 +26,10 @@ export async function sync() {
 	res.ok && (subscriptions = res.data) && pubsub.publish("subscriptions-changed");
 }
 
+export function get(id: SubscriptionId) {
+	return subscriptions.filter(s => s.id == id)[0];
+}
+
 export function list() { return subscriptions; }
 
 export async function add(data: Partial<Subscription>) {
