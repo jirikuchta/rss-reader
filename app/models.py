@@ -63,6 +63,7 @@ class Subscription(Repr, db.Model):  # type: ignore
     def from_parser(cls, parser: FeedParser, **kwargs):
         return cls(
             title=parser.title,
+            feed_url=parser.feed_url,
             web_url=parser.web_url,
             **kwargs)
 

@@ -6,7 +6,8 @@ from hashlib import md5
 from typing import List, Optional
 from xml.etree import ElementTree as ET
 
-from .common import FeedType, FeedParser, FeedItemParser, \
+from lib.utils import ensure_abs_url
+from lib.parser.common import FeedType, FeedParser, FeedItemParser, \
     Repr, Enclosure, raise_required_elm_missing_error, find_children, \
     get_child_node_text, get_child_node_content, format_author, \
     get_link_href_attr, find_links_by_rel_attr, get_node_attr, parse_date_str
@@ -14,8 +15,9 @@ from .common import FeedType, FeedParser, FeedItemParser, \
 
 class AtomParser(Repr, FeedParser["AtomItemParser"]):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, base_url: str) -> None:
         self._node = node
+        self._base_url = base_url
 
         title = get_child_node_text(node, "title")
         if title is None:
@@ -25,7 +27,7 @@ class AtomParser(Repr, FeedParser["AtomItemParser"]):
         web_url = get_link_href_attr(self._node, [None, "alternate"])
         if web_url is None:
             raise_required_elm_missing_error("link", "feed")
-        self._web_url = web_url
+        self._web_url = ensure_abs_url(base_url, web_url)
 
     @property
     def title(self) -> str:
@@ -36,11 +38,15 @@ class AtomParser(Repr, FeedParser["AtomItemParser"]):
         return self._web_url
 
     @property
+    def feed_url(self) -> str:
+        return self._base_url
+
+    @property
     def items(self) -> List["AtomItemParser"]:
         items: List[AtomItemParser] = []
         for node in self._node.findall("entry"):
             try:
-                items.append(AtomItemParser(node))
+                items.append(AtomItemParser(node, self.web_url))
             except Exception:
                 pass  # TODO: log
         return items
@@ -52,7 +58,8 @@ class AtomParser(Repr, FeedParser["AtomItemParser"]):
 
 class AtomItemParser(Repr, FeedItemParser):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, base_url: str) -> None:
+        self._base_url = base_url
         self._node = node
 
         guid = get_child_node_text(node, "id")
@@ -63,7 +70,7 @@ class AtomItemParser(Repr, FeedItemParser):
         url = get_link_href_attr(self._node, [None, "alternate"])
         if url is None:
             raise_required_elm_missing_error("link", "entry")
-        self._url = url
+        self._url = ensure_abs_url(self._base_url, url)
 
     @property
     def guid(self) -> str:
@@ -102,6 +109,10 @@ class AtomItemParser(Repr, FeedItemParser):
         if comments_url is None:
             comments_url = get_link_href_attr(self._node, ["replies"])
 
+        if comments_url:
+            comments_url = ensure_abs_url(
+                self._base_url, comments_url)
+
         return comments_url
 
     @property
@@ -136,7 +147,7 @@ class AtomItemParser(Repr, FeedItemParser):
         enclosures: List[Enclosure] = []
         for node in find_links_by_rel_attr(self._node, ["enclosure"]):
             try:
-                enclosures.append(Enclosure(node))
+                enclosures.append(Enclosure(node, self._base_url))
             except Exception:
                 pass  # TODO: log
         return enclosures

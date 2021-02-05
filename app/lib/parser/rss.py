@@ -6,7 +6,8 @@ from hashlib import md5
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from .common import NS, ParserError, FeedType, Repr, \
+from lib.utils import ensure_abs_url
+from lib.parser.common import NS, ParserError, FeedType, Repr, \
     FeedParser, FeedItemParser, Enclosure, get_child_node_text, \
     get_child_node_content, format_author, find_children, get_node_text, \
     find_child, get_node_attr, get_link_href_attr, \
@@ -15,7 +16,9 @@ from .common import NS, ParserError, FeedType, Repr, \
 
 class RSSParser(Repr, FeedParser["RSSItemParser"]):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, base_url: str) -> None:
+        self._base_url = base_url
+
         channel_node = node.find("channel")
         if channel_node is None:
             raise_required_elm_missing_error("channel", "rss")
@@ -29,11 +32,15 @@ class RSSParser(Repr, FeedParser["RSSItemParser"]):
         web_url = get_child_node_text(self._node, "link")
         if web_url is None:
             raise_required_elm_missing_error("link", "channel")
-        self._web_url = web_url
+        self._web_url = ensure_abs_url(base_url, web_url)
 
     @property
     def title(self) -> str:
         return self._title
+
+    @property
+    def feed_url(self) -> str:
+        return self._base_url
 
     @property
     def web_url(self) -> str:
@@ -41,10 +48,10 @@ class RSSParser(Repr, FeedParser["RSSItemParser"]):
 
     @property
     def items(self) -> List["RSSItemParser"]:
-        items: List["RSSItemParser"] = []
+        items: List[RSSItemParser] = []
         for node in self._node.findall("item"):
             try:
-                items.append(RSSItemParser(node))
+                items.append(RSSItemParser(node, self.web_url))
             except Exception:
                 pass  # TODO: log
         return items
@@ -56,8 +63,10 @@ class RSSParser(Repr, FeedParser["RSSItemParser"]):
 
 class RSSItemParser(Repr, FeedItemParser):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, base_url: str) -> None:
         self._node = node
+        self._base_url = base_url
+
         self._guid = self._get_guid()
         self._url = self._get_url()
 
@@ -101,7 +110,8 @@ class RSSItemParser(Repr, FeedItemParser):
 
     @property
     def comments_url(self) -> Optional[str]:
-        return get_child_node_text(self._node, "comments")
+        url = get_child_node_text(self._node, "comments")
+        return ensure_abs_url(self._base_url, url) if url else url
 
     @property
     def author(self) -> Optional[str]:
@@ -127,7 +137,7 @@ class RSSItemParser(Repr, FeedItemParser):
         enclosures: List[Enclosure] = []
         for node in find_children(self._node, "enclosure"):
             try:
-                enclosures.append(Enclosure(node))
+                enclosures.append(Enclosure(node, self._base_url))
             except Exception:
                 pass  # TODO: log
         return enclosures
@@ -141,19 +151,19 @@ class RSSItemParser(Repr, FeedItemParser):
     def _get_url(self) -> Optional[str]:
         value = get_child_node_text(self._node, "link")
         if value:
-            return value
+            return ensure_abs_url(self._base_url, value)
 
         guid_node = find_child(self._node, "guid")
         if guid_node is not None:
             if get_node_attr(guid_node, "isPermalink") == "true":
                 value = get_node_text(guid_node)
         if value:
-            return value
+            return ensure_abs_url(self._base_url, value)
 
         value = get_link_href_attr(self._node, [None, "alternate"],
                                    tag_name=f"{{{ NS['atom'] }}}link")
         if value:
-            return value
+            return ensure_abs_url(self._base_url, value)
 
         return None
 

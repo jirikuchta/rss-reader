@@ -45,8 +45,7 @@ def create_subscription() -> TReturnValue:
     if already_subscribed:
         raise ClientError(ErrorType.AlreadyExists)
 
-    subscription = Subscription.from_parser(
-        parser, feed_url=feed_url, category_id=category_id)
+    subscription = Subscription.from_parser(parser, category_id=category_id)
     db.session.add(subscription)
     db.session.flush()
 

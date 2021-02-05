@@ -5,6 +5,8 @@ from html.parser import HTMLParser
 from typing import Optional, List, TypeVar, Generic, NoReturn, Union
 from xml.etree import ElementTree as ET
 
+from lib.utils import ensure_abs_url
+
 
 NS = {
     "atom": "http://www.w3.org/2005/Atom",
@@ -45,6 +47,11 @@ class FeedParser(Generic[TFeedItemParser], metaclass=ABCMeta):
     @property
     @abstractmethod
     def web_url(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def feed_url(self) -> str:
         raise NotImplementedError
 
     @property
@@ -118,7 +125,7 @@ class FeedItemParser(metaclass=ABCMeta):
 
 class Enclosure(Repr):
 
-    def __init__(self, node: ET.Element) -> None:
+    def __init__(self, node: ET.Element, base_url: str) -> None:
         self._node = node
 
         url = get_node_attr(node, "href")
@@ -126,7 +133,7 @@ class Enclosure(Repr):
             url = get_node_attr(node, "url")
         if url is None:
             raise ParserError("Failed to parse enclosure url.")
-        self._url = url
+        self._url = ensure_abs_url(base_url, url)
 
         enc_type = get_node_attr(node, "type")
         if enc_type is None:

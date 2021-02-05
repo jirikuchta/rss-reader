@@ -1,11 +1,11 @@
 from base64 import b64decode
 from io import BytesIO
-from urllib import request
 from flask import Flask, Blueprint, render_template, abort, Response
 
 from models import Subscription
 from lib.logger import before_request, after_request
 from lib.parser import parse_web_favicon_url
+from lib.utils import request
 
 
 views = Blueprint("views", __name__)
@@ -37,13 +37,13 @@ def feed_icon(subscription_id: int) -> Response:
     web_url = subscription.web_url.strip("/")
 
     try:
-        with request.urlopen(f"{web_url}/favicon.ico") as res:
+        with request(f"{web_url}/favicon.ico") as res:
             icon = res.read()
     except Exception:
         try:
             icon_url = parse_web_favicon_url(web_url)
             if icon_url:
-                with request.urlopen(icon_url) as res:
+                with request(icon_url) as res:
                     icon = res.read()
         except Exception:
             pass
