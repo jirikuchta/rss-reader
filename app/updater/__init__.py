@@ -24,7 +24,7 @@ class UpdateResult(TypedDict):
 def update_subscriptions(options: UpdateOptions) -> UpdateResult:
     app.logger.info("Subscriptions update started: %s", json.dumps(options))
 
-    min_time_updated = datetime.now() - timedelta(minutes=options["interval"])
+    min_time_updated = datetime.now() - timedelta(seconds=options["interval"])
 
     filters = [
         Subscription.time_updated < min_time_updated

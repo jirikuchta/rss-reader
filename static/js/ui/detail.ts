@@ -13,12 +13,12 @@ export async function build(article?: Article) {
 	if (!article) { return; }
 
 	let frag = html.fragment()
-	let header = html.node("header", {}, "", frag);
-	let content = html.node("div", {}, "", frag);
 
+	let header = html.node("header", {}, "", frag);
 	let title = html.node("h1", {}, "", header);
 	html.node("a", {href: article.url, target: "_blank", rel: "noopener noreferrer"}, article.title, title);
 
+	let content = html.node("div", {}, "", frag);
 	content.innerHTML = article.content || article.summary || "";
 
 	node.appendChild(frag);

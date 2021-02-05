@@ -1,16 +1,17 @@
-from os import environ
+from os import environ, getcwd
 from flask import Flask
 
 DEFAULT_CONFIG = {
     "DEBUG": True,
     "SECRET_KEY": "insecure_secret_key",
-    "UPDATER_RUN_INTERVAL": 50,
-    "SUBSCRIPTION_UPDATE_INTERVAL": 60,
-    "PURGE_ARTICLE_AGE": 60,
+    "UPDATER_RUN_INTERVAL_SECONDS": 60,
+    "SUBSCRIPTION_UPDATE_INTERVAL_SECONDS": 60,
+    "PURGE_ARTICLE_AGE_DAYS": 60,
     "PURGE_UNREAD_ARTICLES": False,
-    "SQLALCHEMY_DATABASE_URI": "sqlite:///rss_reader.sqlite",
+    "SQLALCHEMY_DATABASE_URI": f"sqlite:///{getcwd()}/rss_reader.sqlite",
     "SQLALCHEMY_ECHO": False,
-    "SQLALCHEMY_TRACK_MODIFICATIONS": False}
+    "SQLALCHEMY_TRACK_MODIFICATIONS": False
+}
 
 
 def init(app: Flask):

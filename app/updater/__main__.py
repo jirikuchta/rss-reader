@@ -21,11 +21,11 @@ def main(loop: bool = False, subscription_id: Optional[int] = None):
             try:
                 purge_old_articles({
                     "subscription_id": subscription_id,
-                    "max_age_days": app.config["PURGE_ARTICLE_AGE"],
+                    "max_age_days": app.config["PURGE_ARTICLE_AGE_DAYS"],
                     "purge_unread": app.config["PURGE_UNREAD_ARTICLES"]
                 })
                 update_subscriptions({
-                    "interval": app.config["SUBSCRIPTION_UPDATE_INTERVAL"],
+                    "interval": app.config["SUBSCRIPTION_UPDATE_INTERVAL_SECONDS"],
                     "subscription_id": subscription_id,
                 })
             except Exception as e:
@@ -34,7 +34,7 @@ def main(loop: bool = False, subscription_id: Optional[int] = None):
             if not loop:
                 break
 
-            time.sleep(app.config["UPDATER_RUN_INTERVAL"])
+            time.sleep(app.config["UPDATER_RUN_INTERVAL_SECONDS"])
 
 
 if __name__ == "__main__":
