@@ -5,7 +5,7 @@ from xml.etree import ElementTree as ET
 
 from app import app as rss_reader_app
 from models import db
-from lib.parser.common import NS
+from lib.feedparser import NS
 
 from tests.mocks.feed_server import FeedServer
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \

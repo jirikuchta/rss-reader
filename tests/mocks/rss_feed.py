@@ -1,7 +1,7 @@
 from typing import Optional, List
 from xml.etree import ElementTree as ET
 
-from lib.parser.common import NS
+from lib.feedparser import NS
 from tests.mocks.atom_feed import MockAtomLink
 
 
@@ -53,8 +53,6 @@ class MockRSSFeedItem:
             author: Optional[str] = None,
             pubdate: Optional[str] = None,
             dc_creator: Optional[str] = None,
-            enclosures: List["MockRSSFeedItemEnclosure"] = None,
-            categories: List[str] = None,
             atom_links: List[MockAtomLink] = None) -> None:
         self.title = title
         self.link = link
@@ -65,8 +63,6 @@ class MockRSSFeedItem:
         self.author = author
         self.pubdate = pubdate
         self.dc_creator = dc_creator
-        self.enclosures = [] if enclosures is None else enclosures
-        self.categories = [] if categories is None else categories
         self.atom_links = [] if atom_links is None else atom_links
 
     def build(self) -> ET.Element:
@@ -107,13 +103,6 @@ class MockRSSFeedItem:
         if self.dc_creator is not None:
             dc_creator = ET.SubElement(root, f"{{{ NS['dc'] }}}creator")
             dc_creator.text = self.dc_creator
-
-        for enclosure in self.enclosures:
-            root.append(enclosure.build())
-
-        for category in self.categories:
-            cat_node = ET.SubElement(root, "category")
-            cat_node.text = category
 
         for atom_link in self.atom_links:
             root.append(atom_link.build(use_prefix=True))

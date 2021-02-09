@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from sqlalchemy import func, event, engine  # type: ignore
 
-from lib.parser import FeedParser, FeedItemParser
+from lib.feedparser import FeedParser, FeedItemParser
 
 
 db = SQLAlchemy()
@@ -48,9 +48,9 @@ class Subscription(Repr, db.Model):  # type: ignore
     __tablename__ = "subscription"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.Text, nullable=False)
     feed_url = db.Column(db.String(255), nullable=False, unique=True)
-    web_url = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.Text)
+    web_url = db.Column(db.String(255))
 
     category_id = db.Column(
         db.Integer,
@@ -79,7 +79,7 @@ class Article(Repr, db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     guid = db.Column(db.String(255), nullable=False, index=True)
     hash = db.Column(db.String(255), nullable=False)
-    title = db.Column(db.Text, nullable=False)
+    title = db.Column(db.Text)
     url = db.Column(db.String(255))
     summary = db.Column(db.Text)
     content = db.Column(db.Text)

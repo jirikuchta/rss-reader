@@ -1,5 +1,44 @@
+from base64 import b64decode
+from io import BytesIO
 from typing import List, Tuple, Optional
 from html.parser import HTMLParser
+
+from flask import Response
+
+from models import Subscription
+from lib.utils import ensure_abs_url, request
+
+# 1px transparent GIF
+DEFAULT = b64decode(
+    "R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==")
+
+
+def fetch(subscription: Subscription) -> Response:
+    if subscription.web_url is None:
+        return Response(BytesIO(DEFAULT), mimetype="image/x-icon")
+
+    icon = DEFAULT
+    web_url = subscription.web_url
+
+    try:
+        with request(ensure_abs_url(web_url, "favicon.ico")) as res:
+            icon = res.read()
+    except Exception:
+        try:
+            with request(web_url) as response:
+                charset = response.headers.get_content_charset("utf-8")
+                html = response.read().decode(charset)
+
+            icon_url = FaviconParser.parse(html)
+
+            if icon_url:
+                icon_url = ensure_abs_url(web_url, icon_url)
+                with request(icon_url) as res:
+                    icon = res.read()
+        except Exception:
+            pass
+
+    return Response(BytesIO(icon), mimetype="image/x-icon")
 
 
 class FaviconParser(HTMLParser):
@@ -36,4 +75,3 @@ class FaviconParser(HTMLParser):
             for k, v in attrs:
                 if k == "rel" and v and "icon" in v.split(" "):
                     return True
-        return False

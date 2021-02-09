@@ -4,7 +4,7 @@ from typing import TypedDict
 from flask import current_app as app
 
 from models import db, Subscription, Article
-from lib.parser import parse
+from lib.feedparser import parse
 
 
 class Result(TypedDict):

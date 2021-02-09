@@ -4,7 +4,7 @@ from flask import request, current_app as app
 from models import db, Subscription, Category, Article
 from api import api_bp, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
-from lib.parser import parse
+from lib.feedparser import parse
 
 
 def get_subscription_or_raise(subscription_id: int) -> Subscription:

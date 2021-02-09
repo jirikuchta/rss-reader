@@ -1,7 +1,7 @@
 from typing import Optional, List, Union
 from xml.etree import ElementTree as ET
 
-from lib.parser.common import NS
+from lib.feedparser import NS
 
 
 class MockAtomFeed:
@@ -42,9 +42,7 @@ class MockAtomFeedItem:
             content: Optional[str] = None,
             comments: Optional[Union["MockAtomLink", str]] = None,
             author: Optional["MockAtomAuthor"] = None,
-            published: Optional[str] = None,
-            enclosures: Optional[List["MockAtomLink"]] = None,
-            categories: Optional[List[str]] = None) -> None:
+            published: Optional[str] = None) -> None:
         self.item_id = item_id
         self.title = title
         self.link = link
@@ -53,8 +51,6 @@ class MockAtomFeedItem:
         self.comments = comments
         self.author = author
         self.published = published
-        self.enclosures = [] if enclosures is None else enclosures
-        self.categories = [] if categories is None else categories
 
     def build(self) -> ET.Element:
         root = ET.Element("entry")
@@ -91,13 +87,6 @@ class MockAtomFeedItem:
             else:
                 comments = ET.SubElement(root, "comments")
                 comments.text = self.comments
-
-        for enclosure in self.enclosures:
-            root.append(enclosure.build())
-
-        for category in self.categories:
-            category_attrib = {"term": category}
-            ET.SubElement(root, "category", attrib=category_attrib)
 
         return root
 
