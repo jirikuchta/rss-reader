@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List
 from xml.etree import ElementTree as ET
 
 from lib.feedparser import NS
@@ -9,8 +9,8 @@ class MockRSSFeed:
 
     def __init__(
             self,
-            title: Optional[str],
-            link: Optional[str],
+            title: str = None,
+            link: str = None,
             items: List["MockRSSFeedItem"] = None,
             channel: bool = True) -> None:
         self.title = title
@@ -44,15 +44,15 @@ class MockRSSFeedItem:
 
     def __init__(
             self,
-            link: Optional[str],
-            guid: Optional["MockRSSFeedItemGUID"],
-            title: Optional[str] = None,
-            description: Optional[str] = None,
-            content_encoded: Optional[str] = None,
-            comments: Optional[str] = None,
-            author: Optional[str] = None,
-            pubdate: Optional[str] = None,
-            dc_creator: Optional[str] = None,
+            link: str = None,
+            guid: "MockRSSFeedItemGUID" = None,
+            title: str = None,
+            description: str = None,
+            content_encoded: str = None,
+            comments: str = None,
+            author: str = None,
+            pubdate: str = None,
+            dc_creator: str = None,
             atom_links: List[MockAtomLink] = None) -> None:
         self.title = title
         self.link = link
@@ -114,9 +114,9 @@ class MockRSSFeedItemEnclosure:
 
     def __init__(
             self,
-            url: Optional[str],
-            type_attr: Optional[str],
-            length: Optional[int] = None) -> None:
+            url: str,
+            type_attr: str,
+            length: int = None) -> None:
         self.url = url
         self.type = type_attr
         self.length = length
@@ -138,9 +138,9 @@ class MockRSSFeedItemEnclosure:
 
 class MockRSSFeedItemGUID:
 
-    def __init__(self, value: str, isPermalink: bool = False):
-        self.value: Optional[str] = value
-        self.isPermalink: bool = isPermalink
+    def __init__(self, value: str = None, isPermalink: bool = False):
+        self.value = value
+        self.isPermalink = isPermalink
 
     def build(self) -> ET.Element:
         attrib = {}

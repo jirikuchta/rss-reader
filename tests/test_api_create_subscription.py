@@ -25,7 +25,7 @@ class TestAPISubscribe:
         assert res.json["error"]["field"] == "feed_url"
 
     def test_parser_error(self, client, feed_server):
-        feed_server.feed = MockRSSFeed(title=None, link=None)  # invalid feed
+        feed_server.feed = MockRSSFeed(channel=False)  # invalid feed
         res = client.post("/api/subscriptions/",
                           json={"feed_url": feed_server.url})
         assert res.status_code == 400, res

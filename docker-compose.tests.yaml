@@ -9,4 +9,8 @@ services:
       - ./tests:/tests
     environment:
       FLASK_ENV: testing
-      DATABASE_URI: "sqlite:////:memory:"
+      SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
+    environment:
+      SHELL: sh
+    command: >
+      sh -c "python -m pytest -v --color=yes /tests"

@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import List, Union
 from xml.etree import ElementTree as ET
 
 from lib.feedparser import NS
@@ -8,8 +8,8 @@ class MockAtomFeed:
 
     def __init__(
             self,
-            title: Optional[str],
-            links: Optional[List["MockAtomLink"]] = None,
+            title: str = None,
+            links: List["MockAtomLink"] = None,
             items: List["MockAtomFeedItem"] = None) -> None:
         self.title = title
         self.links = [] if links is None else links
@@ -35,14 +35,14 @@ class MockAtomFeedItem:
 
     def __init__(
             self,
-            item_id: Optional[str],
-            link: Optional["MockAtomLink"],
-            title: Optional[str] = None,
-            summary: Optional[str] = None,
-            content: Optional[str] = None,
-            comments: Optional[Union["MockAtomLink", str]] = None,
-            author: Optional["MockAtomAuthor"] = None,
-            published: Optional[str] = None) -> None:
+            item_id: str = None,
+            link: "MockAtomLink" = None,
+            title: str = None,
+            summary: str = None,
+            content: str = None,
+            comments: Union["MockAtomLink", str] = None,
+            author: "MockAtomAuthor" = None,
+            published: str = None) -> None:
         self.item_id = item_id
         self.title = title
         self.link = link
@@ -94,10 +94,10 @@ class MockAtomFeedItem:
 class MockAtomLink:
     def __init__(
             self,
-            href: Optional[str],
-            rel: Optional[str] = None,
-            type_attr: Optional[str] = None,
-            length: Optional[int] = None) -> None:
+            href: str = None,
+            rel: str = None,
+            type_attr: str = None,
+            length: int = None) -> None:
         self.href = href
         self.rel = rel
         self.type = type_attr
@@ -128,8 +128,8 @@ class MockAtomLink:
 class MockAtomAuthor:
     def __init__(
             self,
-            name: Optional[str] = None,
-            email: Optional[str] = None) -> None:
+            name: str = None,
+            email: str = None) -> None:
         self.name = name
         self.email = email
 

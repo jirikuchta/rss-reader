@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
@@ -16,13 +17,17 @@ def parse(feed_url: str) -> "FeedParser":
         return FeedParser(ET.fromstring(res.read()), feed_url)
 
 
-def inner_text(n: Optional[ET.Element]) -> Optional[str]:
+def text(n: Optional[ET.Element]) -> Optional[str]:
     return TextParser.parse(n.text) if n is not None and n.text else None
 
 
-def inner_safe_html(n: Optional[ET.Element]) -> Optional[str]:
+def html(n: Optional[ET.Element]) -> Optional[str]:
     # TODO: sanitize and ensure abs urls
-    return n.text if n is not None and n.text else None
+    return n.text.strip() if n is not None and n.text else None
+
+
+def attr(n: Optional[ET.Element], name: str) -> Optional[str]:
+    return n.attrib.get(name) if n is not None else None
 
 
 NS = {
@@ -60,8 +65,8 @@ class RootNode:
 
     @cached_property
     def namespaces(self) -> Dict[str, str]:
-        is_atom = self.feed_type is FeedType.ATOM
-        return {**({"": NS["atom"]} if is_atom else {}), **NS}
+        match = re.match(r"{(\S+)}", self.node.tag)
+        return {**({"": match.groups()[0]} if match else {}), **NS}
 
     def find(self, tag: str) -> Optional[ET.Element]:
         node = self.node.find(tag, self.namespaces)
@@ -89,9 +94,7 @@ class FeedParser(RootNode):
         return f"<{type(self).__name__} {self.feed_url}>"
 
     def __repr__(self):
-        return (
-            f"<{type(self).__name__}("
-            f"ElementTree.fromString({ET.tostring(self._node)}))>")
+        return (f"<{type(self).__name__} {ET.tostring(self._node)}>")
 
     @property
     def base_url(self) -> str:
@@ -103,17 +106,19 @@ class FeedParser(RootNode):
 
     @cached_property
     def title(self) -> Optional[str]:
-        return inner_text(self.find("title"))
+        return text(self.find("title"))
 
     @cached_property
     def web_url(self) -> Optional[str]:
+        url = None
+
         if self.feed_type is FeedType.RSS:
-            url = inner_text(self.find("title"))
-        else:  # atom
-            node = next(filter(
+            url = text(self.find("link"))
+
+        if self.feed_type is FeedType.ATOM:
+            url = attr(next(filter(
                 lambda n: n.attrib.get("rel") in (None, "alternate"),
-                self.findall("link")), None)
-            url = None if node is None else node.attrib.get("href")
+                self.findall("link")), None), "href")
 
         return None if url is None else ensure_abs_url(self._feed_url, url)
 
@@ -124,7 +129,8 @@ class FeedParser(RootNode):
 
         for node in self.findall(tag):
             try:
-                items.append(FeedItemParser(node, self))
+                items.append(
+                    FeedItemParser(node, self.feed_type, self.base_url))
             except Exception as e:
                 app.logger.warning("Failed to parse feed item, err=%s", e)
                 app.logger.debug(ET.tostring(node))
@@ -134,22 +140,20 @@ class FeedParser(RootNode):
 
 class FeedItemParser(RootNode):
 
-    def __init__(self, node: ET.Element, feed: FeedParser):
-        super().__init__(node, feed.feed_type)
-        self._feed = feed
+    def __init__(self, node: ET.Element, feed_type: FeedType, base_url: str):
+        super().__init__(node, feed_type)
+        self._base_url = base_url
 
     def __str__(self):
         return f"<{type(self).__name__} {self.guid}>"
 
     def __repr__(self):
-        return (
-            f"<{type(self).__name__}("
-            f"ElementTree.fromString({ET.tostring(self._node)}))>")
+        return (f"<{type(self).__name__} {ET.tostring(self._node)}>")
 
     @cached_property
     def guid(self) -> str:
         tag = "guid" if self.feed_type is FeedType.RSS else "id"
-        return inner_text(self.find(tag)) or self.url or self.hash
+        return text(self.find(tag)) or self.url or self.hash
 
     @cached_property
     def hash(self) -> str:
@@ -157,41 +161,46 @@ class FeedItemParser(RootNode):
 
     @cached_property
     def title(self) -> Optional[str]:
-        return inner_text(self.find("title"))
+        return text(self.find("title"))
 
     @cached_property
     def url(self) -> Optional[str]:
+        url = None
+
         if self.feed_type is FeedType.RSS:
-            url = inner_text(self.find("link"))
+            url = text(self.find("link"))
 
             if not url:
                 guid_node = self.find("guid")
-                if guid_node and guid_node.attrib.get("isPermalink") == "true":
-                    url = inner_text(guid_node)
-        else:  # atom
-            node = next(filter(
-                lambda n: n.attrib.get("rel") in (None, "alternate"),
-                self.findall("link")), None)
-            url = None if node is None else node.attrib.get("href")
+                if attr(guid_node, "isPermalink") == "true":
+                    url = text(guid_node)
 
-        return ensure_abs_url(self._feed.base_url, url) if url else None
+            if not url:
+                url = attr(next(filter(
+                    lambda n: n.attrib.get("rel") in (None, "alternate"),
+                    self.findall("atom:link")), None), "href")
+
+        if self.feed_type is FeedType.ATOM:
+            url = attr(next(filter(
+                lambda n: n.attrib.get("rel") in (None, "alternate"),
+                self.findall("link")), None), "href")
+
+        return ensure_abs_url(self._base_url, url) if url else None
 
     @cached_property
     def summary(self) -> Optional[str]:
         tag = "description" if self.feed_type is FeedType.RSS else "summary"
-        return inner_text(self.find(tag)) \
-            or inner_text(self.find("content:encoded"))
+        return text(self.find(tag)) or text(self.find("content:encoded"))
 
     @cached_property
     def content(self) -> Optional[str]:
         tag = "description" if self.feed_type is FeedType.RSS else "content"
-        return inner_safe_html(self.find("content:encoded")) \
-            or inner_safe_html(self.find(tag))
+        return html(self.find("content:encoded")) or html(self.find(tag))
 
     @cached_property
     def time_published(self) -> Optional[datetime]:
         tag = "pubDate" if self.feed_type is FeedType.RSS else "published"
-        date_str = inner_text(self.find(tag))
+        date_str = text(self.find(tag))
 
         if date_str is None:
             return None
@@ -216,25 +225,26 @@ class FeedItemParser(RootNode):
 
     @cached_property
     def comments_url(self) -> Optional[str]:
-        url = inner_text(self.find("comments"))
+        url = text(self.find("comments"))
 
         if not url and self.feed_type is FeedType.ATOM:
-            node = next(filter(lambda n: n.attrib.get("rel") == "replies",
-                               self.findall("link")), None)
-            url = None if node is None else node.attrib.get("href")
+            url = attr(next(filter(
+                lambda n: n.attrib.get("rel") == "replies",
+                self.findall("link")), None), "href")
 
-        return ensure_abs_url(self._feed.base_url, url) if url else None
+        return ensure_abs_url(self._base_url, url) if url else None
 
     @cached_property
     def author(self) -> Optional[str]:
         if self.feed_type is FeedType.RSS:
-            return inner_text(self.find("author")) \
-                or inner_text(self.find("dc:creator"))
-        else:  # atom
+            return text(self.find("author")) or text(self.find("dc:creator"))
+
+        if self.feed_type is FeedType.ATOM:
             nodes = self.findall("author")
-            names = [name for name in [inner_text(n.find("name"))
-                                       for n in nodes] if name]
+            names = [m for m in [text(n.find("name")) for n in nodes] if m]
             return ", ".join(names) or None
+
+        return None
 
 
 class TextParser(HTMLParser):
