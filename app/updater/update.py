@@ -14,7 +14,7 @@ class Result(TypedDict):
 
 
 def update_subscription(subscription: Subscription) -> Result:
-    app.logger.info("Updating subscription: %s", subscription)
+    app.logger.info("Updating %s", subscription)
     app.logger.debug(repr(subscription))
 
     result: Result = {
@@ -28,7 +28,7 @@ def update_subscription(subscription: Subscription) -> Result:
         Article.subscription_id == subscription.id).all()
 
     for item in parser.items:
-        app.logger.info("Processing feed item: %s", item)
+        app.logger.info("Processing %s", item)
         app.logger.debug(repr(item))
 
         article = next(filter(lambda a: a.guid == item.guid, articles), None)
@@ -38,14 +38,14 @@ def update_subscription(subscription: Subscription) -> Result:
             app.logger.debug(repr(article))
 
             if article.hash == item.hash:
-                app.logger.info("Article is up-to-date, nothing to be done.")
+                app.logger.info("%s is up-to-date", article)
                 result["skipped_items"] += 1
             else:
-                app.logger.info("Feed item has changed, updating article.")
+                app.logger.info("%s has changed, updating %s.", item, article)
 
                 article.update(item)
 
-                app.logger.info("Article updated: %s", article)
+                app.logger.info("%s updated", article)
                 app.logger.debug(repr(article))
 
                 result["updated_items"] += 1
@@ -58,7 +58,7 @@ def update_subscription(subscription: Subscription) -> Result:
             db.session.add(article)
             db.session.flush()
 
-            app.logger.info("Article created: %s", article)
+            app.logger.info("%s created", article)
             app.logger.debug(repr(article))
 
             result["new_items"] += 1
@@ -67,7 +67,7 @@ def update_subscription(subscription: Subscription) -> Result:
 
     db.session.commit()
 
-    app.logger.info("Subscription updated: %s", subscription)
+    app.logger.info("%s updated", subscription)
     app.logger.debug(json.dumps(result))
 
     return result
