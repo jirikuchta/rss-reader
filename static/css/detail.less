@@ -1,17 +1,15 @@
 #detail {
-	margin: 48px 24px;
-	width: 768px;
-	max-width: calc(100% - 48px);
+	> header, > div {
+		@padding: 24px;
 
-	> * {
-		max-width: 768px;
-		margin: auto;
+		padding: 0 @padding;
+		margin: 48px auto;
+		max-width: calc(768px + 2 * @padding);
 	}
 
-	h1 {
-		margin-bottom: 24px;
-		a { color: var(--color-text); }
-	}
+	> div > * { margin: 24px 0; }
+
+	h1 a { color: var(--color-text); }
 
 	figure, img {
 		display: block;

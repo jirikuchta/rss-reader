@@ -50,15 +50,13 @@ main {
   height: 100vh;
   overflow: hidden;
   position: relative;
+  --col-min-width: 48px;
   --layout-sidebar-width: 15%;
-  --layout-sidebar-min-width: 200px;
   --layout-entries-width: 30%;
-  --layout-entries-min-width: 320px;
-  --layout-detail-min-width: 480px;
 }
 main > nav {
   flex: 0 0 var(--layout-sidebar-width);
-  min-width: var(--layout-sidebar-min-width);
+  min-width: 24px;
   max-width: calc(100% - 800px);
   overflow: auto;
   border-right: 1px solid var(--color-border);
@@ -66,15 +64,15 @@ main > nav {
 }
 #list {
   flex: 0 0 var(--layout-entries-width);
-  min-width: var(--layout-entries-min-width);
-  max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-detail-min-width));
+  min-width: var(--col-min-width);
+  max-width: calc(100% - 2 * var(--col-min-width));
   overflow: auto;
   border-right: 1px solid var(--color-border);
 }
 #detail {
   flex-grow: 1;
   min-width: var(--layout-detail-min-width);
-  max-width: calc(100% - var(--layout-sidebar-min-width) - var(--layout-entries-min-width));
+  max-width: calc(100% - 2 * var(--col-min-width));
   overflow: auto;
 }
 .resizer {
@@ -257,17 +255,14 @@ nav li:hover .count {
 #list article.is-selected h3 {
   color: var(--color-active);
 }
-#detail {
-  margin: 48px 24px;
-  width: 768px;
-  max-width: calc(100% - 48px);
+#detail > header,
+#detail > div {
+  padding: 0 24px;
+  margin: 48px auto;
+  max-width: calc(768px + 2 * 24px);
 }
-#detail > * {
-  max-width: 768px;
-  margin: auto;
-}
-#detail h1 {
-  margin-bottom: 24px;
+#detail > div > * {
+  margin: 24px 0;
 }
 #detail h1 a {
   color: var(--color-text);

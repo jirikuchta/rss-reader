@@ -252,7 +252,7 @@ class TextParser(HTMLParser):
     @staticmethod
     def parse(html: str) -> str:
         parser = TextParser()
-        parser.feed(html)
+        parser.feed(f"<div>{html}</div>")
         return "".join(parser.data).strip()
 
     def __init__(self) -> None:
