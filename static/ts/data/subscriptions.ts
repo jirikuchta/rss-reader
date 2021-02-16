@@ -1,17 +1,8 @@
-import { Category, CategoryId } from "data/categories";
-import { api } from "util/api";
+import api from "util/api";
 import * as pubsub from "util/pubsub";
 
+
 let subscriptions: Subscription[];
-
-export type SubscriptionId = number;
-
-export interface Subscription {
-	id: SubscriptionId;
-	title: string;
-	feed_url: string;
-	category_id?: CategoryId;
-}
 
 export function isSubscription(entity: Category | Subscription) {
 	return (entity as Subscription).feed_url != undefined

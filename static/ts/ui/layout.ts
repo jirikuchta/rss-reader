@@ -8,15 +8,16 @@ import * as detail from "ui/detail";
 let node = document.querySelector("main") as HTMLElement;
 
 export async function init() {
-	let navNode = nav.init();
-	let listNode = list.init();
+	nav.init();
+	list.init();
+	detail.init();
 
-	node.appendChild(navNode);
-	node.appendChild(listNode);
-	node.appendChild(detail.init());
+	node.appendChild(nav.node);
+	node.appendChild(list.node);
+	node.appendChild(detail.node);
 
-	new Resizer(navNode, "sidebar-width");
-	new Resizer(listNode, "articles-width");
+	new Resizer(nav.node, "sidebar-width");
+	new Resizer(list.node, "articles-width");
 }
 
 
@@ -64,7 +65,7 @@ class Resizer {
 		this._node.style.flexBasis = `${widthPerc}%`;
 	}
 
-	_save() {  // FIXME: not user-aware
+	_save() {
 		let widthPerc = (this._node.offsetWidth / document.body.offsetWidth) * 100;
 		this._storageId && localStorage.setItem(this._storageId, `${widthPerc}`);
 	}

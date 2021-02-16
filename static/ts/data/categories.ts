@@ -1,15 +1,9 @@
 import * as subscriptions from "data/subscriptions";
-import { api } from "util/api";
+import api from "util/api";
 import * as pubsub from "util/pubsub";
 
+
 let categories: Category[] = [];
-
-export type CategoryId = number;
-
-export interface Category {
-	id: CategoryId;
-	title: string;
-}
 
 export async function init() {
 	let res = await api("GET", "/api/categories/");

@@ -1,16 +1,22 @@
-import { Article } from "data/articles";
-import * as html from "util/html";
+import * as articles from "data/articles";
 
-let node:HTMLElement;
+import * as html from "util/html";
+import * as pubsub from "util/pubsub";
+
+import { selected as article } from "ui/list";
+
+
+export const node = html.node("section", {"id": "detail"});
 
 export function init() {
 	build();
-	return node;
+	pubsub.subscribe("article-selected", build);
 }
 
-export async function build(article?: Article) {
-	node ? html.clear(node) : node = html.node("section", {"id": "detail"});
+export async function build() {
 	if (!article) { return; }
+
+	html.clear(node);
 
 	let frag = html.fragment()
 
@@ -22,4 +28,6 @@ export async function build(article?: Article) {
 	content.innerHTML = article.content || article.summary || "";
 
 	node.appendChild(frag);
+
+	articles.toggle_read(article);
 }

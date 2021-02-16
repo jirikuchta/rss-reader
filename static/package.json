@@ -11,9 +11,9 @@
     "scripts": {
         "build": "npm run build-js && npm run build-css",
         "build-js": "tsc && rollup --config",
-        "build-css": "lessc css/app.less app.min.css",
+        "build-css": "lessc less/app.less app.min.css",
         "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\"",
-        "watch-js": "chokidar \"js/**/*.ts\" -c \"npm run build-js\"",
-        "watch-css": "chokidar \"css/**/*.less\" -c \"npm run build-css\""
+        "watch-js": "chokidar \"ts/**/*.ts\" -c \"npm run build-js\"",
+        "watch-css": "chokidar \"less/**/*.less\" -c \"npm run build-css\""
     }
 }

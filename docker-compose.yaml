@@ -21,8 +21,8 @@ services:
       context: .
       dockerfile: ./docker/static.Dockerfile
     volumes:
-      - ./static/css:/rss_reader/css
-      - ./static/js:/rss_reader/js
+      - ./static/less:/rss_reader/less
+      - ./static/ts:/rss_reader/ts
       - ./static/app.min.css:/rss_reader/app.min.css
       - ./static/app.min.js:/rss_reader/app.min.js
     environment:

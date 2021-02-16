@@ -1,10 +1,9 @@
 import * as html from "util/html";
 import * as random from "util/random";
-import { ApiResponse } from "util/api";
 
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
-import { Subscription } from "data/subscriptions";
+
 
 export default class SubscriptionForm {
 	node!: HTMLFormElement;

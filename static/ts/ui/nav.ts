@@ -1,21 +1,21 @@
 import * as categories from "data/categories";
-import { Category } from "data/categories";
 import * as subscriptions from "data/subscriptions";
-import { Subscription, isSubscription } from "data/subscriptions";
+import { isSubscription } from "data/subscriptions";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import * as list from "ui/list";
 import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
 import { Dialog, confirm } from "ui/widget/dialog";
 
+
 const SELECTED_CSS_CLASS = "is-selected";
 
-let node:HTMLElement;
+export const node = html.node("nav");
+export let selected: Category | Subscription;
 
 export function init() {
 	build();
@@ -23,12 +23,10 @@ export function init() {
 	// FIXME: may cause two consecutive builds
 	pubsub.subscribe("subscriptions-changed", build);
 	pubsub.subscribe("categories-changed", build);
-
-	return node;
 }
 
 async function build() {
-	node ? html.clear(node) : node = html.node("nav");
+	html.clear(node);
 
 	let header = html.node("header", {}, "", node);
 	html.node("h3", {}, "Subscriptions", header);
@@ -87,7 +85,8 @@ function buildItem(entity: Category | Subscription) {
 function selectItem(itemNode: HTMLElement, entity: Category | Subscription) {
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
 	itemNode.classList.add(SELECTED_CSS_CLASS);
-	list.setSelectedNavItem(entity);
+	selected = entity;
+	pubsub.publish("nav-item-selected");
 }
 
 function showItemPopup(entity: Category | Subscription, target: HTMLElement) {

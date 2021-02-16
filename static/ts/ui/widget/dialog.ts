@@ -1,5 +1,6 @@
 import * as html from "util/html";
 
+
 let current: Dialog | null = null;
 
 export class Dialog {

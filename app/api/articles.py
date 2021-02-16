@@ -22,7 +22,7 @@ def list_articles() -> TReturnValue:
     starred = request.args.get("starred", False)
     include_read = request.args.get("include_read", False)
     limit = int(request.args.get("limit", 20))
-    page = int(request.args.get("page", 1))
+    offset = int(request.args.get("offset", 0))
 
     filters = []
 
@@ -44,7 +44,7 @@ def list_articles() -> TReturnValue:
         .filter(*filters)\
         .order_by(Article.time_published.desc())\
         .limit(limit)\
-        .offset((page-1)*limit)\
+        .offset(offset)\
         .all()
 
     return [article.to_json() for article in articles], 200

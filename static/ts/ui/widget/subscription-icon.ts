@@ -1,6 +1,5 @@
 import * as html from "util/html";
 
-import { Subscription } from "data/subscriptions";
 
 export default function build(subscription: Subscription) {
 	let node = html.node("span", {className: "subscription-icon"});

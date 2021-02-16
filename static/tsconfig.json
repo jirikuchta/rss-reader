@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"baseUrl": "js",
+		"baseUrl": "ts",
 		"strict": true,
 		"noUnusedLocals": true,
 		"target": "es2018",
