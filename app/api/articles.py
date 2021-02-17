@@ -35,10 +35,10 @@ def list_articles() -> TReturnValue:
         filters.append(Article.subscription_id.in_(subscriptions_query))
 
     if starred:
-        filters.append(Article.time_starred.isnot(None))
+        filters.append(Article.starred.is_(True))
 
     if not include_read:
-        filters.append(Article.time_read.is_(None))
+        filters.append(Article.read.is_(False))
 
     articles = Article.query\
         .filter(*filters)\
@@ -61,7 +61,7 @@ def get_article(article_id: int) -> TReturnValue:
 def toggle_article_read(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
 
-    article.time_read = db.func.now() if request.method == "PUT" else None
+    article.read = request.method == "PUT"
     db.session.commit()
 
     return None, 204
@@ -72,7 +72,7 @@ def toggle_article_read(article_id: int) -> TReturnValue:
 def toggle_article_star(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
 
-    article.time_starred = db.func.now() if request.method == "PUT" else None
+    article.starred = request.method == "PUT"
     db.session.commit()
 
     return None, 204

@@ -14,7 +14,7 @@ class TestAPIToggleArticleRead:
 
         res = client.get(f"/api/articles/{article_id}/")
         assert res.status_code == 200, res
-        assert res.json["time_read"] is not None
+        assert res.json["read"] is True
 
         # unread
         res = client.delete(f"api/articles/{article_id}/read/")
@@ -22,7 +22,7 @@ class TestAPIToggleArticleRead:
 
         res = client.get(f"/api/articles/{article_id}/")
         assert res.status_code == 200, res
-        assert res.json["time_read"] is None
+        assert res.json["read"] is False
 
     def test_not_found(self, client):
         res = client.put(f"api/articles/666/read/")

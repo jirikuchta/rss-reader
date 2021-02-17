@@ -85,14 +85,14 @@ class Article(Repr, db.Model):  # type: ignore
     content = db.Column(db.Text)
     comments_url = db.Column(db.String(255))
     author = db.Column(db.String(255))
+    read = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    starred = db.Column(db.Boolean, nullable=False, default=False, index=True)
     time_published = db.Column(
         db.DateTime,
         nullable=False, server_default=func.now())
     time_created = db.Column(
         db.DateTime,
         nullable=False, server_default=func.now(), index=True)
-    time_read = db.Column(db.DateTime, index=True)
-    time_starred = db.Column(db.DateTime, index=True)
     subscription_id = db.Column(
         db.Integer,
         db.ForeignKey("subscription.id", ondelete="CASCADE"), nullable=False)
@@ -113,12 +113,12 @@ class Article(Repr, db.Model):  # type: ignore
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        self.time_read = None
+        self.read = False
 
         return self
 
     def to_json(self):
         keys = ("id", "title", "url", "summary", "content", "comments_url",
-                "author", "subscription_id", "time_published", "time_read",
-                "time_starred",)
+                "author", "subscription_id", "time_published", "read",
+                "starred",)
         return {key: getattr(self, key) for key in keys}

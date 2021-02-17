@@ -68,7 +68,6 @@ export function icon(type:string, title = "", parent?: Node) {
 	return s;
 }
 
-
 export function fragment() {
 	return document.createDocumentFragment();
 }

@@ -77,14 +77,14 @@ def purge_old_articles(options: PurgeOptions) -> PurgeResult:
 
     filters = [
         Article.time_created < min_time_created,
-        Article.time_starred.is_(None)
+        Article.starred.is_(False)
     ]
 
     if options["subscription_id"] is not None:
         filters.append(Article.subscription_id == options["subscription_id"])
 
     if options["purge_unread"] is False:
-        filters.append(Article.time_read.isnot(None))
+        filters.append(Article.read.is_(True))
 
     result: PurgeResult = {
         "total_count": Article.query.filter(*filters).delete()

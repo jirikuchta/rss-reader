@@ -30,9 +30,12 @@ interface Article {
 	id: ArticleId;
 	subscription_id: SubscriptionId;
 	title: string;
+	url: string;
+	read: boolean;
+	starred: boolean;
+	time_published: Date;
 	content?: string;
 	summary?: string;
-	url: string;
 }
 
 interface ArticleFilters {

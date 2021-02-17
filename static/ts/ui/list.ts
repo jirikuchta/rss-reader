@@ -3,6 +3,7 @@ import { list as listArticles } from "data/articles";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
+import * as format from "util/format";
 
 import { selected as selectedNavItem } from "ui/nav";
 import subscriptionIcon from "ui/widget/subscription-icon";
@@ -14,12 +15,10 @@ const READ_CSS_CLASS = "is-read";
 export const node = html.node("section", {"id": "list"});
 export let selected: Article;
 
-const observer = new IntersectionObserver(loadMore, {root: node, threshold: 1});
-
-
-function loadMore(entries: IntersectionObserverEntry[]) {
-	entries[0].isIntersecting && ble();
-}
+const observer = new IntersectionObserver(
+	entries => entries[0].isIntersecting && buildItems(),
+	{root: node, rootMargin: "0% 0% 33% 0%", threshold: 1}
+);
 
 export function init() {
 	build();
@@ -28,7 +27,16 @@ export function init() {
 
 async function build() {
 	html.clear(node);
-	ble();
+	buildItems();
+}
+
+async function buildItems() {
+	observer.disconnect();
+	let items = await listArticles(get_filters());
+	if (items.length) {
+		items.forEach(article => node.appendChild(buildItem(article)));
+		observer.observe(node.querySelector("article:last-child")!);
+	}
 }
 
 function buildItem(article: Article) {
@@ -40,19 +48,12 @@ function buildItem(article: Article) {
 	let header = html.node("header", {}, "", node);
 	header.appendChild(subscriptionIcon(subscription));
 	header.appendChild(html.node("h6", {}, subscription.title));
+	header.appendChild(html.node("time", {}, format.date(article.time_published)));
 
 	node.appendChild(html.node("h3", {}, article.title));
 	node.appendChild(html.node("p", {}, article.summary));
 
 	return node;
-}
-
-async function selectItem(itemNode: HTMLElement, article: Article) {
-	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
-	itemNode.classList.add(SELECTED_CSS_CLASS);
-	itemNode.classList.add(READ_CSS_CLASS);
-	selected = article;
-	pubsub.publish("article-selected");
 }
 
 function get_filters() {
@@ -71,16 +72,10 @@ function get_filters() {
 	return filters;
 }
 
-async function ble() {
-	let items = await listArticles(get_filters());
-
-	if (items) {
-		let lastItem = Array.from(node.querySelectorAll("article")).pop();
-		lastItem && observer.unobserve(lastItem);
-
-		items.forEach(article => node.appendChild(buildItem(article)));
-
-		lastItem = Array.from(node.querySelectorAll("article")).pop();
-		lastItem && observer.observe(lastItem);
-	}
+async function selectItem(itemNode: HTMLElement, article: Article) {
+	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
+	itemNode.classList.add(SELECTED_CSS_CLASS);
+	itemNode.classList.add(READ_CSS_CLASS);
+	selected = article;
+	pubsub.publish("article-selected");
 }
