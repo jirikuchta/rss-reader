@@ -8,9 +8,8 @@ services:
       - ./app:/rss_reader
       - ./tests:/tests
     environment:
-      FLASK_ENV: testing
+      SHELL: "sh"
+      FLASK_ENV: "testing"
       SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
-    environment:
-      SHELL: sh
     command: >
       sh -c "python -m pytest -v --color=yes /tests"

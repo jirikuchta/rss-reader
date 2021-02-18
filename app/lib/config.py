@@ -16,17 +16,16 @@ DEFAULT_CONFIG: Dict[str, Union[str, bool, int]] = {
 
 
 def init(app: Flask) -> None:
-    for k, default_value in DEFAULT_CONFIG.items():
-        value: Optional[Union[str, int, bool]] = environ.get(
-            f"RSS_READER_{k}", environ.get(k))
+    app.config.update(DEFAULT_CONFIG)
 
+    for k, default_value in DEFAULT_CONFIG.items():
+        value: Optional[str] = environ.get(f"RSS_READER_{k}", environ.get(k))
         if value is not None:
             if type(default_value) is bool:
-                value = value in ("1", "True", "true")
+                app.config[k] = value.lower() in ("1", "true", "on", "yes")
 
             if type(default_value) is int:
-                value = int(value)
-        else:
-            value = default_value
+                app.config[k] = int(value)
 
-        app.config[k] = value
+            if type(default_value) is str:
+                app.config[k] = value
