@@ -4,7 +4,7 @@ from io import BytesIO
 from flask import Response
 
 from models import Subscription
-from lib.utils import ensure_abs_url, request
+from lib.utils import ensure_abs_url, http_request
 from lib.htmlparser import FaviconParser
 
 # 1px transparent GIF
@@ -20,21 +20,21 @@ def fetch(subscription: Subscription) -> Response:
         return Response(BytesIO(icon), mimetype="image/x-icon")
 
     try:
-        with request(ensure_abs_url(web_url, "favicon.ico")) as res:
+        with http_request(ensure_abs_url(web_url, "favicon.ico")) as res:
             icon = res.read()
     except Exception:
         try:
-            with request(web_url) as response:
+            with http_request(web_url) as response:
                 charset = response.headers.get_content_charset("utf-8")
                 html = response.read().decode(charset)
 
-            parser = FaviconParser(html)
+            parser = FaviconParser(html, web_url)
 
             if len(parser.icons):
-                icon_url = ensure_abs_url(web_url, next(
-                    filter(lambda i: i["size"] == 16, parser.icons),
-                    parser.icons[0])["href"])
-                with request(icon_url) as res:
+                icon_url = next(filter(
+                    lambda i: i["size"] == 16, parser.icons),
+                    parser.icons[0])["href"]
+                with http_request(icon_url) as res:
                     icon = res.read()
         except Exception:
             pass

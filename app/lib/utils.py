@@ -10,7 +10,7 @@ def ensure_abs_url(base: str, url: str) -> str:
 
 
 @contextmanager
-def request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
+def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
     app.logger.info("Sending HTTP %s request to %s", method, url)
 
     url_parsed = urlparse(url)
@@ -35,7 +35,7 @@ def request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
     if res.status in (301, 302):
         redir_url = res.headers.get("Location")
         app.logger.info("Following HTTP redirect %s -> %s", url, redir_url)
-        with request(redir_url, method) as res:
+        with http_request(redir_url, method) as res:
             yield res
     else:
         yield res

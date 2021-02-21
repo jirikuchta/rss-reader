@@ -9,12 +9,29 @@ from xml.etree import ElementTree as ET
 
 from flask import current_app as app
 
-from lib.utils import request, ensure_abs_url
+from lib.utils import http_request, ensure_abs_url
+from lib.htmlparser import FeedLinkParser, FeedLink
 
 
-def parse(feed_url: str) -> "FeedParser":
-    with request(feed_url) as res:
-        return FeedParser(ET.fromstring(res.read()), feed_url)
+def parse(url: str) -> "FeedParser":
+    with http_request(url, "HEAD") as res:
+        is_html = res.headers.get_content_type() == "text/html"
+
+    if is_html:
+        with http_request(url) as res:
+            charset = res.headers.get_content_charset("utf-8")
+            html = res.read().decode(charset)
+
+        feed_link_parser = FeedLinkParser(html, url)
+
+        if len(feed_link_parser.links) > 1:
+            raise AmbiguousFeedUrl(feed_link_parser.links)
+
+        if len(feed_link_parser.links) == 1:
+            url = feed_link_parser.links[0]["href"]
+
+    with http_request(url) as res:
+        return FeedParser(ET.fromstring(res.read()), url)
 
 
 def text(n: Optional[ET.Element]) -> Optional[str]:
@@ -34,6 +51,12 @@ NS = {
     "atom": "http://www.w3.org/2005/Atom",
     "dc": "http://purl.org/dc/elements/1.1/",
     "content": "http://purl.org/rss/1.0/modules/content/"}
+
+
+class AmbiguousFeedUrl(Exception):
+    def __init__(self, feed_links: FeedLink):
+        super().__init__()
+        self.feed_links = feed_links
 
 
 class ParserError(Exception):

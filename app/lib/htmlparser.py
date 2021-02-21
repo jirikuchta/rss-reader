@@ -1,6 +1,8 @@
 from html.parser import HTMLParser
 from typing import TypedDict, List, Tuple, Optional
 
+from lib.utils import ensure_abs_url
+
 
 class FeedLink(TypedDict):
     href: str
@@ -9,8 +11,9 @@ class FeedLink(TypedDict):
 
 class FeedLinkParser(HTMLParser):
 
-    def __init__(self, html: str) -> None:
+    def __init__(self, html: str, base_url: str) -> None:
         super().__init__()
+        self._base_url = base_url
         self._links: List[FeedLink] = []
         self.feed(html)
 
@@ -29,7 +32,7 @@ class FeedLinkParser(HTMLParser):
 
         if href and type in ("application/rss+xml", "application/atom+xml"):
             self._links.append({
-                "href": href,
+                "href": ensure_abs_url(self._base_url, href),
                 "title": attrs_dict.get("title")})
 
 
@@ -40,8 +43,9 @@ class Favicon(TypedDict):
 
 class FaviconParser(HTMLParser):
 
-    def __init__(self, html: str) -> None:
+    def __init__(self, html: str, base_url: str) -> None:
         super().__init__()
+        self._base_url = base_url
         self._icons: List[Favicon] = []
         self.feed(html)
 
@@ -61,5 +65,5 @@ class FaviconParser(HTMLParser):
         if href and rel and "icon" in rel.split(" "):
             size = attrs_dict.get("sizes")
             self._icons.append({
-                "href": href,
+                "href": ensure_abs_url(self._base_url, href),
                 "size": int(size.split("x")[0]) if size else None})

@@ -4,9 +4,7 @@ from flask import request, current_app as app
 from models import db, Subscription, Category, Article
 from api import api_bp, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
-from lib.feedparser import parse
-from lib.utils import request as http_request
-from lib.htmlparser import FeedLinkParser
+from lib.feedparser import parse, AmbiguousFeedUrl
 
 
 def get_subscription_or_raise(subscription_id: int) -> Subscription:
@@ -37,21 +35,10 @@ def create_subscription() -> TReturnValue:
     category_id = request.json.get("category_id")
     raise_for_invalid_category_id(category_id)
 
-    # TODO: refactor
-    with http_request(feed_url, "HEAD") as head_res:
-        if head_res.headers.get_content_type() == "text/html":
-            with http_request(feed_url) as html_res:
-                charset = html_res.headers.get_content_charset("utf-8")
-                html = html_res.read().decode(charset)
-
-            feed_link_parser = FeedLinkParser(html)
-            if len(feed_link_parser.links) == 1:
-                feed_url = feed_link_parser.links[0]["href"]
-            else:
-                pass  # TODO: return 300 and list of links
-
     try:
         parser = parse(feed_url)
+    except AmbiguousFeedUrl as e:
+        return {"links": e.feed_links}, 300
     except Exception:
         raise ClientError(ErrorType.ParserError)
 
