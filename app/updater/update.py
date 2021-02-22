@@ -14,7 +14,7 @@ class Result(TypedDict):
 
 
 def update_subscription(subscription: Subscription) -> Result:
-    app.logger.info("Updating %s", subscription)
+    app.logger.info("Processing %s", subscription)
     app.logger.debug(repr(subscription))
 
     result: Result = {
@@ -24,6 +24,12 @@ def update_subscription(subscription: Subscription) -> Result:
     }
 
     parser = parse(subscription.feed_url)
+
+    if subscription.hash == parser.hash:
+        app.logger.info("%s is up-to-date.", subscription)
+        result["skipped_items"] = len(parser.items)
+        return result
+
     articles = Article.query.filter(
         Article.subscription_id == subscription.id).all()
 
@@ -63,6 +69,7 @@ def update_subscription(subscription: Subscription) -> Result:
 
             result["new_items"] += 1
 
+    subscription.hash = parser.hash
     subscription.time_updated = datetime.now()
 
     db.session.commit()

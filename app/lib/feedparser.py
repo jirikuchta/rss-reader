@@ -87,6 +87,10 @@ class RootNode:
         return self._type
 
     @cached_property
+    def hash(self) -> str:
+        return md5(ET.tostring(self.node)).hexdigest()
+
+    @cached_property
     def namespaces(self) -> Dict[str, str]:
         match = re.match(r"{(\S+)}", self.node.tag)
         return {**({"": match.groups()[0]} if match else {}), **NS}
@@ -177,10 +181,6 @@ class FeedItemParser(RootNode):
     def guid(self) -> str:
         tag = "guid" if self.feed_type is FeedType.RSS else "id"
         return text(self.find(tag)) or self.url or self.hash
-
-    @cached_property
-    def hash(self) -> str:
-        return md5(ET.tostring(self.node)).hexdigest()
 
     @cached_property
     def title(self) -> Optional[str]:

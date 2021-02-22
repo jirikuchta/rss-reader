@@ -3,44 +3,45 @@ import random
 from datetime import datetime
 import logging
 from logging.config import dictConfig
-from flask import Flask, g, has_request_context, request, Response, current_app
+from flask import Flask, g, has_app_context, request, Response, current_app
 
 
-def generate_request_id():
+def generate_ctx_id():
     chars = string.ascii_lowercase + string.digits
     return ''.join(random.choices(chars, k=8))
 
 
 def before_request():
-    g.req_id = generate_request_id()
+    g.ctx = generate_ctx_id()
     g.req_start_time = datetime.utcnow().timestamp()
 
     current_app.logger.info(
-        "Request: %s %s%s, data: %s",
+        ">| %s %s%s, data: %s",
         request.method, request.full_path,
         request.query_string.decode(), request.data.decode() or None)
 
 
-def after_request(response: Response):
+def after_request(res: Response):
     now = datetime.utcnow().timestamp()
     req_duration_sec = now - g.req_start_time
-    current_app.logger.info("Response: status: %d, time: %fs",
-                            response.status_code, req_duration_sec)
-    try:
-        current_app.logger.debug("Response data: %s", response.data.decode())
-    except UnicodeError:
-        pass  # feed icon response probably
 
-    g.req_id = None
+    current_app.logger.info(">| %s (%fs)", res.status, req_duration_sec)
+
+    try:
+        current_app.logger.debug(str(res.data.decode()))
+    except UnicodeError:
+        pass
+
+    g.ctx = None
     g.req_start_time = None
 
-    return response
+    return res
 
 
 class ContextFilter(logging.Filter):
 
     def filter(self, record):
-        record.rid = g.get("req_id", "-") if has_request_context() else "-"
+        record.ctx = g.get("ctx", "-") if has_app_context() else "-"
         return True
 
 
@@ -49,7 +50,7 @@ def init(app: Flask):
         "version": 1,
         "formatters": {"default": {
             "datefmt": "%Y/%m/%d %H:%M:%S",
-            "format": "%(asctime)s [%(rid)s] %(levelname)s: %(message)s "
+            "format": "%(asctime)s [%(ctx)s] %(levelname)s: %(message)s "
                       "{%(filename)s.%(funcName)s():%(lineno)d}",
         }},
         "filters": {

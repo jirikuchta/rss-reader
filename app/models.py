@@ -49,6 +49,7 @@ class Subscription(Repr, db.Model):  # type: ignore
 
     id = db.Column(db.Integer, primary_key=True)
     feed_url = db.Column(db.String(255), nullable=False, unique=True)
+    hash = db.Column(db.String(255), nullable=False)
     title = db.Column(db.Text)
     web_url = db.Column(db.String(255))
 
@@ -65,6 +66,7 @@ class Subscription(Repr, db.Model):  # type: ignore
             title=parser.title,
             feed_url=parser.feed_url,
             web_url=parser.web_url,
+            hash=parser.hash,
             **kwargs)
 
     def to_json(self):

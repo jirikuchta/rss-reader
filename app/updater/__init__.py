@@ -2,7 +2,7 @@ import json
 from datetime import datetime, timedelta
 from typing import Optional, TypedDict, List, Dict
 
-from flask import current_app as app
+from flask import current_app as app, g
 
 from models import db, Subscription, Article
 from updater.update import update_subscription, \
@@ -22,7 +22,9 @@ class UpdateResult(TypedDict):
 
 
 def update_subscriptions(options: UpdateOptions) -> UpdateResult:
-    app.logger.info("Subscriptions update started: %s", json.dumps(options))
+    g.ctx = "update"
+    app.logger.info("Started")
+    app.logger.debug(json.dumps(options))
 
     min_time_updated = datetime.now() - timedelta(seconds=options["interval"])
 
@@ -35,7 +37,7 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
 
     subscriptions = Subscription.query.filter(*filters).all()
 
-    app.logger.info("%d subscription(s) needs to be updated",
+    app.logger.info("%d subscription(s) to be checked",
                     len(subscriptions))
 
     result: UpdateResult = {
@@ -51,11 +53,13 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
             result["results"][subscription.id] = res
             result["succeeded_ids"].append(subscription.id)
         except Exception as e:
-            app.logger.warning("Failed to update subscription: %s, err=%s",
-                               subscription, e)
+            app.logger.warning("%s update failed: err=%s", subscription, e)
             result["succeeded_ids"].append(subscription.id)
 
-    app.logger.info("Subscriptions update finished: %s", json.dumps(result))
+    app.logger.info("Finished")
+    app.logger.debug(json.dumps(result))
+
+    g.ctx = None
 
     return result
 
@@ -71,7 +75,9 @@ class PurgeResult(TypedDict):
 
 
 def purge_old_articles(options: PurgeOptions) -> PurgeResult:
-    app.logger.info("Old articles purging started: %s", json.dumps(options))
+    g.ctx = "purge"
+    app.logger.info("Started")
+    app.logger.debug(json.dumps(options))
 
     min_time_created = datetime.now() - timedelta(days=options["max_age_days"])
 
@@ -92,6 +98,9 @@ def purge_old_articles(options: PurgeOptions) -> PurgeResult:
 
     db.session.commit()
 
-    app.logger.info("Old articles purging finished: %s", json.dumps(result))
+    app.logger.info("Finished")
+    app.logger.debug(json.dumps(result))
+
+    g.ctx = None
 
     return result

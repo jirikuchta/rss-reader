@@ -12,6 +12,7 @@ services:
       - 5000:5000
     environment:
       FLASK_ENV: development
+      DEBUG: "false"
       # RSS_READER_BASIC_HTTP_AUTH_CREDENTIALS: admin:admin
       # RSS_READER_FEED_ICONS_CACHE: 1
       # RSS_READER_FEED_ICONS_CACHE: 0
