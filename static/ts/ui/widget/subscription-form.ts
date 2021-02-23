@@ -12,6 +12,7 @@ export default class SubscriptionForm {
 	_url!: HTMLInputElement;
 	_category!: HTMLInputElement;
 	_subscription?: Subscription;
+	_feedSelect?: HTMLSelectElement;
 
 	constructor(subscription?: Subscription) {
 		this._subscription = subscription;
@@ -89,6 +90,14 @@ export default class SubscriptionForm {
 			case "already_exists":
 				this._url.setCustomValidity("You are already subscribed to this feed.");
 			break;
+			case "ambiguous_feed_url":
+				this._feedSelect = html.node("select");
+				html.node("option", {value: this._url.value}, "Select feed…", this._feedSelect);
+				(res.error.links as FeedLink[]).forEach(l => html.node("option", {value: l.href}, l.title || l.href, this._feedSelect));
+				this._feedSelect.addEventListener("change", e => this._url.value = this._feedSelect!.value);
+				this._url.parentNode!.insertBefore(this._feedSelect, this._url.nextSibling);
+				this._feedSelect.setCustomValidity("Provided URL is a HTML page referencing multiple feeds.");
+			break;
 		}
 
 		this.node.classList.toggle("invalid", !this.node.checkValidity());
@@ -96,6 +105,7 @@ export default class SubscriptionForm {
 	}
 
 	_clearValidation() {
+		this._feedSelect?.remove();
 		this._title.setCustomValidity("");
 		this._url.setCustomValidity("");
 		this._category.setCustomValidity("");

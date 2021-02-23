@@ -38,7 +38,7 @@ def create_subscription() -> TReturnValue:
     try:
         parser = parse(feed_url)
     except AmbiguousFeedUrl as e:
-        return {"links": e.feed_links}, 300
+        raise ClientError(ErrorType.AmbiguousFeedUrl, links=e.feed_links)
     except Exception:
         raise ClientError(ErrorType.ParserError)
 

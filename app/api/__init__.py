@@ -29,6 +29,7 @@ class ErrorType(Enum):
     MissingField = auto()
     InvalidField = auto()
     ParserError = auto()
+    AmbiguousFeedUrl = auto()
     NotFound = auto()
     AlreadyExists = auto()
 
@@ -39,6 +40,7 @@ Errors: Dict[ErrorType, Error] = {
     ErrorType.MissingField: Error(400, "missing_field"),
     ErrorType.InvalidField: Error(400, "invalid_field"),
     ErrorType.ParserError: Error(400, "parser_error"),
+    ErrorType.AmbiguousFeedUrl: Error(400, "ambiguous_feed_url"),
     ErrorType.NotFound: Error(404, "not_found"),
     ErrorType.AlreadyExists: Error(409, "already_exists")}
 

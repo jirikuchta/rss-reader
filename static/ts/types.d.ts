@@ -10,6 +10,7 @@ interface ApiErrorData {
 
 interface ApiResponse {
 	ok: boolean;
+	status: number;
 	data?: any;
 	error?: ApiErrorData;
 }
@@ -47,3 +48,7 @@ interface ArticleFilters {
 	include_read?: boolean
 }
 
+interface FeedLink {
+	href: string
+	title?: string
+}
