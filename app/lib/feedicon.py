@@ -22,6 +22,8 @@ def fetch(subscription: Subscription) -> Response:
     try:
         with http_request(ensure_abs_url(web_url, "favicon.ico")) as res:
             icon = res.read()
+            if len(icon) == 0:
+                raise Exception
     except Exception:
         try:
             with http_request(web_url) as response:

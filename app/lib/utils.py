@@ -36,7 +36,7 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
 
     res = conn.getresponse()
 
-    app.logger.info("|> %d %s", res.status, res.reason)
+    app.logger.info("|< %d %s", res.status, res.reason)
 
     if res.status >= 400:
         raise HTTPResponseError(res)

@@ -3,14 +3,13 @@ from datetime import datetime
 from enum import Enum
 from functools import cached_property
 from hashlib import md5
-from html.parser import HTMLParser
 from typing import Optional, List, Dict
 from xml.etree import ElementTree as ET
 
 from flask import current_app as app
 
 from lib.utils import http_request, ensure_abs_url
-from lib.htmlparser import FeedLinkParser, FeedLink
+from lib.htmlparser import FeedLinkParser, FeedLink, TextParser
 
 
 def parse(url: str) -> "FeedParser":
@@ -268,19 +267,3 @@ class FeedItemParser(RootNode):
             return ", ".join(names) or None
 
         return None
-
-
-class TextParser(HTMLParser):
-
-    @staticmethod
-    def parse(html: str) -> str:
-        parser = TextParser()
-        parser.feed(f"<div>{html}</div>")
-        return "".join(parser.data).strip()
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.data = []  # type: List[str]
-
-    def handle_data(self, data: str) -> None:
-        self.data.append(data)

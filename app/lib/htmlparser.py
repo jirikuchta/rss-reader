@@ -67,3 +67,19 @@ class FaviconParser(HTMLParser):
             self._icons.append({
                 "href": ensure_abs_url(self._base_url, href),
                 "size": int(size.split("x")[0]) if size else None})
+
+
+class TextParser(HTMLParser):
+
+    @staticmethod
+    def parse(html: str) -> str:
+        parser = TextParser()
+        parser.feed(f"<div>{html}</div>")
+        return "".join(parser.data).strip()
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.data = []  # type: List[str]
+
+    def handle_data(self, data: str) -> None:
+        self.data.append(data)
