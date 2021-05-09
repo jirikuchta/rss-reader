@@ -20,57 +20,57 @@ def create_subscription(client, updater_feed_server):
     assert res.status_code == 201, res
 
 
-class TestOldArticlesPurge:
+@pytest.mark.parametrize("max_age_days,expected_count", [
+    (60, 0),
+    (-1, FEED_ARTICLE_COUNT)])
+def test_purge_max_age_days(
+        max_age_days, expected_count, app, create_subscription):
+    with app.app_context():
+        assert purge_old_articles({
+            "max_age_days": max_age_days,
+            "purge_unread": True,
+            "subscription_id": None
+        })["total_count"] == expected_count
 
-    @pytest.mark.parametrize("max_age_days,expected_count", [
-        (60, 0),
-        (-1, FEED_ARTICLE_COUNT)])
-    def test_purge_max_age_days(self, max_age_days, expected_count, app,
-                                create_subscription):
-        with app.app_context():
-            assert purge_old_articles({
-                "max_age_days": max_age_days,
-                "purge_unread": True,
-                "subscription_id": None
-            })["total_count"] == expected_count
 
-    @pytest.mark.parametrize("purge_unread,expected_count", [
-        (False, 0),
-        (True, FEED_ARTICLE_COUNT)])
-    def test_purge_unread(self, purge_unread, expected_count, app,
-                          create_subscription):
-        with app.app_context():
-            assert purge_old_articles({
-                "max_age_days": -1,
-                "purge_unread": purge_unread,
-                "subscription_id": None
-            })["total_count"] == expected_count
+@pytest.mark.parametrize("purge_unread,expected_count", [
+    (False, 0),
+    (True, FEED_ARTICLE_COUNT)])
+def test_purge_unread(purge_unread, expected_count, app, create_subscription):
+    with app.app_context():
+        assert purge_old_articles({
+            "max_age_days": -1,
+            "purge_unread": purge_unread,
+            "subscription_id": None
+        })["total_count"] == expected_count
 
-    def test_purge_subscription_id(self, app, client, create_subscription):
-        subscription_id = client.get("/api/subscriptions/").json[0]["id"]
 
-        with app.app_context():
-            assert purge_old_articles({
-                "max_age_days": -1,
-                "purge_unread": True,
-                "subscription_id": 666
-            })["total_count"] == 0
+def test_purge_subscription_id(app, client, create_subscription):
+    subscription_id = client.get("/api/subscriptions/").json[0]["id"]
 
-            assert purge_old_articles({
-                "max_age_days": -1,
-                "purge_unread": True,
-                "subscription_id": subscription_id
-            })["total_count"] == FEED_ARTICLE_COUNT
+    with app.app_context():
+        assert purge_old_articles({
+            "max_age_days": -1,
+            "purge_unread": True,
+            "subscription_id": 666
+        })["total_count"] == 0
 
-    def test_do_not_purge_starred(self, app, client, create_subscription):
-        article_id = client.get("/api/articles/").json[0]["id"]
+        assert purge_old_articles({
+            "max_age_days": -1,
+            "purge_unread": True,
+            "subscription_id": subscription_id
+        })["total_count"] == FEED_ARTICLE_COUNT
 
-        res = client.put(f"/api/articles/{article_id}/star/")
-        assert res.status_code == 204, res
 
-        with app.app_context():
-            assert purge_old_articles({
-                "max_age_days": -1,
-                "purge_unread": True,
-                "subscription_id": None
-            })["total_count"] == FEED_ARTICLE_COUNT - 1
+def test_do_not_purge_starred(app, client, create_subscription):
+    article_id = client.get("/api/articles/").json[0]["id"]
+
+    res = client.put(f"/api/articles/{article_id}/star/")
+    assert res.status_code == 204, res
+
+    with app.app_context():
+        assert purge_old_articles({
+            "max_age_days": -1,
+            "purge_unread": True,
+            "subscription_id": None
+        })["total_count"] == FEED_ARTICLE_COUNT - 1
