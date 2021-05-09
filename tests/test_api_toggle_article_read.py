@@ -8,7 +8,7 @@ def test_ok(client, create_subscription, feed_server):
 
     # read
     res = client.put(f"api/articles/{article_id}/read/")
-    res.status_code == 204, res
+    assert res.status_code == 204, res
 
     res = client.get(f"/api/articles/{article_id}/")
     assert res.status_code == 200, res

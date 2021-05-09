@@ -19,8 +19,8 @@ def get_article_or_raise(article_id: int) -> Article:
 def list_articles() -> TReturnValue:
     subscription_id = request.args.get("subscription_id")
     category_id = request.args.get("category_id")
-    starred = request.args.get("starred", False)
-    include_read = request.args.get("include_read", False)
+    starred_only = "starred_only" in request.args
+    unread_only = "unread_only" in request.args
     limit = int(request.args.get("limit", 20))
     offset = int(request.args.get("offset", 0))
 
@@ -34,10 +34,10 @@ def list_articles() -> TReturnValue:
             Subscription.category_id == category_id)
         filters.append(Article.subscription_id.in_(subscriptions_query))
 
-    if starred:
+    if starred_only:
         filters.append(Article.starred.is_(True))
 
-    if not include_read:
+    if unread_only:
         filters.append(Article.read.is_(False))
 
     articles = Article.query\

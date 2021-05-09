@@ -1,16 +1,12 @@
 def test_ok(client, create_subscription):
-    subscription = create_subscription()
+    subscription_id = create_subscription()["id"]
 
-    res = client.get("/api/articles/")
-    assert res.status_code == 200, res
-    assert len(res.json) != 0
-
-    res = client.put(f"/api/subscriptions/{subscription['id']}/read/")
+    res = client.put(f"/api/subscriptions/{subscription_id}/read/")
     assert res.status_code == 204, res
 
-    res = client.get("/api/articles/")
+    res = client.get(f"/api/articles/?subscription_id={subscription_id}")
     assert res.status_code == 200, res
-    assert len(res.json) == 0
+    assert all([a["read"] for a in res.json]) is True
 
 
 def test_not_found(client, feed_server):

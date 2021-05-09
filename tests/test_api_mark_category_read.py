@@ -1,17 +1,13 @@
 def test_ok(create_category, create_subscription, client):
-    cat = create_category()
-    create_subscription(cat["id"])
+    category_id = create_category()["id"]
+    create_subscription(category_id)
 
-    res = client.get("/api/articles/")
-    assert res.status_code == 200, res
-    assert len(res.json) != 0
-
-    res = client.put(f"/api/categories/{cat['id']}/read/")
+    res = client.put(f"/api/categories/{category_id}/read/")
     assert res.status_code == 204, res
 
-    res = client.get("/api/articles/")
+    res = client.get(f"/api/articles/?category_id={category_id}")
     assert res.status_code == 200, res
-    assert len(res.json) == 0
+    assert all([a["read"] for a in res.json]) is True
 
 
 def test_not_found(client):
