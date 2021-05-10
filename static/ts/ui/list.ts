@@ -58,6 +58,7 @@ function buildItem(article: Article) {
 
 function get_filters() {
 	let filters: ArticleFilters = {
+		unread_only: true,
 		offset: node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`).length
 	};
 

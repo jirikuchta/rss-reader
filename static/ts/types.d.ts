@@ -44,8 +44,8 @@ interface ArticleFilters {
 	category_id?: CategoryId
 	limit?: number
 	offset?: number
-	starred?: boolean
-	include_read?: boolean
+	starred_only?: boolean
+	unread_only?: boolean
 }
 
 interface FeedLink {

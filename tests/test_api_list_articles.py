@@ -35,7 +35,7 @@ def test_category_filter(
 def test_starred_only_filter(client, create_subscription):
     create_subscription()
     article_id = client.get("/api/articles/").json[0]["id"]
-    client.put(f"/api/articles/{article_id}/star/")
+    client.patch(f"/api/articles/{article_id}/", json={"starred": True})
 
     res = client.get("/api/articles/?starred_only")
     assert res.status_code == 200
@@ -46,7 +46,7 @@ def test_starred_only_filter(client, create_subscription):
 def test_unread_only_filter(client, create_subscription, feed_server):
     create_subscription()
     article_id = client.get("/api/articles/").json[0]["id"]
-    client.put(f"/api/articles/{article_id}/read/")
+    client.patch(f"/api/articles/{article_id}/", json={"read": True})
 
     res = client.get("/api/articles/?unread_only")
     assert res.status_code == 200

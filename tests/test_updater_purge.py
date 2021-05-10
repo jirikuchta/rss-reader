@@ -65,8 +65,8 @@ def test_purge_subscription_id(app, client, create_subscription):
 def test_do_not_purge_starred(app, client, create_subscription):
     article_id = client.get("/api/articles/").json[0]["id"]
 
-    res = client.put(f"/api/articles/{article_id}/star/")
-    assert res.status_code == 204, res
+    res = client.patch(f"/api/articles/{article_id}/", json={"starred": True})
+    assert res.status_code == 200, res
 
     with app.app_context():
         assert purge_old_articles({

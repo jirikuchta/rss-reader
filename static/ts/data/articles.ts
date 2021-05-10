@@ -7,5 +7,5 @@ export async function list(filters?: ArticleFilters) {
 }
 
 export async function toggle_read(article: Article) {
-	await api("PUT", `/api/articles/${article.id}/read/`);
+	await api("PATCH", `/api/articles/${article.id}/`, {"read": true});
 }

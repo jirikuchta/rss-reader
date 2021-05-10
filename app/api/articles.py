@@ -56,23 +56,23 @@ def get_article(article_id: int) -> TReturnValue:
     return get_article_or_raise(article_id).to_json(), 200
 
 
-@api_bp.route("/articles/<int:article_id>/read/", methods=["PUT", "DELETE"])
+@api_bp.route("/articles/<int:article_id>/", methods=["PATCH"])
 @make_api_response
-def toggle_article_read(article_id: int) -> TReturnValue:
+def update_article(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
 
-    article.read = request.method == "PUT"
+    if "starred" in request.json:
+        article.starred = bool(request.json["starred"])
+
+    if "read" in request.json:
+        article.read = bool(request.json["read"])
+
     db.session.commit()
 
-    return None, 204
+    return article.to_json(), 200
 
 
-@api_bp.route("/articles/<int:article_id>/star/", methods=["PUT", "DELETE"])
+@api_bp.route("/articles/mark_read/", methods=["POST"])
 @make_api_response
-def toggle_article_star(article_id: int) -> TReturnValue:
-    article = get_article_or_raise(article_id)
-
-    article.starred = request.method == "PUT"
-    db.session.commit()
-
-    return None, 204
+def mark_articles_as_read(article_id: int) -> TReturnValue:
+    pass  # TODO
