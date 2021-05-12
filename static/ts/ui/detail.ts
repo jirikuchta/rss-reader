@@ -1,4 +1,4 @@
-import * as articles from "data/articles";
+import { toggleRead } from "data/articles";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
@@ -29,5 +29,5 @@ export async function build() {
 
 	node.appendChild(frag);
 
-	articles.toggle_read(article);
+	toggleRead(article);
 }

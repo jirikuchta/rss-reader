@@ -59,9 +59,10 @@ export default class SubscriptionForm {
 			this._title.value = this._subscription.title;
 			this._url.value = this._subscription.feed_url;
 			this._url.disabled = true;
-			let catTitle = categories.get()
-				.find(c => c.id == this._subscription?.category_id)?.title;
-			catTitle && (this._category.value = catTitle);
+			if (this._subscription.category_id) {
+				let cat = categories.get(this._subscription.category_id);
+				cat && (this._category.value = cat.title);
+			}
 		}
 
 		this._subscription && this.node.appendChild(labelInput("Title", this._title));
@@ -130,7 +131,7 @@ export function labelInput(text: string, input: HTMLInputElement) {
 
 function buildCategoryList() {
 	let node = html.node("datalist", {id: random.id()});
-	categories.get().forEach(c => html.node("option", {value: c.title}, c.title, node));
+	categories.list().forEach(c => html.node("option", {value: c.title}, c.title, node));
 	return node;
 }
 
@@ -138,8 +139,8 @@ async function getCategory(title: string) {
 	title = title.trim();
 	if (!title) { return; }
 
-	let category = categories.get()
-		.find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
+	let category = categories.list().find(
+		cat => cat.title.trim().toLowerCase() == title.toLowerCase());
 
 	if (!category) {
 		let res = await categories.add({title});

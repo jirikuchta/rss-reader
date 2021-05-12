@@ -1,5 +1,5 @@
-import { get as getSubscription, isSubscription } from "data/subscriptions";
-import { get as getArticles } from "data/articles";
+import * as subscriptions from "data/subscriptions";
+import * as articles from "data/articles";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
@@ -32,7 +32,7 @@ async function build() {
 
 async function buildItems() {
 	observer.disconnect();
-	let items = await getArticles(get_filters());
+	let items = await articles.list(get_filters());
 	if (items.length) {
 		items.forEach(article => node.appendChild(buildItem(article)));
 		observer.observe(node.querySelector("article:last-child")!);
@@ -40,7 +40,8 @@ async function buildItems() {
 }
 
 function buildItem(article: Article) {
-	let subscription = getSubscription(article.subscription_id);
+	let subscription = subscriptions.get(article.subscription_id);
+	if (!subscription) { return html.fragment(); }
 
 	let node = html.node("article");
 	node.addEventListener("click", _ => selectItem(node, article));
@@ -63,7 +64,7 @@ function get_filters() {
 	};
 
 	if (selectedNavItem) {
-		if (isSubscription(selectedNavItem)) {
+		if (subscriptions.isSubscription(selectedNavItem)) {
 			filters["subscription_id"] = selectedNavItem.id;
 		} else {
 			filters["category_id"] = selectedNavItem.id;

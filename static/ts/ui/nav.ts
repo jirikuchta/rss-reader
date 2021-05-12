@@ -33,23 +33,20 @@ async function build() {
 	let btn = html.button({icon: "plus-circle"}, "", header);
 	btn.addEventListener("click", e => editSubscription());
 
-	categories.get()
-		.forEach(cat => node.appendChild(buildCategory(cat)));
+	categories.list().forEach(c => node.appendChild(buildCategory(c)));
 
 	let uncategorized = html.node("ul", {}, "", node);
-	subscriptions.get()
-		.filter(s => s.category_id == null)
-		.forEach(s => uncategorized.appendChild(buildItem(s)));
+	subscriptions.list().forEach(s => {
+		s.category_id === null && uncategorized.appendChild(buildItem(s))
+	});
 }
 
 function buildCategory(category: Category) {
 	let list = html.node("ul");
 	list.appendChild(buildItem(category));
-
-	subscriptions.get()
-		.filter(s => s.category_id == category.id)
-		.forEach(s => list.appendChild(buildItem(s)))
-
+	subscriptions.list().forEach(s => {
+		s.category_id == category.id && list.appendChild(buildItem(s));
+	});
 	return list;
 }
 
