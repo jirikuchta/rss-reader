@@ -2,7 +2,6 @@ import * as subscriptions from "data/subscriptions";
 import api from "util/api";
 import * as pubsub from "util/pubsub";
 
-
 let categories: Category[] = [];
 
 export async function init() {
@@ -10,7 +9,12 @@ export async function init() {
 	res.ok && (categories = res.data);
 }
 
-export function list() { return categories; }
+export function get(): Category[];
+export function get(id: CategoryId): Category;
+export function get(id?: CategoryId):  Category | Category[] {
+	if (id === undefined) { return categories; }
+	return categories.filter(s => s.id == id)[0];
+}
 
 export async function add(data: Partial<Category>) {
 	let res = await api("POST", "/api/categories/", data);

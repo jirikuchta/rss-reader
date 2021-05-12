@@ -59,7 +59,8 @@ export default class SubscriptionForm {
 			this._title.value = this._subscription.title;
 			this._url.value = this._subscription.feed_url;
 			this._url.disabled = true;
-			let catTitle = categories.list().find(c => c.id == this._subscription?.category_id)?.title;
+			let catTitle = categories.get()
+				.find(c => c.id == this._subscription?.category_id)?.title;
 			catTitle && (this._category.value = catTitle);
 		}
 
@@ -129,7 +130,7 @@ export function labelInput(text: string, input: HTMLInputElement) {
 
 function buildCategoryList() {
 	let node = html.node("datalist", {id: random.id()});
-	categories.list().forEach(c => html.node("option", {value: c.title}, c.title, node));
+	categories.get().forEach(c => html.node("option", {value: c.title}, c.title, node));
 	return node;
 }
 
@@ -137,7 +138,7 @@ async function getCategory(title: string) {
 	title = title.trim();
 	if (!title) { return; }
 
-	let category = categories.list()
+	let category = categories.get()
 		.find(cat => cat.title.trim().toLowerCase() == title.toLowerCase());
 
 	if (!category) {

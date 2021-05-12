@@ -33,11 +33,11 @@ async function build() {
 	let btn = html.button({icon: "plus-circle"}, "", header);
 	btn.addEventListener("click", e => editSubscription());
 
-	categories.list()
+	categories.get()
 		.forEach(cat => node.appendChild(buildCategory(cat)));
 
 	let uncategorized = html.node("ul", {}, "", node);
-	subscriptions.list()
+	subscriptions.get()
 		.filter(s => s.category_id == null)
 		.forEach(s => uncategorized.appendChild(buildItem(s)));
 }
@@ -46,7 +46,7 @@ function buildCategory(category: Category) {
 	let list = html.node("ul");
 	list.appendChild(buildItem(category));
 
-	subscriptions.list()
+	subscriptions.get()
 		.filter(s => s.category_id == category.id)
 		.forEach(s => list.appendChild(buildItem(s)))
 

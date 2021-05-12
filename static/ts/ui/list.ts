@@ -1,5 +1,5 @@
 import { get as getSubscription, isSubscription } from "data/subscriptions";
-import { list as listArticles } from "data/articles";
+import { get as getArticles } from "data/articles";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
@@ -32,7 +32,7 @@ async function build() {
 
 async function buildItems() {
 	observer.disconnect();
-	let items = await listArticles(get_filters());
+	let items = await getArticles(get_filters());
 	if (items.length) {
 		items.forEach(article => node.appendChild(buildItem(article)));
 		observer.observe(node.querySelector("article:last-child")!);
