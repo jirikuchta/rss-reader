@@ -211,6 +211,7 @@ nav li:hover {
 }
 nav li:hover .btn-dots {
   display: inline;
+  color: var(--color-grey);
 }
 nav li:hover .count {
   display: none;

@@ -1,5 +1,6 @@
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
+import * as counters from "data/counters";
 import { isSubscription } from "data/subscriptions";
 
 import * as html from "util/html";
@@ -56,7 +57,8 @@ function buildItem(entity: Category | Subscription) {
 	if (isSubscription(entity)) {
 		node.appendChild(subscriptionIcon(entity as Subscription));
 		node.appendChild(html.node("span", {className: "title"}, entity.title));
-		node.appendChild(html.node("span", {className: "count"}, "50"));
+		let count = counters.get(entity.id);
+		count &&  node.appendChild(html.node("span", {className: "count"}, `${count}`));
 	} else {
 		node.classList.add("category");
 		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
