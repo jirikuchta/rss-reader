@@ -1,3 +1,4 @@
+import { CategoryId, Category } from "data/types";
 import * as subscriptions from "data/subscriptions";
 import api from "util/api";
 import * as pubsub from "util/pubsub";

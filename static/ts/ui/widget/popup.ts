@@ -1,6 +1,5 @@
 import * as html from "util/html";
 
-
 type PositionType = "side" | "below";
 interface Position {
 	left: number;

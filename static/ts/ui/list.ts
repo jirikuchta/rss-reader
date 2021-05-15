@@ -1,3 +1,5 @@
+import { Article, ArticleFilters } from "data/types";
+
 import * as subscriptions from "data/subscriptions";
 import * as articles from "data/articles";
 

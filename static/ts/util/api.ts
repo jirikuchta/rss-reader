@@ -1,5 +1,18 @@
 type METHODS = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
+export interface ApiErrorData {
+	code: string;
+	field?: string;
+	[key: string]: any;
+}
+
+export interface ApiResponse {
+	ok: boolean;
+	status: number;
+	data?: any;
+	error?: ApiErrorData;
+}
+
 export default async function api(method: METHODS, uri: string, data: any = null) {
 	let init: RequestInit = {method: method};
 

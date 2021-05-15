@@ -1,3 +1,4 @@
+import { Article, ArticleFilters } from "data/types";
 import api from "util/api";
 
 export async function list(filters?: ArticleFilters) {

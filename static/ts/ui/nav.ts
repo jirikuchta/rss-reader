@@ -1,3 +1,5 @@
+import { Category, Subscription } from "data/types";
+
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 import * as counters from "data/counters";

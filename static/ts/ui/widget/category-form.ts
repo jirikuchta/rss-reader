@@ -1,3 +1,6 @@
+import { Category } from "data/types";
+import { ApiResponse } from "util/api"
+
 import * as html from "util/html";
 import * as random from "util/random";
 

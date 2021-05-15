@@ -1,33 +1,20 @@
-type SubscriptionId = number;
-type CategoryId = number;
-type ArticleId = number;
+export type SubscriptionId = number;
+export type CategoryId = number;
+export  type ArticleId = number;
 
-interface ApiErrorData {
-	code: string;
-	field?: string;
-	[key: string]: any;
-}
-
-interface ApiResponse {
-	ok: boolean;
-	status: number;
-	data?: any;
-	error?: ApiErrorData;
-}
-
-interface Subscription {
+export interface Subscription {
 	id: SubscriptionId;
 	title: string;
 	feed_url: string;
 	category_id?: CategoryId;
 }
 
-interface Category {
+export interface Category {
 	id: CategoryId;
 	title: string;
 }
 
-interface Article {
+export interface Article {
 	id: ArticleId;
 	subscription_id: SubscriptionId;
 	title: string;
@@ -39,7 +26,7 @@ interface Article {
 	summary?: string;
 }
 
-interface ArticleFilters {
+export interface ArticleFilters {
 	subscription_id?: SubscriptionId
 	category_id?: CategoryId
 	limit?: number
@@ -48,7 +35,7 @@ interface ArticleFilters {
 	unread_only?: boolean
 }
 
-interface FeedLink {
+export interface FeedLink {
 	href: string
 	title?: string
 }
