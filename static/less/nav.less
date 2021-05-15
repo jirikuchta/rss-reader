@@ -38,6 +38,11 @@ nav {
 			}
 		}
 
+		&.is-selected {
+			border-left-color: var(--color-active);
+			color: var(--color-active);
+		}
+
 		.subscription-icon {
 			margin-right: 8px;
 		}
@@ -56,6 +61,7 @@ nav {
 		}
 
 		button {
+			flex-shrink: 0;
 			width: 24px;
 			height: 24px;
 
@@ -63,20 +69,19 @@ nav {
 				margin-right: 8px;
 			}
 
-			&.btn-dots {
+			&:not(.btn-chevron) {
+				flex-shrink: 0;
 				font-size: 1.6rem;
-				display: none;
+				color: var(--color-grey);
 			}
 		}
 
-		&.is-selected {
-			border-left-color: var(--color-active);
-			color: var(--color-active);
+		&:not(:hover) button:not(.btn-chevron) {
+			display: none;
 		}
 
 		&:hover {
 			background-color: var(--color-hover);
-			.btn-dots { display: inline; color: var(--color-grey); }
 			.count { display: none; }
 		}
 	}

@@ -23,11 +23,18 @@
 	}
 
 	> footer {
+		display: flex;
 		text-align: center;
 		background: var(--color-background);
 
 		button {
 			min-width: 100px;
+
+			&.delete {
+				color: red;
+				margin-left: auto;
+				.icon { margin-right: 8px; }
+			}
 		}
 	}
 

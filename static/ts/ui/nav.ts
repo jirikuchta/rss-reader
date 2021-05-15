@@ -11,8 +11,7 @@ import * as pubsub from "util/pubsub";
 import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
-import { PopupMenu } from "ui/widget/popup";
-import { Dialog, confirm } from "ui/widget/dialog";
+import Dialog, { confirm } from "ui/widget/dialog";
 
 
 const SELECTED_CSS_CLASS = "is-selected";
@@ -72,15 +71,37 @@ function buildItem(entity: Category | Subscription) {
 		node.appendChild(html.node("span", {className: "count"}, "50"));
 	}
 
+	node.appendChild(buildButtons(entity));
+
 	node.addEventListener("click", e => selectItem(node, entity));
 
-	let btn = html.button({className: "plain btn-dots", icon: "dots-horizontal"}, "", node);
+	return node;
+}
+
+function buildButtons(entity: Category | Subscription) {
+	let frag = html.fragment();
+
+	let btn = html.button({icon: "check-all"}, "", frag);
 	btn.addEventListener("click", e => {
 		e.stopPropagation();
-		showItemPopup(entity, btn);
+		if (isSubscription(entity)) {
+			subscriptions.markRead((entity as Subscription).id);
+		} else {
+			categories.markRead((entity as Category).id);
+		}
 	});
 
-	return node;
+	btn = html.button({icon: "pencil"}, "", frag);
+	btn.addEventListener("click", e => {
+		e.stopPropagation();
+		if (isSubscription(entity)) {
+			editSubscription(entity as Subscription);
+		} else {
+			editCategory(entity as Category);
+		}
+	});
+
+	return frag;
 }
 
 function selectItem(itemNode: HTMLElement, entity: Category | Subscription) {
@@ -88,22 +109,6 @@ function selectItem(itemNode: HTMLElement, entity: Category | Subscription) {
 	itemNode.classList.add(SELECTED_CSS_CLASS);
 	selected = entity;
 	pubsub.publish("nav-item-selected");
-}
-
-function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
-	let menu = new PopupMenu();
-
-	if (isSubscription(entity)) {
-		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((entity as Subscription).id));
-		menu.addItem("Edit subscription", "pencil", () => editSubscription(entity as Subscription));
-		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity as Subscription));
-	} else {
-		menu.addItem("Mark as read", "check-all", () => categories.markRead((entity as Category).id));
-		menu.addItem("Edit category", "pencil", () => editCategory(entity as Category));
-		menu.addItem("Delete category", "trash", () => deleteCategory(entity as Category));
-	}
-
-	menu.open(target, "below");
 }
 
 function editSubscription(subscription?: Subscription) {
@@ -120,13 +125,12 @@ function editSubscription(subscription?: Subscription) {
 	let footer = html.node("footer", {}, "", dialog.node);
 	footer.appendChild(subscriptionForm.submitBtn);
 
-	dialog.open();
-}
-
-async function deleteSubscription(subscription: Subscription) {
-	if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
-		subscriptions.remove(subscription.id);
+	if (subscription) {
+		let deleteBtn = html.button({className: "plain delete", "icon": "trash"}, "Unsubscribe", footer);
+		deleteBtn.addEventListener("click", e => deleteSubscription(subscription));
 	}
+
+	dialog.open();
 }
 
 function editCategory(category: Category) {
@@ -143,11 +147,21 @@ function editCategory(category: Category) {
 	let footer = html.node("footer", {}, "", dialog.node);
 	footer.appendChild(categoryForm.submitBtn);
 
+	let deleteBtn = html.button({className: "plain delete", "icon": "trash"}, "Delete category", footer);
+	deleteBtn.addEventListener("click", e => deleteCategory(category));
+
 	dialog.open();
 }
 
 async function deleteCategory(category: Category) {
-	if (await confirm(`Delete category ${category.title}? Any nested subscriptions would be `)) {
+	if (await confirm(`Delete category ${category.title}? Any nested subscriptions will be moved to uncategorized.`)) {
 		categories.remove(category.id);
 	}
 }
+
+async function deleteSubscription(subscription: Subscription) {
+	   if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
+			   subscriptions.remove(subscription.id);
+	   }
+}
+
