@@ -6,7 +6,8 @@ import * as layout from "ui/layout";
 async function init() {
 	await categories.init();
 	await subscriptions.init();
-	await counters.init();
+
+	counters.init();
 	layout.init();
 }
 

@@ -72,7 +72,13 @@ def update_article(article_id: int) -> TReturnValue:
     return article.to_json(), 200
 
 
-@api_bp.route("/articles/mark_read/", methods=["POST"])
+@api_bp.route("/articles/mark-read/", methods=["POST"])
 @make_api_response
-def mark_articles_as_read(article_id: int) -> TReturnValue:
-    pass  # TODO
+def mark_articles_read() -> TReturnValue:
+    Article.query \
+        .filter(Article.id.in_(request.json.get("ids", []))) \
+        .update({Article.read: True}, synchronize_session=False)
+
+    db.session.commit()
+
+    return None, 204

@@ -65,19 +65,28 @@ nav {
 			width: 24px;
 			height: 24px;
 
-			&.btn-chevron {
-				margin-right: 8px;
-			}
-
 			&:not(.btn-chevron) {
-				flex-shrink: 0;
 				font-size: 1.6rem;
 				color: var(--color-grey);
 			}
 		}
 
-		&:not(:hover) button:not(.btn-chevron) {
-			display: none;
+		.btn-chevron {
+			margin-right: 8px;
+		}
+
+		.btn-dots {
+			order: 1;
+
+			&.active { display: none; }
+
+			&:not(.active) ~ button {
+				display: none;
+			}
+		}
+
+		&:not(:hover) {
+			.btn-dots { display: none; }
 		}
 
 		&:hover {

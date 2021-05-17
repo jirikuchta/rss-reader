@@ -1,4 +1,5 @@
 import { Article, ArticleFilters } from "data/types";
+import * as counters from "data/counters";
 import api from "util/api";
 
 export async function list(filters?: ArticleFilters) {
@@ -7,6 +8,7 @@ export async function list(filters?: ArticleFilters) {
 	return res.data as Article[];
 }
 
-export async function toggleRead(article: Article) {
-	await api("PATCH", `/api/articles/${article.id}/`, {"read": true});
+export async function markRead(articles: Article[]) {
+	let res = await api("POST", "/api/articles/mark-read/", {ids: articles.map(a => a.id)});
+	res.ok && counters.sync();
 }

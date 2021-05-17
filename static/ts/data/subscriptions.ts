@@ -1,6 +1,7 @@
 import { SubscriptionId, Subscription, Category } from "data/types";
-import api from "util/api";
+import * as counters from "data/counters";
 import * as pubsub from "util/pubsub";
+import api from "util/api";
 
 const subscriptions: Map<SubscriptionId, Subscription> = new Map();
 
@@ -43,7 +44,8 @@ export async function remove(id: SubscriptionId) {
 }
 
 export async function markRead(id: SubscriptionId) {
-	return await api("PUT", `/api/subscriptions/${id}/read/`);
+	return await api("POST", `/api/subscriptions/${id}/mark-read/`);
+	counters.sync();
 }
 
 export function isSubscription(entity: Category | Subscription) {

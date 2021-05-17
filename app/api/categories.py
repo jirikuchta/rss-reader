@@ -91,7 +91,7 @@ def delete_category(category_id: int) -> TReturnValue:
     return None, 204
 
 
-@api_bp.route("/categories/<int:category_id>/read/", methods=["PUT"])
+@api_bp.route("/categories/<int:category_id>/mark-read/", methods=["POST"])
 @make_api_response
 def mark_category_read(category_id: int) -> TReturnValue:
     category = get_category_or_raise(category_id)

@@ -117,7 +117,7 @@ def delete_subscription(subscription_id: int) -> TReturnValue:
     return None, 204
 
 
-@api_bp.route("/subscriptions/<int:subscription_id>/read/", methods=["PUT"])
+@api_bp.route("/subscriptions/<int:subscription_id>/mark-read/", methods=["POST"])
 @make_api_response
 def mark_subscription_read(subscription_id: int) -> TReturnValue:
     subscription = get_subscription_or_raise(subscription_id)

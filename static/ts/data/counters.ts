@@ -12,12 +12,20 @@ export function init() {
 export async function sync() {
 	let res = await api("GET", "/api/counters/");
 	if (!res.ok) { return; }
+
+	let prevSum = sum();
 	counters.clear();
-	for (const [key, value] of Object.entries(res.data)) {
-		counters.set(Number(key), value as number)
+
+	for (const [id, count] of Object.entries(res.data)) {
+		counters.set(Number(id), count as number)
 	}
-	pubsub.publish("subscriptions-changed");
+
+	prevSum != sum() && pubsub.publish("counters-updated");
 }
 
 export function list() { return counters; }
 export function get(id: SubscriptionId) { return counters.get(id); }
+
+function sum() {
+	return Array.from(counters.values()).reduce((res, count) => res + count, 0);
+}

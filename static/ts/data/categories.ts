@@ -1,7 +1,8 @@
 import { CategoryId, Category } from "data/types";
 import * as subscriptions from "data/subscriptions";
-import api from "util/api";
+import * as counters from "data/counters";
 import * as pubsub from "util/pubsub";
+import api from "util/api";
 
 const categories: Map<CategoryId, Category> = new Map();
 
@@ -39,5 +40,6 @@ export async function remove(id: CategoryId) {
 }
 
 export async function markRead(id: CategoryId) {
-	return await api("PUT", `/api/categories/${id}/read/`);
+	let res = await api("POST", `/api/categories/${id}/mark-read/`);
+	res.ok && counters.sync();
 }

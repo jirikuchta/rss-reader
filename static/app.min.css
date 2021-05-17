@@ -200,15 +200,23 @@ nav li button {
   width: 24px;
   height: 24px;
 }
-nav li button.btn-chevron {
-  margin-right: 8px;
-}
 nav li button:not(.btn-chevron) {
-  flex-shrink: 0;
   font-size: 1.6rem;
   color: var(--color-grey);
 }
-nav li:not(:hover) button:not(.btn-chevron) {
+nav li .btn-chevron {
+  margin-right: 8px;
+}
+nav li .btn-dots {
+  order: 1;
+}
+nav li .btn-dots.active {
+  display: none;
+}
+nav li .btn-dots:not(.active) ~ button {
+  display: none;
+}
+nav li:not(:hover) .btn-dots {
   display: none;
 }
 nav li:hover {

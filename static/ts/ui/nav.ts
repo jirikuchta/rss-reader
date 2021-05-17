@@ -1,3 +1,4 @@
+
 import { Category, Subscription } from "data/types";
 
 import * as categories from "data/categories";
@@ -13,11 +14,11 @@ import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import Dialog, { confirm } from "ui/widget/dialog";
 
-
 const SELECTED_CSS_CLASS = "is-selected";
 
 export const node = html.node("nav");
-export let selected: Category | Subscription;
+export let selected: Item;
+let items: Item[] = [];
 
 export function init() {
 	build();
@@ -25,10 +26,12 @@ export function init() {
 	// FIXME: may cause two consecutive builds
 	pubsub.subscribe("subscriptions-changed", build);
 	pubsub.subscribe("categories-changed", build);
+	pubsub.subscribe("counters-updated", updateCounters);
 }
 
 async function build() {
 	html.clear(node);
+	items = [];
 
 	let header = html.node("header", {}, "", node);
 	html.node("h3", {}, "Subscriptions", header);
@@ -38,61 +41,46 @@ async function build() {
 	categories.list().forEach(c => node.appendChild(buildCategory(c)));
 
 	let uncategorized = html.node("ul", {}, "", node);
-	subscriptions.list().forEach(s => {
-		s.category_id === null && uncategorized.appendChild(buildItem(s))
-	});
+	subscriptions.list()
+		.filter(s => s.category_id === null)
+		.forEach(s => {
+			let item = new Item(s);
+			uncategorized.appendChild(item.node);
+			items.push(item);
+		});
+
+	updateCounters();
 }
 
 function buildCategory(category: Category) {
 	let list = html.node("ul");
-	list.appendChild(buildItem(category));
-	subscriptions.list().forEach(s => {
-		s.category_id == category.id && list.appendChild(buildItem(s));
-	});
-	return list;
-}
 
-function buildItem(entity: Category | Subscription) {
-	let node = html.node("li");
+	let categoryItem = new Item(category);
+	list.appendChild(categoryItem.node);
+	items.push(categoryItem);
 
-	if (isSubscription(entity)) {
-		node.appendChild(subscriptionIcon(entity as Subscription));
-		node.appendChild(html.node("span", {className: "title"}, entity.title));
-		let count = counters.get(entity.id);
-		count &&  node.appendChild(html.node("span", {className: "count"}, `${count}`));
-	} else {
-		node.classList.add("category");
-		let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
-		btn.addEventListener("click", e => {
-			e.stopPropagation();
-			node.classList.toggle("is-collapsed");
+	subscriptions.list()
+		.filter(s => s.category_id == category.id)
+		.forEach(s => {
+			let item = new Item(s);
+			list.appendChild(item.node);
+			items.push(item);
 		});
-		node.appendChild(html.node("span", {className: "title"}, entity.title));
-		node.appendChild(html.node("span", {className: "count"}, "50"));
-	}
 
-	node.appendChild(buildButtons(entity));
-
-	node.addEventListener("click", e => selectItem(node, entity));
-
-	return node;
+	return list;
 }
 
 function buildButtons(entity: Category | Subscription) {
 	let frag = html.fragment();
 
-	let btn = html.button({icon: "check-all"}, "", frag);
-	btn.addEventListener("click", e => {
+	let dotsBtn = html.button({icon: "dots-horizontal", className: "btn-dots"}, "", frag);
+	dotsBtn.addEventListener("click", e => {
 		e.stopPropagation();
-		if (isSubscription(entity)) {
-			subscriptions.markRead((entity as Subscription).id);
-		} else {
-			categories.markRead((entity as Category).id);
-		}
+		dotsBtn.classList.toggle("active");
 	});
 
-	btn = html.button({icon: "pencil"}, "", frag);
-	btn.addEventListener("click", e => {
+	let editBtn = html.button({icon: "pencil", title: "Edit"}, "", frag);
+	editBtn.addEventListener("click", e => {
 		e.stopPropagation();
 		if (isSubscription(entity)) {
 			editSubscription(entity as Subscription);
@@ -101,14 +89,93 @@ function buildButtons(entity: Category | Subscription) {
 		}
 	});
 
+	let checkBtn = html.button({icon: "check-all", title: "Mark as read"}, "", frag);
+	checkBtn.addEventListener("click", e => {
+		e.stopPropagation();
+		if (isSubscription(entity)) {
+			subscriptions.markRead((entity as Subscription).id);
+		} else {
+			categories.markRead((entity as Category).id);
+		}
+	});
+
 	return frag;
 }
 
-function selectItem(itemNode: HTMLElement, entity: Category | Subscription) {
+function selectItem(item: Item) {
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
-	itemNode.classList.add(SELECTED_CSS_CLASS);
-	selected = entity;
+	item.node.classList.add(SELECTED_CSS_CLASS);
+	selected = item;
 	pubsub.publish("nav-item-selected");
+}
+
+function updateCounters() {
+	items.forEach(i => i.updateCounter());
+}
+
+class Item {
+	protected _node?: HTMLLIElement;
+	protected counter?: HTMLSpanElement;
+	protected data: Category | Subscription;
+
+	constructor(data: Category | Subscription) {
+		this.data = data;
+	}
+
+	get node() {
+		if (this._node) { return this._node; };
+
+		let node = html.node("li");
+		let counter = node.appendChild(html.node("span", {className: "count"}));
+
+		if (this.type == "subscription") {
+			node.appendChild(subscriptionIcon(this.data as Subscription));
+
+		} else {
+			node.classList.add("category");
+			let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
+			btn.addEventListener("click", e => {
+				e.stopPropagation();
+				node.classList.toggle("is-collapsed");
+			});
+		}
+
+		node.appendChild(html.node("span", {className: "title"}, this.data.title));
+		node.appendChild(buildButtons(this.data));
+		node.appendChild(counter);
+
+		this._node = node;
+		this.counter = counter;
+
+		this.updateCounter();
+		node.addEventListener("click", e => selectItem(this));
+
+		return this._node;
+	}
+
+	get id() {
+		return this.data.id;
+	}
+
+	get type() {
+		return isSubscription(this.data) ? "subscription" : "category";
+	}
+
+	updateCounter() {
+		if (!this.counter) { return; }
+		html.clear(this.counter);
+
+		let count = 0;
+		if (this.type == "category") {
+			count = subscriptions.list()
+				.filter(s => s.category_id == this.id)
+				.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
+		} else {
+			count = counters.get(this.id) || 0;
+		}
+
+		this.counter.appendChild(html.text(`${count || ""}`));
+	}
 }
 
 function editSubscription(subscription?: Subscription) {
@@ -164,4 +231,3 @@ async function deleteSubscription(subscription: Subscription) {
 			   subscriptions.remove(subscription.id);
 	   }
 }
-

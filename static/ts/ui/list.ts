@@ -66,7 +66,7 @@ function get_filters() {
 	};
 
 	if (selectedNavItem) {
-		if (subscriptions.isSubscription(selectedNavItem)) {
+		if (selectedNavItem.type == "subscription") {
 			filters["subscription_id"] = selectedNavItem.id;
 		} else {
 			filters["category_id"] = selectedNavItem.id;
