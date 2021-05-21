@@ -75,9 +75,12 @@ def update_article(article_id: int) -> TReturnValue:
 @api_bp.route("/articles/mark-read/", methods=["POST"])
 @make_api_response
 def mark_articles_read() -> TReturnValue:
-    Article.query \
-        .filter(Article.id.in_(request.json.get("ids", []))) \
-        .update({Article.read: True}, synchronize_session=False)
+    if request.json.get("all", False):
+        Article.query.update({Article.read: True})
+    else:
+        Article.query \
+            .filter(Article.id.in_(request.json.get("ids", []))) \
+            .update({Article.read: True}, synchronize_session=False)
 
     db.session.commit()
 

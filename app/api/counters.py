@@ -11,5 +11,6 @@ def get_counter() -> TReturnValue:
         .with_entities(Article.subscription_id, func.count())\
         .filter(Article.read.is_(False))\
         .group_by(Article.subscription_id).all()
+
     return dict((subscription_id, count)
                 for subscription_id, count in data), 200

@@ -44,8 +44,8 @@ export async function remove(id: SubscriptionId) {
 }
 
 export async function markRead(id: SubscriptionId) {
-	return await api("POST", `/api/subscriptions/${id}/mark-read/`);
-	counters.sync();
+	let res = await api("POST", `/api/subscriptions/${id}/mark-read/`);
+	res.ok && counters.sync();
 }
 
 export function isSubscription(entity: Category | Subscription) {

@@ -174,7 +174,8 @@ class Item {
 			count = counters.get(this.id) || 0;
 		}
 
-		this.counter.appendChild(html.text(`${count || ""}`));
+		html.clear(this.counter);
+		count && this.counter.appendChild(html.text(`${count}`));
 	}
 }
 
