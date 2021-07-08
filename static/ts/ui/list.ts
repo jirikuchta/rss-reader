@@ -34,7 +34,7 @@ async function build() {
 
 async function buildItems() {
 	observer.disconnect();
-	let items = await articles.list(get_filters());
+	let items = await articles.list(getFilters());
 	if (items.length) {
 		items.forEach(article => node.appendChild(buildItem(article)));
 		observer.observe(node.querySelector("article:last-child")!);
@@ -59,7 +59,7 @@ function buildItem(article: Article) {
 	return node;
 }
 
-function get_filters() {
+function getFilters() {
 	let filters: ArticleFilters = {
 		unread_only: true,
 		offset: node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`).length

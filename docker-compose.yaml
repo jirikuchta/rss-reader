@@ -10,13 +10,9 @@ services:
       - ./static:/rss_reader/static
     ports:
       - 5000:5000
-    environment:
-      FLASK_ENV: development
-      DEBUG: "false"
-      # RSS_READER_BASIC_HTTP_AUTH_CREDENTIALS: admin:admin
-      # RSS_READER_FEED_ICONS_CACHE: 1
-      # RSS_READER_FEED_ICONS_CACHE: 0
-      # RSS_READER_FEED_ICONS_CACHE: /rss_reader/feed-icons.cache
+    env_file:
+      - .env_default
+      - .env
   static:
     build:
       context: .

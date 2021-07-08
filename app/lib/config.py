@@ -1,31 +1,32 @@
-from typing import Dict, Union, Optional
-from os import environ, getcwd
+from typing import TypedDict
+from os import environ
 from flask import Flask
 
 
-DEFAULT_CONFIG: Dict[str, Union[str, bool, int]] = {
-    "DEBUG": True,
-    "SECRET_KEY": "insecure_secret_key",
-    "UPDATER_RUN_INTERVAL_SECONDS": 60,
-    "SUBSCRIPTION_UPDATE_INTERVAL_SECONDS": 60,
-    "PURGE_ARTICLE_AGE_DAYS": 60,
-    "PURGE_UNREAD_ARTICLES": False,
-    "SQLALCHEMY_DATABASE_URI": f"sqlite:///{getcwd()}/rss_reader.sqlite",
-    "SQLALCHEMY_ECHO": False,
-    "SQLALCHEMY_TRACK_MODIFICATIONS": False}
+class Config(TypedDict):
+    DEBUG: bool
+    SECRET_KEY: str
+    UPDATER_RUN_INTERVAL_SECONDS: int
+    SUBSCRIPTION_UPDATE_INTERVAL_SECONDS: int
+    PURGE_ARTICLE_AGE_DAYS: int
+    PURGE_UNREAD_ARTICLES: bool
+    SQLALCHEMY_DATABASE_URI: str
+    SQLALCHEMY_ECHO: bool
+    SQLALCHEMY_TRACK_MODIFICATIONS: bool
 
 
 def init(app: Flask) -> None:
-    app.config.update(DEFAULT_CONFIG)
+    for key, key_type in Config.__annotations__.items():
+        value = environ.get(f"RSS_READER_{key}", environ.get(key))
 
-    for k, default_value in DEFAULT_CONFIG.items():
-        value: Optional[str] = environ.get(f"RSS_READER_{k}", environ.get(k))
-        if value is not None:
-            if type(default_value) is bool:
-                app.config[k] = value.lower() in ("1", "true", "on", "yes")
+        if value is None:
+            continue
 
-            if type(default_value) is int:
-                app.config[k] = int(value)
+        if key_type is bool:
+            app.config[key] = value.lower() in ("1", "true", "on", "yes")
 
-            if type(default_value) is str:
-                app.config[k] = value
+        if key_type is int:
+            app.config[key] = int(value)
+
+        if key_type is str:
+            app.config[key] = value

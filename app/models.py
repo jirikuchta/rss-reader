@@ -24,7 +24,7 @@ def init(app: Flask) -> None:
         db.session.commit()
 
 
-class Repr:
+class Model:
     def __str__(self):
         return f"<{type(self).__name__} {self.id}>"
 
@@ -32,7 +32,7 @@ class Repr:
         return f"<{type(self).__name__} {self.__dict__}>"
 
 
-class Category(Repr, db.Model):  # type: ignore
+class Category(Model, db.Model):  # type: ignore
     __tablename__ = "category"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -44,7 +44,7 @@ class Category(Repr, db.Model):  # type: ignore
             "title": self.title}
 
 
-class Subscription(Repr, db.Model):  # type: ignore
+class Subscription(Model, db.Model):  # type: ignore
     __tablename__ = "subscription"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +74,7 @@ class Subscription(Repr, db.Model):  # type: ignore
         return {key: getattr(self, key) for key in keys}
 
 
-class Article(Repr, db.Model):  # type: ignore
+class Article(Model, db.Model):  # type: ignore
     __tablename__ = "article"
     __table_args__ = (db.UniqueConstraint("subscription_id", "guid"),)
 
