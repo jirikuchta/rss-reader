@@ -1,7 +1,7 @@
 __pycache__/
 node_modules/
 .mypy_cache/
-
+.env
 *.db
 *.sqlite
 *.cache
