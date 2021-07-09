@@ -1,6 +1,3 @@
-from tests.mocks.rss_feed import MockRSSFeed
-
-
 def test_ok(client, feed_server, create_category):
     category = create_category()
     res = client.post("/api/subscriptions/", json={
@@ -23,14 +20,6 @@ def test_missing_uri(client):
     assert res.status_code == 400, res
     assert res.json["error"]["code"] == "missing_field"
     assert res.json["error"]["field"] == "feed_url"
-
-
-def test_parser_error(client, feed_server):
-    feed_server.feed = MockRSSFeed(channel=False)  # invalid feed
-    res = client.post("/api/subscriptions/",
-                      json={"feed_url": feed_server.url})
-    assert res.status_code == 400, res
-    assert res.json["error"]["code"] == "parser_error"
 
 
 def test_already_exists(client, feed_server):

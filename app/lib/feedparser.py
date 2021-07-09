@@ -14,12 +14,11 @@ from lib.htmlparser import FeedLinkParser, FeedLink, TextParser
 
 def parse(url: str) -> "FeedParser":
     with http_request(url, "HEAD") as res:
-        is_html = res.headers.get_content_type() == "text/html"
+        content_type = res.headers.get_content_type()
 
-    if is_html:
+    if content_type == "text/html":
         with http_request(url) as res:
-            charset = res.headers.get_content_charset("utf-8")
-            html = res.read().decode(charset)
+            html = res.read().decode(res.headers.get_content_charset("utf-8"))
 
         feed_link_parser = FeedLinkParser(html, url)
 
@@ -30,7 +29,9 @@ def parse(url: str) -> "FeedParser":
             url = feed_link_parser.links[0]["href"]
 
     with http_request(url) as res:
-        return FeedParser(ET.fromstring(res.read()), url)
+        node = ET.fromstring(res.read())
+
+    return FeedParser(node, url)
 
 
 def text(n: Optional[ET.Element]) -> Optional[str]:
@@ -107,14 +108,13 @@ class FeedParser(RootNode):
     def __init__(self, node: ET.Element, feed_url: str) -> None:
         self._feed_url = feed_url
 
-        is_rss = node.tag == "rss"
-        super().__init__(node, FeedType.RSS if is_rss else FeedType.ATOM)
+        feed_type = FeedType.ATOM
 
-        if self.feed_type is FeedType.RSS:
-            channel_node = self.node.find("channel")
-            if channel_node is None:
-                raise ParserError("Missing requied <channel> node.")
-            self._node = channel_node
+        if node.tag == "rss":
+            feed_type = FeedType.RSS
+            node = RootNode(node, feed_type).find("channel") or node
+
+        super().__init__(node, feed_type)
 
     def __str__(self):
         return f"<{type(self).__name__} {self.feed_url}>"

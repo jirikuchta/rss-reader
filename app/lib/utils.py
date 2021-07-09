@@ -32,7 +32,8 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
     if url_parsed.query:
         req_url += f"?{url_parsed.query}"
 
-    conn.request(method, req_url, headers={"User-agent": "RSS reader"})
+    conn.request(method, req_url, headers={
+        "User-agent": "https://github.com/jirikuchta/rss-reader"})
 
     res = conn.getresponse()
 

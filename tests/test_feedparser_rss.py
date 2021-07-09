@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from lib.feedparser import ParserError, FeedType, FeedParser, FeedItemParser
+from lib.feedparser import FeedType, FeedParser, FeedItemParser
 
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
     MockRSSFeedItemGUID, MockAtomLink
@@ -34,11 +34,6 @@ class TestParserRSS:
         parser = FeedParser(feed.build(), "")
         assert len(parser.items) == 1
         assert type(parser.items[0]) is FeedItemParser
-
-    def test_no_channel_error(self) -> None:
-        feed = MockRSSFeed(channel=False)
-        with pytest.raises(ParserError):
-            FeedParser(feed.build(), "")
 
 
 class TestParserRSSItem:
