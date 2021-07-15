@@ -207,20 +207,19 @@ nav li button:not(.btn-chevron) {
 nav li .btn-chevron {
   margin-right: 8px;
 }
-nav li .btn-dots {
-  order: 1;
-}
-nav li .btn-dots.active {
+nav li .btn-menu {
+  font-size: 1.6rem;
   display: none;
 }
-nav li .btn-dots:not(.active) ~ button {
-  display: none;
-}
-nav li:not(:hover) .btn-dots {
+nav li:not(:hover) .btn-menu {
   display: none;
 }
 nav li:hover {
   background-color: var(--color-hover);
+}
+nav li:hover .btn-menu {
+  display: inline;
+  color: var(--color-grey);
 }
 nav li:hover .count {
   display: none;
@@ -320,19 +319,11 @@ nav li:hover .count {
   border-bottom: 1px solid var(--color-border);
 }
 #dialog > footer {
-  display: flex;
   text-align: center;
   background: var(--color-background);
 }
 #dialog > footer button {
   min-width: 100px;
-}
-#dialog > footer button.delete {
-  color: red;
-  margin-left: auto;
-}
-#dialog > footer button.delete .icon {
-  margin-right: 8px;
 }
 #dialog.alert {
   text-align: center;
@@ -345,6 +336,28 @@ body.with-dialog::after {
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.5);
+}
+.popup {
+  position: absolute;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+.popup-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+.popup-menu > button {
+  justify-content: start;
+  padding: 0 16px;
+  font-size: 1.4rem;
+  line-height: 3.6rem;
+}
+.popup-menu > button:hover {
+  background: var(--color-hover);
+}
+.popup-menu > button .icon {
+  margin-right: 8px;
 }
 .subscription-icon {
   display: flex;

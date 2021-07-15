@@ -1,4 +1,3 @@
-
 import { Category, Subscription } from "data/types";
 
 import * as categories from "data/categories";
@@ -12,6 +11,7 @@ import * as pubsub from "util/pubsub";
 import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
+import { PopupMenu } from "ui/widget/popup";
 import Dialog, { confirm } from "ui/widget/dialog";
 
 const SELECTED_CSS_CLASS = "is-selected";
@@ -70,38 +70,6 @@ function buildCategory(category: Category) {
 	return list;
 }
 
-function buildButtons(entity: Category | Subscription) {
-	let frag = html.fragment();
-
-	let dotsBtn = html.button({icon: "dots-horizontal", className: "btn-dots"}, "", frag);
-	dotsBtn.addEventListener("click", e => {
-		e.stopPropagation();
-		dotsBtn.classList.toggle("active");
-	});
-
-	let editBtn = html.button({icon: "pencil", title: "Edit"}, "", frag);
-	editBtn.addEventListener("click", e => {
-		e.stopPropagation();
-		if (isSubscription(entity)) {
-			editSubscription(entity as Subscription);
-		} else {
-			editCategory(entity as Category);
-		}
-	});
-
-	let checkBtn = html.button({icon: "check-all", title: "Mark as read"}, "", frag);
-	checkBtn.addEventListener("click", e => {
-		e.stopPropagation();
-		if (isSubscription(entity)) {
-			subscriptions.markRead((entity as Subscription).id);
-		} else {
-			categories.markRead((entity as Category).id);
-		}
-	});
-
-	return frag;
-}
-
 function selectItem(item: Item) {
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
 	item.node.classList.add(SELECTED_CSS_CLASS);
@@ -140,9 +108,15 @@ class Item {
 			});
 		}
 
+		let menuBtn = html.button({icon: "dots-horizontal", className: "btn-menu"});
+		menuBtn.addEventListener("click", e => {
+			e.stopPropagation();
+			showItemPopup(this.data, menuBtn);
+		});
+
 		node.appendChild(html.node("span", {className: "title"}, this.data.title));
-		node.appendChild(buildButtons(this.data));
 		node.appendChild(counter);
+		node.appendChild(menuBtn);
 
 		this._node = node;
 		this.counter = counter;
@@ -179,6 +153,22 @@ class Item {
 	}
 }
 
+function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
+	let menu = new PopupMenu();
+
+	if (isSubscription(entity)) {
+		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((entity as Subscription).id));
+		menu.addItem("Edit subscription", "pencil", () => editSubscription(entity as Subscription));
+		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity as Subscription));
+	} else {
+		menu.addItem("Mark as read", "check-all", () => categories.markRead((entity as Category).id));
+		menu.addItem("Edit category", "pencil", () => editCategory(entity as Category));
+		menu.addItem("Delete category", "trash", () => deleteCategory(entity as Category));
+	}
+
+	menu.open(target, "below");
+}
+
 function editSubscription(subscription?: Subscription) {
 	let dialog = new Dialog();
 
@@ -192,11 +182,6 @@ function editSubscription(subscription?: Subscription) {
 
 	let footer = html.node("footer", {}, "", dialog.node);
 	footer.appendChild(subscriptionForm.submitBtn);
-
-	if (subscription) {
-		let deleteBtn = html.button({className: "plain delete", "icon": "trash"}, "Unsubscribe", footer);
-		deleteBtn.addEventListener("click", e => deleteSubscription(subscription));
-	}
 
 	dialog.open();
 }
