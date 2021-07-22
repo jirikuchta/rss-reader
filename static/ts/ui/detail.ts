@@ -3,7 +3,7 @@ import { markRead } from "data/articles";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import { selected as article } from "ui/list";
+import { getSelectedArticle } from "ui/list";
 
 
 export const node = html.node("section", {"id": "detail"});
@@ -14,9 +14,10 @@ export function init() {
 }
 
 export async function build() {
-	if (!article) { return; }
-
 	html.clear(node);
+
+	let article = getSelectedArticle();
+	if (!article) { return; }
 
 	let frag = html.fragment()
 

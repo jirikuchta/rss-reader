@@ -15,38 +15,53 @@ const SELECTED_CSS_CLASS = "is-selected";
 const READ_CSS_CLASS = "is-read";
 
 export const node = html.node("section", {"id": "list"});
-export let selected: Article;
+
+let items: Article[] = [];
+let selectedIndex: number = -1;
 
 const observer = new IntersectionObserver(
-	entries => entries[0].isIntersecting && buildItems(),
+	entries => entries[0].isIntersecting && build(),
 	{root: node, rootMargin: "0% 0% 33% 0%", threshold: 1}
 );
 
 export function init() {
 	build();
-	pubsub.subscribe("nav-item-selected", build);
+	pubsub.subscribe("nav-item-selected", _ => clear() && build());
+
+	document.body.addEventListener("keydown", e => {
+		e.code == "ArrowRight" && select(selectedIndex + 1, true);
+		e.code == "ArrowLeft" && select(selectedIndex - 1, true);
+	});
+}
+
+export function getSelectedArticle() {
+	return items[selectedIndex];
+}
+
+async function clear() {
+	html.clear(node);
+	items = [];
+	selectedIndex = -1;
 }
 
 async function build() {
-	html.clear(node);
-	buildItems();
-}
-
-async function buildItems() {
 	observer.disconnect();
-	let items = await articles.list(getFilters());
-	if (items.length) {
-		items.forEach(article => node.appendChild(buildItem(article)));
-		observer.observe(node.querySelector("article:last-child")!);
-	}
+
+	let data = await articles.list(getFilters());
+	if (!data.length) { return; }
+
+	data.forEach((article, i) => node.appendChild(buildItem(article, i)));
+	items = items.concat(data);
+
+	observer.observe(node.querySelector("article:last-child")!);
 }
 
-function buildItem(article: Article) {
+function buildItem(article: Article, index: number) {
 	let subscription = subscriptions.get(article.subscription_id);
 	if (!subscription) { return html.fragment(); }
 
 	let node = html.node("article");
-	node.addEventListener("click", _ => selectItem(node, article));
+	node.addEventListener("click", _ => select(items.findIndex(i => i.id == article.id)));
 
 	let header = html.node("header", {}, "", node);
 	header.appendChild(subscriptionIcon(subscription));
@@ -76,10 +91,15 @@ function getFilters() {
 	return filters;
 }
 
-async function selectItem(itemNode: HTMLElement, article: Article) {
+function select(index: number, scrollIntoView = false) {
+	let articleNode = node.querySelector(`article:nth-of-type(${index + 1})`);
+	if (!articleNode) { return; }
+
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
-	itemNode.classList.add(SELECTED_CSS_CLASS);
-	itemNode.classList.add(READ_CSS_CLASS);
-	selected = article;
+	articleNode.classList.add(SELECTED_CSS_CLASS);
+	articleNode.classList.add(READ_CSS_CLASS);
+	scrollIntoView && articleNode.scrollIntoView(false);
+
+	selectedIndex = index;
 	pubsub.publish("article-selected");
 }

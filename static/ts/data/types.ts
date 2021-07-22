@@ -1,6 +1,6 @@
 export type SubscriptionId = number;
 export type CategoryId = number;
-export  type ArticleId = number;
+export type ArticleId = number;
 
 export interface Subscription {
 	id: SubscriptionId;
