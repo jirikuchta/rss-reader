@@ -115,8 +115,6 @@ class Article(Model, db.Model):  # type: ignore
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
-        self.read = False
-
         return self
 
     def to_json(self):
