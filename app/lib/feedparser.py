@@ -8,13 +8,16 @@ from xml.etree import ElementTree as ET
 
 from flask import current_app as app
 
-from lib.utils import http_request, ensure_abs_url
+from lib.utils import http_request, ensure_abs_url, HTTPResponseError
 from lib.htmlparser import FeedLinkParser, FeedLink, TextParser
 
 
 def parse(url: str) -> "FeedParser":
-    with http_request(url, "HEAD") as res:
-        content_type = res.headers.get_content_type()
+    try:
+        with http_request(url, "HEAD") as res:
+            content_type = res.headers.get_content_type()
+    except HTTPResponseError:
+        content_type = None
 
     if content_type == "text/html":
         with http_request(url) as res:
