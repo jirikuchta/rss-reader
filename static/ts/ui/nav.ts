@@ -82,12 +82,16 @@ function updateCounters() {
 }
 
 class Item {
+	protected _data: Category | Subscription;
 	protected _node?: HTMLLIElement;
 	protected counter?: HTMLSpanElement;
-	protected data: Category | Subscription;
 
 	constructor(data: Category | Subscription) {
-		this.data = data;
+		this._data = data;
+	}
+
+	get data() {
+		return this._data;
 	}
 
 	get node() {
@@ -108,21 +112,16 @@ class Item {
 			});
 		}
 
-		let menuBtn = html.button({icon: "dots-horizontal", className: "btn-menu"});
-		menuBtn.addEventListener("click", e => {
-			e.stopPropagation();
-			showItemPopup(this.data, menuBtn);
-		});
-
 		node.appendChild(html.node("span", {className: "title"}, this.data.title));
 		node.appendChild(counter);
-		node.appendChild(menuBtn);
 
 		this._node = node;
 		this.counter = counter;
 
 		this.updateCounter();
+
 		node.addEventListener("click", e => selectItem(this));
+		node.addEventListener("contextmenu", e => showItemPopup(this, e));
 
 		return this._node;
 	}
@@ -153,20 +152,25 @@ class Item {
 	}
 }
 
-function showItemPopup(entity: Category | Subscription, target: HTMLElement) {
+function showItemPopup(item: Item, e: MouseEvent) {
+	e.preventDefault();
+
 	let menu = new PopupMenu();
 
-	if (isSubscription(entity)) {
-		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((entity as Subscription).id));
-		menu.addItem("Edit subscription", "pencil", () => editSubscription(entity as Subscription));
-		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(entity as Subscription));
+	if (item.type == "subscription") {
+		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((item.data as Subscription).id));
+		menu.addItem("Edit subscription", "pencil", () => editSubscription(item.data as Subscription));
+		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(item.data as Subscription));
 	} else {
-		menu.addItem("Mark as read", "check-all", () => categories.markRead((entity as Category).id));
-		menu.addItem("Edit category", "pencil", () => editCategory(entity as Category));
-		menu.addItem("Delete category", "trash", () => deleteCategory(entity as Category));
+		menu.addItem("Mark as read", "check-all", () => categories.markRead((item.data as Category).id));
+		menu.addItem("Edit category", "pencil", () => editCategory(item.data as Category));
+		menu.addItem("Delete category", "trash", () => deleteCategory(item.data as Category));
 	}
 
-	menu.open(target, "below");
+	menu.open(item.node, "below", [
+		e.clientX - item.node.getBoundingClientRect().left + 8,
+		e.clientY - item.node.getBoundingClientRect().bottom + 8
+	]);
 }
 
 function editSubscription(subscription?: Subscription) {

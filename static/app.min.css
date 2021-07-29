@@ -207,22 +207,8 @@ nav li button:not(.btn-chevron) {
 nav li .btn-chevron {
   margin-right: 8px;
 }
-nav li .btn-menu {
-  font-size: 1.6rem;
-  display: none;
-}
-nav li:not(:hover) .btn-menu {
-  display: none;
-}
 nav li:hover {
   background-color: var(--color-hover);
-}
-nav li:hover .btn-menu {
-  display: inline;
-  color: var(--color-grey);
-}
-nav li:hover .count {
-  display: none;
 }
 #list article {
   padding: 16px;
