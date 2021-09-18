@@ -1,4 +1,4 @@
-from io import BytesIO
+from tempfile import TemporaryFile
 from xml.etree import ElementTree as ET
 from flask import send_file
 
@@ -32,6 +32,9 @@ def opml_export():
                 "webUrl": subscription[3] or ""}
             ET.SubElement(node, "outline", attrib=attrib)
 
+    file = TemporaryFile()
+    ET.ElementTree(root).write(file, encoding="utf-8", xml_declaration=True)
+
     return send_file(
-        BytesIO(ET.tostring(root)), mimetype="application/xml",
-        as_attachment=True, attachment_filename="feeds.xml")
+        file, mimetype="application/xml",
+        as_attachment=True, attachment_filename="feeds.opml")
