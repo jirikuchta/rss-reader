@@ -27,10 +27,11 @@ def after_request(res: Response):
 
     current_app.logger.info("<| %s (%fs)", res.status, req_duration_sec)
 
-    try:
-        current_app.logger.debug(str(res.data.decode()))
-    except UnicodeError:
-        pass
+    if res.direct_passthrough is False:
+        try:
+            current_app.logger.debug(str(res.data.decode()))
+        except UnicodeError:
+            pass
 
     g.ctx = None
     g.req_start_time = None

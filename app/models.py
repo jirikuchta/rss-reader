@@ -38,6 +38,8 @@ class Category(Model, db.Model):  # type: ignore
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.Text, nullable=False, unique=True)
 
+    subscriptions = db.relationship("Subscription", back_populates="category")
+
     def to_json(self):
         return {
             "id": self.id,
@@ -59,6 +61,8 @@ class Subscription(Model, db.Model):  # type: ignore
     time_updated = db.Column(
         db.DateTime,
         index=True, server_default=func.now())
+
+    category = db.relationship("Category", back_populates="subscriptions")
 
     @classmethod
     def from_parser(cls, parser: FeedParser, **kwargs):
