@@ -18,7 +18,6 @@ def init(app: Flask) -> None:
     import api.categories  # noqa: F401
     import api.subscriptions  # noqa: F401
     import api.counters  # noqa: F401
-    import api.opml  # noqa: F401
 
     api_bp.before_request(before_request)
     api_bp.after_request(after_request)
