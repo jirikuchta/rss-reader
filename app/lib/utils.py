@@ -33,7 +33,7 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
         req_url += f"?{url_parsed.query}"
 
     conn.request(method, req_url, headers={
-        "User-agent": "https://github.com/jirikuchta/rss-reader"})
+        "User-agent": "Mozilla/5.0 (+https://github.com/jirikuchta/garmin-ical-export"})
 
     res = conn.getresponse()
 
