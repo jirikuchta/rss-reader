@@ -57,7 +57,8 @@ class Subscription(Model, db.Model):  # type: ignore
 
     category_id = db.Column(
         db.Integer,
-        db.ForeignKey("category.id", ondelete="SET NULL"))
+        db.ForeignKey("category.id", ondelete="SET NULL"),
+        index=True)
     time_updated = db.Column(
         db.DateTime,
         index=True, server_default=func.now())
@@ -101,7 +102,8 @@ class Article(Model, db.Model):  # type: ignore
         nullable=False, server_default=func.now(), index=True)
     subscription_id = db.Column(
         db.Integer,
-        db.ForeignKey("subscription.id", ondelete="CASCADE"), nullable=False)
+        db.ForeignKey("subscription.id", ondelete="CASCADE"),
+        index=True, nullable=False)
 
     @classmethod
     def from_parser(cls, parser: FeedItemParser, **kwargs):
