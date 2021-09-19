@@ -6,6 +6,7 @@ export interface Subscription {
 	id: SubscriptionId;
 	title: string;
 	feed_url: string;
+	web_url?: string;
 	category_id?: CategoryId;
 }
 
@@ -38,4 +39,11 @@ export interface ArticleFilters {
 export interface FeedLink {
 	href: string
 	title?: string
+}
+
+export interface OPMLItem {
+	title: string | null;
+	xmlUrl: string | null;
+	webUrl: string | null;
+	category: string | null;
 }
