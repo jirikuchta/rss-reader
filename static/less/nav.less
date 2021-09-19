@@ -1,21 +1,25 @@
 nav {
+	display: flex;
+	flex-direction: column;
 	line-height: 3.2rem;
 
-	> header {
+	ul {
+		flex-grow: 1;
+		padding: 12px 0;
+		overflow: auto;
+	}
+
+	> footer {
 		display: flex;
 		align-items: center;
-		padding-left: 20px;
-		padding-right: 12px;
-
-		h3 {
-			flex-grow: 1;
-			text-transform: uppercase;
-			font-size: 1.2rem;
-		}
+		justify-content: center;
+		gap: 32px;
+		border-top: 1px solid var(--color-border);
 
 		button {
-			width: 24px;
-			height: 24px;
+			width: 4.8rem;
+			height: 4.8rem;
+			font-size: 1.6rem;
 		}
 	}
 

@@ -33,11 +33,6 @@ async function build() {
 	html.clear(node);
 	items = [];
 
-	let header = html.node("header", {}, "", node);
-	html.node("h3", {}, "Subscriptions", header);
-	let btn = html.button({icon: "plus-circle"}, "", header);
-	btn.addEventListener("click", e => editSubscription());
-
 	categories.list().forEach(c => node.appendChild(buildCategory(c)));
 
 	let uncategorized = html.node("ul", {}, "", node);
@@ -48,6 +43,14 @@ async function build() {
 			uncategorized.appendChild(item.node);
 			items.push(item);
 		});
+
+	let footer = html.node("footer", {}, "", node);
+
+	let add = html.button({icon: "plus"}, "", footer);
+	add.addEventListener("click", e => editSubscription());
+
+	// let settings = html.button({icon: "gear"}, "", footer);
+	// settings.addEventListener("click", e => editSubscription());
 
 	updateCounters();
 }

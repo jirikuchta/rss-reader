@@ -1,4 +1,4 @@
-import { SubscriptionId, Subscription, Category } from "data/types";
+import { SubscriptionId, Subscription, Category, CategoryId } from "data/types";
 import * as counters from "data/counters";
 import * as pubsub from "util/pubsub";
 import api from "util/api";
@@ -16,7 +16,10 @@ export async function sync() {
 	pubsub.publish("subscriptions-changed");
 }
 
-export function list() { return Array.from(subscriptions.values()); }
+export function list(categoryId?: CategoryId) {
+	return Array.from(subscriptions.values())
+		.filter(s => !categoryId || categoryId == s.category_id) ;
+}
 export function get(id: SubscriptionId) { return subscriptions.get(id); }
 
 export async function add(data: Partial<Subscription>) {
