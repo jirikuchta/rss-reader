@@ -147,10 +147,12 @@ nav {
   flex-direction: column;
   line-height: 3.2rem;
 }
-nav ul {
-  flex-grow: 1;
-  padding: 12px 0;
+nav .scroll {
   overflow: auto;
+  flex: 1;
+}
+nav ul {
+  padding: 12px 0;
 }
 nav > footer {
   display: flex;
@@ -309,6 +311,9 @@ nav li:hover {
   border-bottom: 1px solid var(--color-border);
 }
 #dialog > footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
   text-align: center;
   background: var(--color-background);
 }

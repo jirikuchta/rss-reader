@@ -26,7 +26,7 @@ const observer = new IntersectionObserver(
 
 export function init() {
 	build();
-	pubsub.subscribe("nav-item-selected", _ => clear() && build());
+	pubsub.subscribe("nav-item-selected", _ => {clear(); build()});
 
 	document.body.addEventListener("keydown", e => {
 		e.code == "ArrowRight" && select(selectedIndex + 1, true);
@@ -38,7 +38,7 @@ export function getSelectedArticle() {
 	return items[selectedIndex];
 }
 
-async function clear() {
+function clear() {
 	html.clear(node);
 	items = [];
 	selectedIndex = -1;
@@ -65,7 +65,7 @@ function buildItem(article: Article, index: number) {
 
 	let header = html.node("header", {}, "", node);
 	header.appendChild(subscriptionIcon(subscription));
-	header.appendChild(html.node("h6", {}, subscription.title));
+	header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
 	header.appendChild(html.node("time", {}, format.date(article.time_published)));
 
 	node.appendChild(html.node("h3", {}, article.title));

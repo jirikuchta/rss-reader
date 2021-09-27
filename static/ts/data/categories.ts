@@ -14,6 +14,19 @@ export async function init() {
 export function list() { return Array.from(categories.values()); }
 export function get(id: CategoryId) { return categories.get(id); }
 
+export async function getByName(title: string, create: boolean = false) {
+	for (let cat of categories.values()) {
+		if (cat.title.trim().toLowerCase() == title.trim().toLowerCase()) {
+			return cat;
+		}
+	}
+
+	if (create) {
+		let res = await add({title});
+		if (res.ok) { return res.data; }
+	}
+}
+
 export async function add(data: Partial<Category>) {
 	let res = await api("POST", "/api/categories/", data);
 	if (!res.ok) { return res; }

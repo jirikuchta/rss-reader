@@ -49,7 +49,7 @@ export default class SubscriptionForm {
 			let data: Partial<Subscription> = {
 				title: this._title.value,
 				feed_url: this._url.value,
-				category_id: (await getCategory(this._category.value))?.id
+				category_id: (await categories.getByName(this._category.value, true))?.id
 			};
 
 			let res: ApiResponse;
@@ -91,7 +91,8 @@ export default class SubscriptionForm {
 		this.node.appendChild(labelInput("Feed URL", this._url));
 		this.node.appendChild(labelInput("Category", this._category));
 
-		let categoryList = buildCategoryList();
+		let categoryList = html.node("datalist", {id: random.id()});
+		categories.list().forEach(c => html.node("option", {value: c.title}, c.title, categoryList));
 		this._category.setAttribute("list", categoryList.id);
 		this.node.appendChild(categoryList);
 	}
@@ -134,25 +135,4 @@ export default class SubscriptionForm {
 		this._url.setCustomValidity("");
 		this._category.setCustomValidity("");
 	}
-}
-
-function buildCategoryList() {
-	let node = html.node("datalist", {id: random.id()});
-	categories.list().forEach(c => html.node("option", {value: c.title}, c.title, node));
-	return node;
-}
-
-async function getCategory(title: string) {
-	title = title.trim();
-	if (!title) { return; }
-
-	let category = categories.list().find(
-		cat => cat.title.trim().toLowerCase() == title.toLowerCase());
-
-	if (!category) {
-		let res = await categories.add({title});
-		res.ok && (category = res.data);
-	}
-
-	return category;
 }

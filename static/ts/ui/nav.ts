@@ -11,6 +11,7 @@ import * as pubsub from "util/pubsub";
 import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
+import * as settings from "ui/widget/settings";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
@@ -33,9 +34,11 @@ async function build() {
 	html.clear(node);
 	items = [];
 
-	categories.list().forEach(c => node.appendChild(buildCategory(c)));
+	let scroll = html.node("div", {className: "scroll"}, "", node);
 
-	let uncategorized = html.node("ul", {}, "", node);
+	categories.list().forEach(c => scroll.appendChild(buildCategory(c)));
+
+	let uncategorized = html.node("ul", {}, "", scroll);
 	subscriptions.list()
 		.filter(s => s.category_id === null)
 		.forEach(s => {
@@ -46,11 +49,11 @@ async function build() {
 
 	let footer = html.node("footer", {}, "", node);
 
-	let add = html.button({icon: "plus"}, "", footer);
-	add.addEventListener("click", e => SubscriptionForm.open());
+	let addBtn = html.button({icon: "plus"}, "", footer);
+	addBtn.addEventListener("click", e => SubscriptionForm.open());
 
-	let settings = html.button({icon: "gear"}, "", footer);
-	settings.addEventListener("click", e => SubscriptionForm.open());
+	let settingsBtn = html.button({icon: "gear"}, "", footer);
+	settingsBtn.addEventListener("click", e => settings.open());
 
 	updateCounters();
 }
