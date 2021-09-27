@@ -12,7 +12,7 @@ import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
-import Dialog, { confirm } from "ui/widget/dialog";
+import { confirm } from "ui/widget/dialog";
 
 const SELECTED_CSS_CLASS = "is-selected";
 
@@ -47,10 +47,10 @@ async function build() {
 	let footer = html.node("footer", {}, "", node);
 
 	let add = html.button({icon: "plus"}, "", footer);
-	add.addEventListener("click", e => editSubscription());
+	add.addEventListener("click", e => SubscriptionForm.open());
 
-	// let settings = html.button({icon: "gear"}, "", footer);
-	// settings.addEventListener("click", e => editSubscription());
+	let settings = html.button({icon: "gear"}, "", footer);
+	settings.addEventListener("click", e => SubscriptionForm.open());
 
 	updateCounters();
 }
@@ -162,11 +162,11 @@ function showItemPopup(item: Item, e: MouseEvent) {
 
 	if (item.type == "subscription") {
 		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((item.data as Subscription).id));
-		menu.addItem("Edit subscription", "pencil", () => editSubscription(item.data as Subscription));
+		menu.addItem("Edit subscription", "pencil", () => SubscriptionForm.open(item.data as Subscription));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(item.data as Subscription));
 	} else {
 		menu.addItem("Mark as read", "check-all", () => categories.markRead((item.data as Category).id));
-		menu.addItem("Edit category", "pencil", () => editCategory(item.data as Category));
+		menu.addItem("Edit category", "pencil", () => CategoryForm.open(item.data as Category));
 		menu.addItem("Delete category", "trash", () => deleteCategory(item.data as Category));
 	}
 
@@ -174,43 +174,6 @@ function showItemPopup(item: Item, e: MouseEvent) {
 		e.clientX - item.node.getBoundingClientRect().left + 8,
 		e.clientY - item.node.getBoundingClientRect().bottom + 8
 	]);
-}
-
-function editSubscription(subscription?: Subscription) {
-	let dialog = new Dialog();
-
-	let subscriptionForm = new SubscriptionForm(subscription);
-	subscriptionForm.afterSubmit = () => dialog.close();
-
-	let header = html.node("header", {}, `${subscription ? "Edit" : "Add"} subscription`, dialog.node);
-	header.appendChild(dialog.closeButton());
-
-	dialog.node.appendChild(subscriptionForm.node);
-
-	let footer = html.node("footer", {}, "", dialog.node);
-	footer.appendChild(subscriptionForm.submitBtn);
-
-	dialog.open();
-}
-
-function editCategory(category: Category) {
-	let dialog = new Dialog();
-
-	let categoryForm = new CategoryForm(category);
-	categoryForm.afterSubmit = () => dialog.close();
-
-	let header = html.node("header", {}, "Edit category", dialog.node);
-	header.appendChild(dialog.closeButton());
-
-	dialog.node.appendChild(categoryForm.node);
-
-	let footer = html.node("footer", {}, "", dialog.node);
-	footer.appendChild(categoryForm.submitBtn);
-
-	let deleteBtn = html.button({className: "plain delete", "icon": "trash"}, "Delete category", footer);
-	deleteBtn.addEventListener("click", e => deleteCategory(category));
-
-	dialog.open();
 }
 
 async function deleteCategory(category: Category) {

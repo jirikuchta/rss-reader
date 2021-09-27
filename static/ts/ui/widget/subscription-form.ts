@@ -1,11 +1,13 @@
 import { Subscription, FeedLink } from "data/types";
-import { ApiResponse } from "util/api";
-
-import * as html from "util/html";
-import * as random from "util/random";
-
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
+
+import { ApiResponse } from "util/api";
+import * as html from "util/html";
+import * as random from "util/random";
+import { labelInput } from "util/uitools";
+
+import Dialog from "ui/widget/dialog";
 
 
 export default class SubscriptionForm {
@@ -21,6 +23,23 @@ export default class SubscriptionForm {
 		this._subscription = subscription;
 		this._build();
 		this.node.addEventListener("submit", this);
+	}
+
+	static open(subscription?: Subscription) {
+		let dialog = new Dialog();
+
+		let subscriptionForm = new SubscriptionForm(subscription);
+		subscriptionForm.afterSubmit = () => dialog.close();
+
+		let header = html.node("header", {}, `${subscription ? "Edit" : "Add"} subscription`, dialog.node);
+		header.appendChild(dialog.closeButton());
+
+		dialog.node.appendChild(subscriptionForm.node);
+
+		let footer = html.node("footer", {}, "", dialog.node);
+		footer.appendChild(subscriptionForm.submitBtn);
+
+		dialog.open();
 	}
 
 	async handleEvent(e: Event) {
@@ -115,21 +134,6 @@ export default class SubscriptionForm {
 		this._url.setCustomValidity("");
 		this._category.setCustomValidity("");
 	}
-}
-
-export function labelInput(text: string, input: HTMLInputElement) {
-	let label = html.node("label", {}, text);
-	input.required && label.classList.add("required");
-
-	let id = random.id();
-	label.setAttribute("for", id);
-	input.setAttribute("id", id);
-
-	let frag = html.fragment();
-	frag.appendChild(label);
-	frag.appendChild(input);
-
-	return frag;
 }
 
 function buildCategoryList() {

@@ -1,83 +1,87 @@
 import { Category } from "data/types";
-import { ApiResponse } from "util/api"
+import * as categories from "data/categories";
 
+import { ApiResponse } from "util/api"
 import * as html from "util/html";
 import * as random from "util/random";
+import { labelInput } from "util/uitools";
 
-import * as categories from "data/categories";
+import Dialog from "ui/widget/dialog";
 
 
 export default class CategoryForm {
-    node!: HTMLFormElement;
-    submitBtn!: HTMLButtonElement;
-    _title!: HTMLInputElement;
-    _category: Category;
+	node!: HTMLFormElement;
+	submitBtn!: HTMLButtonElement;
+	_title!: HTMLInputElement;
+	_category: Category;
 
-    constructor(category: Category) {
-        this._category = category;
-        this._build();
-        this.node.addEventListener("submit", this);
-    }
+	static open(category: Category) {
+		let dialog = new Dialog();
 
-    async handleEvent(e: Event) {
-        if (e.type == "submit") {
-            e.preventDefault();
+		let categoryForm = new CategoryForm(category);
+		categoryForm.afterSubmit = () => dialog.close();
 
-            let res = await categories.edit(this._category.id, {
-                title: this._title.value
-            });
+		let header = html.node("header", {}, "Edit category", dialog.node);
+		header.appendChild(dialog.closeButton());
 
-            this._validate(res);
-            this.node.checkValidity() && this.afterSubmit();
-        }
-    }
+		dialog.node.appendChild(categoryForm.node);
 
-    afterSubmit() {}
+		let footer = html.node("footer", {}, "", dialog.node);
+		footer.appendChild(categoryForm.submitBtn);
 
-    _build() {
-        this.node = html.node("form", {id: random.id()});
-        this.node.noValidate = true;
+		dialog.open();
+	}
 
-        this.submitBtn = html.button({type: "submit"}, "Submit");
-        this.submitBtn.setAttribute("form", this.node.id);
+	constructor(category: Category) {
+		this._category = category;
+		this._build();
+		this.node.addEventListener("submit", this);
+	}
 
-        this._title = html.node("input", {type: "text", required: "true", value: this._category.title});
+	async handleEvent(e: Event) {
+		if (e.type == "submit") {
+			e.preventDefault();
 
-        this.node.appendChild(labelInput("Title", this._title));
-    }
+			let res = await categories.edit(this._category.id, {
+				title: this._title.value
+			});
 
-    _validate(res: ApiResponse) {
-        this._clearValidation();
+			this._validate(res);
+			this.node.checkValidity() && this.afterSubmit();
+		}
+	}
 
-        switch (res.error?.code) {
-            case "missing_field":
-                this._title.setCustomValidity("Please fill out this field.");
-            break;
-            case "already_exists":
-                this._title.setCustomValidity(`Title already exists.`);
-            break;
-        }
+	afterSubmit() {}
 
-        this.node.classList.toggle("invalid", !this.node.checkValidity());
-        this.node.reportValidity();
-    }
+	_build() {
+		this.node = html.node("form", {id: random.id()});
+		this.node.noValidate = true;
 
-    _clearValidation() {
-        this._title.setCustomValidity("");
-    }
-}
+		this.submitBtn = html.button({type: "submit"}, "Submit");
+		this.submitBtn.setAttribute("form", this.node.id);
 
-export function labelInput(text: string, input: HTMLInputElement) {
-    let label = html.node("label", {}, text);
-    input.required && label.classList.add("required");
+		this._title = html.node("input", {type: "text", required: "true", value: this._category.title});
 
-    let id = random.id();
-    label.setAttribute("for", id);
-    input.setAttribute("id", id);
+		this.node.appendChild(labelInput("Title", this._title));
+	}
 
-    let frag = html.fragment();
-    frag.appendChild(label);
-    frag.appendChild(input);
+	_validate(res: ApiResponse) {
+		this._clearValidation();
 
-    return frag;
+		switch (res.error?.code) {
+			case "missing_field":
+				this._title.setCustomValidity("Please fill out this field.");
+			break;
+			case "already_exists":
+				this._title.setCustomValidity(`Title already exists.`);
+			break;
+		}
+
+		this.node.classList.toggle("invalid", !this.node.checkValidity());
+		this.node.reportValidity();
+	}
+
+	_clearValidation() {
+		this._title.setCustomValidity("");
+	}
 }
