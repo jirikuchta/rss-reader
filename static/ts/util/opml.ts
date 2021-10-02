@@ -15,7 +15,7 @@ export function parse(opml: string): OPMLItem[] {
 		title: node.getAttribute("title"),
 		xmlUrl: node.getAttribute("xmlUrl"),
 		webUrl: node.getAttribute("webUrl"),
-		category: node.closest("body > outline")?.getAttribute("title") || null
+		category: node.closest("body > outline:not([type=rss])")?.getAttribute("title") || null
 	}));
 }
 

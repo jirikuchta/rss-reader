@@ -150,8 +150,6 @@ nav {
 nav .scroll {
   overflow: auto;
   flex: 1;
-}
-nav ul {
   padding: 12px 0;
 }
 nav > footer {
@@ -188,7 +186,7 @@ nav li.is-selected {
   color: var(--color-active);
 }
 nav li .subscription-icon {
-  margin-right: 8px;
+  margin: 0 8px 0 4px;
 }
 nav li .title {
   flex-grow: 1;
@@ -211,7 +209,7 @@ nav li button:not(.btn-chevron) {
   color: var(--color-grey);
 }
 nav li .btn-chevron {
-  margin-right: 8px;
+  margin-right: 4px;
 }
 nav li:hover {
   background-color: var(--color-hover);

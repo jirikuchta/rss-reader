@@ -41,6 +41,7 @@ function onFileInput(e: Event) {
 }
 
 async function processImport(items: OPMLItem[]) {
+	console.log(items)
 	for (let item of items) {
 		let category = item.category ? (await categories.getByName(item.category, true)) : null;
 		let data: Partial<Subscription> = {
