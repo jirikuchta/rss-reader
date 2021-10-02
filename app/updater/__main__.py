@@ -29,7 +29,7 @@ def main(loop: bool = False, subscription_id: Optional[int] = None):
                     "subscription_id": subscription_id,
                 })
             except Exception as e:
-                app.logger.critical("Failed to run updater, err=%s", e)
+                app.logger.critical(f"Failed to run updater, err={e}")
 
             if not loop:
                 break

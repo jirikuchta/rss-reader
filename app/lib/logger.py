@@ -16,16 +16,16 @@ def before_request():
     g.req_start_time = datetime.utcnow().timestamp()
 
     current_app.logger.info(
-        ">| %s %s%s, data: %s",
-        request.method, request.full_path,
-        request.query_string.decode(), request.data.decode() or None)
+        f">| {request.method} "
+        f"{request.full_path}{request.query_string.decode()}, "
+        f"data: {request.data.decode() or None}")
 
 
 def after_request(res: Response):
     now = datetime.utcnow().timestamp()
     req_duration_sec = now - g.req_start_time
 
-    current_app.logger.info("<| %s (%fs)", res.status, req_duration_sec)
+    current_app.logger.info(f"<| {res.status} ({round(req_duration_sec, 4)}s)")
 
     if res.direct_passthrough is False:
         try:

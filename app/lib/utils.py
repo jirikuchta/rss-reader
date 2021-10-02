@@ -18,7 +18,7 @@ class HTTPResponseError(Exception):
 @contextmanager
 def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
     method = method.upper()
-    app.logger.info("|> %s %s", method, url)
+    app.logger.info(f"|> {method} {url}")
 
     url_parsed = urlparse(url)
     conn: Union[HTTPConnection, HTTPSConnection]
@@ -37,14 +37,14 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
 
     res = conn.getresponse()
 
-    app.logger.info("|< %d %s", res.status, res.reason)
+    app.logger.info(f"|< {res.status} {res.reason}")
 
     if res.status >= 400:
         raise HTTPResponseError(res)
 
     if res.status in (301, 302):
         redir_url = res.headers.get("Location")
-        app.logger.info("|> %s", redir_url)
+        app.logger.info(f"|> {redir_url}")
         with http_request(redir_url, method) as res:
             yield res
     else:

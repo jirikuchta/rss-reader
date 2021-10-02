@@ -51,18 +51,18 @@ def create_subscription() -> TReturnValue:
     db.session.add(subscription)
     db.session.flush()
 
-    app.logger.info("Subscription created: %s", subscription)
+    app.logger.info(f"{subscription} created")
     app.logger.debug(repr(subscription))
 
     for item in parser.items:
-        app.logger.info("Creating article for feed item %s", item)
+        app.logger.info(f"Creating article for {item}")
         app.logger.debug(repr(item))
 
         article = Article.from_parser(item, subscription_id=subscription.id)
         db.session.add(article)
         db.session.flush()
 
-        app.logger.info("Article created: %s", article)
+        app.logger.info(f"{article} created")
         app.logger.debug(repr(article))
 
     db.session.commit()

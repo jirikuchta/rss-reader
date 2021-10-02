@@ -161,7 +161,7 @@ class FeedParser(RootNode):
                 items.append(
                     FeedItemParser(node, self.feed_type, self.base_url))
             except Exception as e:
-                app.logger.warning("Failed to parse feed item, err=%s", e)
+                app.logger.warning(f"Failed to parse feed item, err={e}")
                 app.logger.debug(ET.tostring(node))
 
         return items

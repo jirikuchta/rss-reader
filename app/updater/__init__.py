@@ -37,8 +37,7 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
 
     subscriptions = Subscription.query.filter(*filters).all()
 
-    app.logger.info("%d subscription(s) to be checked",
-                    len(subscriptions))
+    app.logger.info(f"{len(subscriptions)} subscription(s) to be checked")
 
     result: UpdateResult = {
         "total_count": len(subscriptions),
@@ -53,7 +52,7 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
             result["results"][subscription.id] = res
             result["succeeded_ids"].append(subscription.id)
         except Exception as e:
-            app.logger.warning("%s update failed: err=%s", subscription, e)
+            app.logger.warning(f"{subscription} update failed: err={e}")
             result["succeeded_ids"].append(subscription.id)
 
     app.logger.info("Finished")

@@ -40,8 +40,8 @@ function onFileInput(e: Event) {
 	reader.readAsText((e.target as HTMLInputElement)!.files![0]);
 }
 
-function processImport(items: OPMLItem[]) {
-	items.forEach(async (item) => {
+async function processImport(items: OPMLItem[]) {
+	for (let item of items) {
 		let category = item.category ? (await categories.getByName(item.category, true)) : null;
 		let data: Partial<Subscription> = {
 			feed_url: item.xmlUrl || item.webUrl || ""
@@ -50,5 +50,5 @@ function processImport(items: OPMLItem[]) {
 		item.webUrl && (data["web_url"] = item.webUrl);
 		category && (data["category_id"] = category.id);
 		await subscriptions.add(data);
-	});
+	};
 }

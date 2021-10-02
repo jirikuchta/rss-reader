@@ -14,7 +14,7 @@ class Result(TypedDict):
 
 
 def update_subscription(subscription: Subscription) -> Result:
-    app.logger.info("Processing %s", subscription)
+    app.logger.info(f"Updating {subscription}")
     app.logger.debug(repr(subscription))
 
     result: Result = {
@@ -26,7 +26,7 @@ def update_subscription(subscription: Subscription) -> Result:
     parser = parse(subscription.feed_url)
 
     if subscription.hash == parser.hash:
-        app.logger.info("%s is up-to-date.", subscription)
+        app.logger.info(f"{subscription} is up-to-date.")
         result["skipped_items"] = len(parser.items)
         return result
 
@@ -34,24 +34,24 @@ def update_subscription(subscription: Subscription) -> Result:
         Article.subscription_id == subscription.id).all()
 
     for item in parser.items:
-        app.logger.info("Processing %s", item)
+        app.logger.info(f"Processing {item}")
         app.logger.debug(repr(item))
 
         article = next(filter(lambda a: a.guid == item.guid, articles), None)
 
         if article:
-            app.logger.info("Matching article found: %s", article)
+            app.logger.info(f"{item} already exists as {article}")
             app.logger.debug(repr(article))
 
             if article.hash == item.hash:
-                app.logger.info("%s is up-to-date", article)
+                app.logger.info(f"{article} is up-to-date")
                 result["skipped_items"] += 1
             else:
-                app.logger.info("%s has changed, updating %s.", item, article)
+                app.logger.info(f"{item} has changed, updating {article}.")
 
                 article.update(item)
 
-                app.logger.info("%s updated", article)
+                app.logger.info(f"{article} updated")
                 app.logger.debug(repr(article))
 
                 result["updated_items"] += 1
@@ -64,7 +64,7 @@ def update_subscription(subscription: Subscription) -> Result:
             db.session.add(article)
             db.session.flush()
 
-            app.logger.info("%s created", article)
+            app.logger.info(f"{article} created")
             app.logger.debug(repr(article))
 
             result["new_items"] += 1
@@ -74,7 +74,7 @@ def update_subscription(subscription: Subscription) -> Result:
 
     db.session.commit()
 
-    app.logger.info("%s updated", subscription)
+    app.logger.info(f"{subscription} updated")
     app.logger.debug(json.dumps(result))
 
     return result
