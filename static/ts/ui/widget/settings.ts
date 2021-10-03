@@ -23,9 +23,14 @@ function buildOPML() {
 	let node = html.node("section", {id: "opml"});
 
 	html.node("h3", {}, "Import from OPML file", node);
-	let droparea = html.node("div", {className: "droparea"}, "", node);
+
+	let droparea = html.node("label", {className: "droparea"}, "Click to choose OPML file or drop one here", node);
+	droparea.addEventListener("dragover", e => e.preventDefault());
+	droparea.addEventListener("drop", e => e.preventDefault());
+
 	let input = html.node("input", {type: "file"}, "", droparea);
 	input.addEventListener("input", onFileInput);
+
 
 	html.node("h3", {}, "Export to OPML file", node);
 	let href = window.URL.createObjectURL(new Blob([opml.serialize()], {type: "application/xml"}));
@@ -41,7 +46,6 @@ function onFileInput(e: Event) {
 }
 
 async function processImport(items: OPMLItem[]) {
-	console.log(items)
 	for (let item of items) {
 		let category = item.category ? (await categories.getByName(item.category, true)) : null;
 		let data: Partial<Subscription> = {
