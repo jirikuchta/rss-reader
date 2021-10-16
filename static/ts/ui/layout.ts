@@ -1,3 +1,6 @@
+import { Settings } from "data/types";
+import * as settings from "data/settings";
+
 import * as html from "util/html";
 
 import * as nav from "ui/nav";
@@ -16,16 +19,16 @@ export async function init() {
 	node.appendChild(list.node);
 	node.appendChild(detail.node);
 
-	new Resizer(nav.node, "sidebar-width");
-	new Resizer(list.node, "articles-width");
+	new Resizer(nav.node, "navWidth");
+	new Resizer(list.node, "articlesWidth");
 }
 
 
 class Resizer {
 	_node: HTMLElement;
-	_storageId?: string;
+	_storageId: keyof Settings;
 
-	constructor(node: HTMLElement, storageId?: string) {
+	constructor(node: HTMLElement, storageId: keyof Settings) {
 		this._node = node;
 		this._storageId = storageId;
 		this._build();
@@ -37,7 +40,8 @@ class Resizer {
 
 		this._node.insertAdjacentElement("afterend", node);
 
-		this._load();
+		let width = settings.getItem(this._storageId);
+		width && (this._node.style.flexBasis = `${width}%`);
 	}
 
 	handleEvent(ev: MouseEvent) {
@@ -51,7 +55,10 @@ class Resizer {
 				document.removeEventListener("mousemove", this);
 				document.removeEventListener("mouseup", this);
 				document.body.style.userSelect = "";
-				this._save();
+
+				let width = (this._node.offsetWidth / document.body.offsetWidth) * 100;
+				settings.setItem(this._storageId, width);
+
 				break;
 			case "mousemove":
 				this._resize(ev.clientX);
@@ -63,15 +70,5 @@ class Resizer {
 		let widthPx = pos - this._node.offsetLeft;
 		let widthPerc = (widthPx / document.body.offsetWidth) * 100;
 		this._node.style.flexBasis = `${widthPerc}%`;
-	}
-
-	_save() {
-		let widthPerc = (this._node.offsetWidth / document.body.offsetWidth) * 100;
-		this._storageId && localStorage.setItem(this._storageId, `${widthPerc}`);
-	}
-
-	_load() {
-		let widthPerc = this._storageId && localStorage.getItem(this._storageId);
-		widthPerc && (this._node.style.flexBasis = `${widthPerc}%`);
 	}
 }

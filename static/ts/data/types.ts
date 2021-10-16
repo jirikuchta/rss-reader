@@ -47,3 +47,9 @@ export interface OPMLItem {
 	webUrl: string | null;
 	category: string | null;
 }
+
+export interface Settings {
+	navWidth?: number;
+	articlesWidth?: number;
+	openCategories?: CategoryId[];
+}
