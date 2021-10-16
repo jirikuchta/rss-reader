@@ -1,4 +1,5 @@
 import { Category, Subscription } from "data/types";
+import * as settings from "data/settings";
 
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
@@ -11,7 +12,7 @@ import * as pubsub from "util/pubsub";
 import subscriptionIcon from "ui/widget/subscription-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
-import * as settings from "ui/widget/settings";
+import { open as openSettings } from "ui/widget/settings";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
@@ -53,7 +54,7 @@ async function build() {
 	addBtn.addEventListener("click", e => SubscriptionForm.open());
 
 	let settingsBtn = html.button({icon: "gear"}, "", footer);
-	settingsBtn.addEventListener("click", e => settings.open());
+	settingsBtn.addEventListener("click", e => openSettings());
 
 	updateCounters();
 }
@@ -62,6 +63,10 @@ function buildCategory(category: Category) {
 	let list = html.node("ul");
 
 	let categoryItem = new Item(category);
+	categoryItem.node.classList.toggle(
+		"is-collapsed",
+		(settings.getItem("collapsedCategories") || []).includes(category.id));
+
 	list.appendChild(categoryItem.node);
 	items.push(categoryItem);
 
@@ -114,7 +119,7 @@ class Item {
 			let btn = html.button({icon: "chevron-down", className: "plain btn-chevron"}, "", node);
 			btn.addEventListener("click", e => {
 				e.stopPropagation();
-				node.classList.toggle("is-collapsed");
+				toggleCategory(this);
 			});
 		}
 
@@ -156,6 +161,17 @@ class Item {
 		html.clear(this.counter);
 		count && this.counter.appendChild(html.text(`${count}`));
 	}
+}
+
+function toggleCategory(item: Item) {
+	item.node.classList.toggle("is-collapsed");
+	let data = settings.getItem("collapsedCategories") || [];
+	if (item.node.classList.contains("is-collapsed")) {
+		data.push(item.data.id);
+	} else {
+		data = data.filter(i => i != item.data.id);
+	}
+	settings.setItem("collapsedCategories", data);
 }
 
 function showItemPopup(item: Item, e: MouseEvent) {
