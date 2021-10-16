@@ -32,7 +32,7 @@ def parse(url: str) -> "FeedParser":
             url = feed_link_parser.links[0]["href"]
 
     with http_request(url) as res:
-        node = ET.fromstring(res.read())
+        node = ET.fromstring(res.read().strip())
 
     return FeedParser(node, url)
 
