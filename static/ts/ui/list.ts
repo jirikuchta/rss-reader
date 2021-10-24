@@ -29,8 +29,8 @@ export function init() {
 	pubsub.subscribe("nav-item-selected", _ => {clear(); build()});
 
 	document.body.addEventListener("keydown", e => {
-		e.code == "ArrowRight" && select(selectedIndex + 1, true);
-		e.code == "ArrowLeft" && select(selectedIndex - 1, true);
+		e.code == "ArrowRight" && !e.isComposing && select(selectedIndex + 1);
+		e.code == "ArrowLeft" && !e.isComposing && select(selectedIndex - 1);
 	});
 }
 
@@ -91,14 +91,18 @@ function getFilters() {
 	return filters;
 }
 
-function select(index: number, scrollIntoView = false) {
-	let articleNode = node.querySelector(`article:nth-of-type(${index + 1})`);
-	if (!articleNode) { return; }
+function select(index: number) {
+	let article = node.querySelector(`article:nth-of-type(${index + 1})`);
+	if (!article) { return; }
 
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
-	articleNode.classList.add(SELECTED_CSS_CLASS);
-	articleNode.classList.add(READ_CSS_CLASS);
-	scrollIntoView && articleNode.scrollIntoView(false);
+	article.classList.add(SELECTED_CSS_CLASS);
+	article.classList.add(READ_CSS_CLASS);
+
+	let rect = article.getBoundingClientRect();
+	if (rect.y <= 0 || rect.bottom > node.clientHeight) {
+		(article.previousElementSibling || article).scrollIntoView(true);
+	}
 
 	selectedIndex = index;
 	pubsub.publish("article-selected");
