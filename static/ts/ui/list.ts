@@ -29,6 +29,7 @@ export function init() {
 	pubsub.subscribe("nav-item-selected", _ => {clear(); build()});
 
 	document.body.addEventListener("keydown", e => {
+		if (["Alt", "Control", "Shift", "OS", "Meta"].some(key => e.getModifierState(key))) { return; }
 		e.code == "ArrowRight" && !e.isComposing && select(selectedIndex + 1);
 		e.code == "ArrowLeft" && !e.isComposing && select(selectedIndex - 1);
 	});
