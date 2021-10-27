@@ -1,9 +1,9 @@
-import { markRead } from "data/articles";
+import * as articles from "data/articles";
 
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import { getSelectedArticle } from "ui/list";
+import { getSelectedArticleId } from "ui/list";
 
 
 export const node = html.node("section", {"id": "detail"});
@@ -16,7 +16,7 @@ export function init() {
 export async function build() {
 	html.clear(node);
 
-	let article = getSelectedArticle();
+	let article = await getArticle();
 	if (!article) { return; }
 
 	let frag = html.fragment()
@@ -30,5 +30,12 @@ export async function build() {
 
 	node.appendChild(frag);
 
-	markRead([article]);
+	!article.read && articles.markRead([article.id]);
+}
+
+
+async function getArticle() {
+	let articleId = getSelectedArticleId();
+	if (!articleId) { return; }
+	return (await articles.get(articleId));
 }

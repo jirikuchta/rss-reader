@@ -1,14 +1,33 @@
-import { Article, ArticleFilters } from "data/types";
+import { Article, ArticleFilters, ArticleId } from "data/types";
 import * as counters from "data/counters";
+import * as pubsub from "util/pubsub";
 import api from "util/api";
 
-export async function list(filters?: ArticleFilters) {
-	let res = await api("GET", "/api/articles/", filters);
-	(res.data as Article[]).forEach(a => a.time_published = new Date(a.time_published));
-	return res.data as Article[];
+const articles: Map<ArticleId, Article> = new Map();
+
+export async function init() {
+	pubsub.subscribe("nav-item-selected", () => articles.clear());
 }
 
-export async function markRead(articles: Article[]) {
-	let res = await api("POST", "/api/articles/mark-read/", {ids: articles.map(a => a.id)});
+export async function list(filters?: ArticleFilters) {
+	let res = await api("GET", "/api/articles/", filters) as {data: Article[]};
+	res.data.forEach(article => {
+		article.time_published = new Date(article.time_published);
+		articles.set(article.id, article);
+	});
+	return res.data;
+}
+
+export async function get(id: ArticleId) {
+	if (!articles.has(id)) {
+		let res = await api("GET", `/api/articles/${id}/`);
+		articles.set(id, res.data as Article);
+	}
+	return articles.get(id)!;
+}
+
+export async function markRead(ids: ArticleId[]) {
+	let res = await api("POST", "/api/articles/mark-read/", {ids});
+	ids.forEach(id => articles.has(id) && articles.set(id, Object.assign(articles.get(id)!, {read: true})));
 	res.ok && counters.sync();
 }
