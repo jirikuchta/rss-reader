@@ -30,4 +30,5 @@ export async function markRead(ids: ArticleId[]) {
 	let res = await api("POST", "/api/articles/mark-read/", {ids});
 	ids.forEach(id => articles.has(id) && articles.set(id, Object.assign(articles.get(id)!, {read: true})));
 	res.ok && counters.sync();
+	pubsub.publish("articles-read");
 }

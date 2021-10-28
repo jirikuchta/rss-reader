@@ -7,7 +7,7 @@ import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 import * as format from "util/format";
 
-import { selected as selectedNavItem } from "ui/nav";
+import * as navigation from "ui/nav";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 
@@ -18,12 +18,25 @@ export const node = html.node("section", {"id": "list"});
 
 let markReadTimeout: number;
 
+const showMoreObserver = new IntersectionObserver(
+	entries => entries[0].isIntersecting && build(),
+	{root: node, rootMargin: "0% 0% 20% 0%"}
+);
+
 export function init() {
 	build();
 
 	pubsub.subscribe("nav-item-selected", () => {
 		html.clear(node);
 		build();
+	});
+
+	pubsub.subscribe("articles-read", async () => {
+		let nodes = node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`);
+		for (let n of nodes) {
+			let article = await articles.get(parseArticleId(n as HTMLElement));
+			article?.read && n.classList.add(READ_CSS_CLASS);
+		}
 	});
 
 	node.addEventListener("scroll", () => {
@@ -53,6 +66,9 @@ async function build() {
 		let elm = buildItem(article);
 		elm && node.appendChild(elm);
 	});
+
+	showMoreObserver.disconnect();
+	data.length && showMoreObserver.observe(node.querySelector("article:last-of-type")!);
 }
 
 function buildItem(article: Article) {
@@ -81,11 +97,11 @@ function getFilters() {
 		offset: node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`).length
 	};
 
-	if (selectedNavItem) {
-		if (selectedNavItem.type == "subscription") {
-			filters["subscription_id"] = selectedNavItem.id;
+	if (navigation.selected) {
+		if (navigation.selected.type == "subscription") {
+			filters["subscription_id"] = navigation.selected.id;
 		} else {
-			filters["category_id"] = selectedNavItem.id;
+			filters["category_id"] = navigation.selected.id;
 		}
 	}
 
@@ -124,16 +140,15 @@ function parseArticleId(elm: HTMLElement) {
 }
 
 function markRead() {
-	let nodes = node.querySelectorAll("article:not(.is-read)");
+	let nodes = node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`);
 	let ids: ArticleId[] = [];
 
 	for (let i = 0; i < nodes.length; i++) {
 		let n = nodes[i] as HTMLElement;
 		if (n.getBoundingClientRect().bottom > 0) { break; }
-
-		n.classList.add(READ_CSS_CLASS);
 		ids.push(parseArticleId(n));
 	}
 
 	ids.length && articles.markRead(ids);
 }
+
