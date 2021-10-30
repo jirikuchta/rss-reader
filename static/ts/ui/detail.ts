@@ -15,6 +15,7 @@ export function init() {
 
 export async function build() {
 	html.clear(node);
+	node.scrollTo(0, 0);
 
 	let articleId = list.selected();
 	if (!articleId) { return; }
