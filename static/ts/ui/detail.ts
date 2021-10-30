@@ -3,7 +3,7 @@ import * as articles from "data/articles";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import { getSelectedArticleId } from "ui/list";
+import * as list from "ui/list";
 
 
 export const node = html.node("section", {"id": "detail"});
@@ -16,7 +16,10 @@ export function init() {
 export async function build() {
 	html.clear(node);
 
-	let article = await getArticle();
+	let articleId = list.selected();
+	if (!articleId) { return; }
+
+	let article = await articles.get(articleId);
 	if (!article) { return; }
 
 	let frag = html.fragment()
@@ -31,11 +34,4 @@ export async function build() {
 	node.appendChild(frag);
 
 	!article.read && articles.markRead([article.id]);
-}
-
-
-async function getArticle() {
-	let articleId = getSelectedArticleId();
-	if (!articleId) { return; }
-	return (await articles.get(articleId));
 }

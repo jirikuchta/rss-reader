@@ -1,4 +1,4 @@
-import { Article, ArticleFilters, ArticleId } from "data/types";
+import { Article, ArticleFilters } from "data/types";
 
 import * as subscriptions from "data/subscriptions";
 import * as articles from "data/articles";
@@ -15,6 +15,7 @@ const SELECTED_CSS_CLASS = "is-selected";
 const READ_CSS_CLASS = "is-read";
 
 export const node = html.node("section", {"id": "list"});
+let items: Item[] = [];
 
 let markReadTimeout: number;
 
@@ -28,16 +29,11 @@ export function init() {
 
 	pubsub.subscribe("nav-item-selected", () => {
 		html.clear(node);
+		items = [];
 		build();
 	});
 
-	pubsub.subscribe("articles-read", async () => {
-		let nodes = node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`);
-		for (let n of nodes) {
-			let article = await articles.get(parseArticleId(n as HTMLElement));
-			article?.read && n.classList.add(READ_CSS_CLASS);
-		}
-	});
+	pubsub.subscribe("articles-read", () => items.forEach(i => i.sync()));
 
 	node.addEventListener("scroll", () => {
 		clearTimeout(markReadTimeout);
@@ -46,55 +42,46 @@ export function init() {
 
 	document.body.addEventListener("keydown", e => {
 		if (["Alt", "Control", "Shift", "OS", "Meta"].some(key => e.getModifierState(key))) { return; }
-		if (!["ArrowRight", "ArrowLeft"].includes(e.code)) { return; }
 		if (e.isComposing) { return; }
 
-		let n = getSibling(e.code == "ArrowRight" ? "next" : "prev");
-		n && select(n, true);
+		let selectedIndex = items.findIndex(i => i.isSelected);
+		if (selectedIndex == -1) { return; }
+
+		if (e.code == "ArrowRight") {
+			let item = items[selectedIndex + 1];
+			item && (item.isSelected = true) && item.focus();
+
+		}
+
+		if (e.code == "ArrowLeft") {
+			let item = items[selectedIndex - 1];
+			item && (item.isSelected = true) && item.focus();
+		}
 	});
 }
 
-export function getSelectedArticleId() {
-	let elm = getSelectedNode();
-	return elm ? parseArticleId(elm) : null;
+export function selected() {
+	return items.find(i => i.isSelected)?.id;
 }
 
 async function build() {
 	let data = await articles.list(getFilters());
 
 	data.forEach(article => {
-		let elm = buildItem(article);
-		elm && node.appendChild(elm);
+		let item = new Item(article);
+		item.node.addEventListener("click", () => item.isSelected = true);
+		node.appendChild(item.node);
+		items.push(item);
 	});
 
 	showMoreObserver.disconnect();
-	data.length && showMoreObserver.observe(node.querySelector("article:last-of-type")!);
-}
-
-function buildItem(article: Article) {
-	let subscription = subscriptions.get(article.subscription_id);
-	if (!subscription) { return; }
-
-	let elm = html.node("article");
-	elm.dataset.id = article.id.toString();
-
-	let header = html.node("header", {}, "", elm);
-	header.appendChild(subscriptionIcon(subscription));
-	header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
-	header.appendChild(html.node("time", {}, format.date(article.time_published)));
-
-	elm.appendChild(html.node("h3", {}, article.title));
-	elm.appendChild(html.node("p", {}, article.summary));
-
-	elm.addEventListener("click", () => select(elm));
-
-	return elm;
+	data.length && showMoreObserver.observe(items[items.length - 1].node);
 }
 
 function getFilters() {
 	let filters: ArticleFilters = {
 		unread_only: true,
-		offset: node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`).length
+		offset: items.filter(i => !i.isRead).length
 	};
 
 	if (navigation.selected) {
@@ -108,47 +95,68 @@ function getFilters() {
 	return filters;
 }
 
-function select(n: HTMLElement, focus = false) {
-	getSelectedNode()?.classList.remove(SELECTED_CSS_CLASS);
+function markRead() {
+	let markReadItems = items.filter(i => !i.isRead && i.node.getBoundingClientRect().bottom <= 0)
+	markReadItems.length && articles.markRead(markReadItems.map(i => i.id));
+}
 
-	n.classList.add(SELECTED_CSS_CLASS);
-	n.classList.add(READ_CSS_CLASS);
+class Item {
+	node: HTMLElement;
+	protected data: Article;
 
-	if (focus) {
-		let rect = n.getBoundingClientRect();
+	constructor(data: Article) {
+		this.data = data;
+		this.node = this.build();
+	}
+
+	get id() {
+		return this.data.id;
+	}
+
+	get isRead() {
+		return this.node.classList.contains(READ_CSS_CLASS);
+	}
+
+	set isRead(value: boolean) {
+		this.node.classList.toggle(READ_CSS_CLASS, value);
+	}
+
+	get isSelected() {
+		return this.node.classList.contains(SELECTED_CSS_CLASS);
+	}
+
+	set isSelected(value: boolean) {
+		items.forEach(i => i.node.classList.toggle(
+			SELECTED_CSS_CLASS, i.id == this.id ? value : (value ? false : i.isSelected)));
+		value && pubsub.publish("article-selected");
+	}
+
+	focus() {
+		let rect = this.node.getBoundingClientRect();
 		if (rect.y <= 0 || rect.bottom > node.clientHeight) {
-			(n.previousElementSibling || n).scrollIntoView(true);
+			(this.node.previousElementSibling || this.node).scrollIntoView(true);
 		}
 	}
 
-	pubsub.publish("article-selected");
-}
-
-function getSelectedNode() {
-	let elm = node.querySelector(`.${SELECTED_CSS_CLASS}`);
-	return elm ? (elm as HTMLElement) : null;
-}
-
-function getSibling(dir: "prev" | "next") {
-	let n = getSelectedNode();
-	if (!n) { return dir == "next" ? node.firstElementChild as HTMLElement : null; }
-	return (dir == "next" ? n.nextElementSibling : n.previousElementSibling) as HTMLElement | null;
-}
-
-function parseArticleId(elm: HTMLElement) {
-	return Number(elm.dataset.id);
-}
-
-function markRead() {
-	let nodes = node.querySelectorAll(`article:not(.${READ_CSS_CLASS})`);
-	let ids: ArticleId[] = [];
-
-	for (let i = 0; i < nodes.length; i++) {
-		let n = nodes[i] as HTMLElement;
-		if (n.getBoundingClientRect().bottom > 0) { break; }
-		ids.push(parseArticleId(n));
+	async sync() {
+		this.data = await articles.get(this.data.id);
+		this.isRead = this.data.read;
 	}
 
-	ids.length && articles.markRead(ids);
-}
+	protected build() {
+		let subscription = subscriptions.get(this.data.subscription_id)!;
 
+		let elm = html.node("article");
+		elm.dataset.id = this.id.toString();
+
+		let header = html.node("header", {}, "", elm);
+		header.appendChild(subscriptionIcon(subscription));
+		header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
+		header.appendChild(html.node("time", {}, format.date(this.data.time_published)));
+
+		elm.appendChild(html.node("h3", {}, this.data.title));
+		elm.appendChild(html.node("p", {}, this.data.summary));
+
+		return elm;
+	}
+}
