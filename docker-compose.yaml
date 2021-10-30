@@ -10,9 +10,8 @@ services:
       - ./static:/rss_reader/static
     ports:
       - 5000:5000
-    env_file:
-      - .env_default
-      - .env
+    environment:
+      FLASK_ENV: development
   static:
     build:
       context: .
