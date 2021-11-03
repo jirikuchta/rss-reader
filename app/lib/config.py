@@ -1,11 +1,12 @@
+import re
+import os
 from typing import TypedDict
-from os import environ, urandom
 from flask import Flask
 
 
 class Config(TypedDict):
     DEBUG: bool = False
-    SECRET_KEY: str = urandom(16)
+    SECRET_KEY: str = os.urandom(16)
     UPDATER_RUN_INTERVAL_SECONDS: int = 5*60
     SUBSCRIPTION_UPDATE_INTERVAL_SECONDS: int = 30*60
     PURGE_ARTICLE_AGE_DAYS: int = 7
@@ -17,7 +18,15 @@ class Config(TypedDict):
 
 def init(app: Flask) -> None:
     for key, key_type in Config.__annotations__.items():
-        value = environ.get(f"RSS_READER_{key}", environ.get(key))
+        value = os.environ.get(f"RSS_READER_{key}", os.environ.get(key))
+
+        if key == "SQLALCHEMY_DATABASE_URI":
+            if value is None:
+                value = getattr(Config, key)
+
+            if value.startswith("sqlite"):
+                app.config[key] = ensure_sqlite_abs_path(value)
+                continue
 
         if value is None:
             app.config[key] = getattr(Config, key)
@@ -31,3 +40,15 @@ def init(app: Flask) -> None:
 
         if key_type is str:
             app.config[key] = value
+
+
+def ensure_sqlite_abs_path(path: str):
+    # https://docs.sqlalchemy.org/en/14/core/engines.html#sqlite
+
+    if path.startswith("sqlite:////"):  # Unix/Mac abs path
+        return path
+
+    if re.match("sqlite:///[A-Z]:", path):  # Windows abs path
+        return path
+
+    return f"sqlite:///{os.getcwd()}{os.path.sep}{path[10:]}"

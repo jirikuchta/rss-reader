@@ -1,6 +1,5 @@
 from contextlib import contextmanager
-from http.client import HTTPConnection, HTTPSConnection, HTTPResponse, \
-    HTTPException
+from http.client import HTTPConnection, HTTPSConnection, HTTPResponse
 from urllib.parse import urljoin, urlparse
 from typing import Union, Iterator, Optional
 from flask import current_app as app
