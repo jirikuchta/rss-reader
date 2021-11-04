@@ -45,10 +45,13 @@ def init(app: Flask) -> None:
 def ensure_sqlite_abs_path(path: str):
     # https://docs.sqlalchemy.org/en/14/core/engines.html#sqlite
 
-    if path.startswith("sqlite:////"):  # Unix/Mac abs path
-        return path
+    prefix = "sqlite:///"
+    path = path[len(prefix):]
 
-    if re.match("sqlite:///[A-Z]:", path):  # Windows abs path
-        return path
+    if path.startswith("/"):  # Unix/Mac abs path
+        return f"{prefix}{path}"
 
-    return f"sqlite:///{os.getcwd()}{os.path.sep}{path[10:]}"
+    if re.match("[A-Za-z]:", path):  # Windows abs path
+        return f"{prefix}{path}"
+
+    return f"{prefix}{os.getcwd()}{os.path.sep}{path}"
