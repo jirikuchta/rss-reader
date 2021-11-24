@@ -42,9 +42,9 @@ def test_all_articles_skipped(
             "interval": 0,
             "subscription_id": sid})["results"][sid]
 
-    assert res["new_items"] == 0
-    assert res["updated_items"] == 0
-    assert res["skipped_items"] == FEED_ARTICLE_COUNT
+    assert res["created"] == 0
+    assert res["updated"] == 0
+    assert res["skipped"] == FEED_ARTICLE_COUNT
 
 
 def test_new_feed_item(client, app, create_subscription, updater_feed_server):
@@ -59,9 +59,9 @@ def test_new_feed_item(client, app, create_subscription, updater_feed_server):
             "interval": 0,
             "subscription_id": sid})["results"][sid]
 
-    assert res["new_items"] == 1
-    assert res["updated_items"] == 0
-    assert res["skipped_items"] == FEED_ARTICLE_COUNT
+    assert res["created"] == 1
+    assert res["updated"] == 0
+    assert res["skipped"] == FEED_ARTICLE_COUNT
 
 
 def test_updated_feed_item(
@@ -75,6 +75,6 @@ def test_updated_feed_item(
             "interval": 0,
             "subscription_id": sid})["results"][sid]
 
-    assert res["new_items"] == 0
-    assert res["updated_items"] == 1
-    assert res["skipped_items"] == FEED_ARTICLE_COUNT - 1
+    assert res["created"] == 0
+    assert res["updated"] == 1
+    assert res["skipped"] == FEED_ARTICLE_COUNT - 1

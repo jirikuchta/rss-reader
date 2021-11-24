@@ -9,8 +9,9 @@ class Config(TypedDict):
     SECRET_KEY: str = os.urandom(16)
     UPDATER_RUN_INTERVAL_SECONDS: int = 5*60
     SUBSCRIPTION_UPDATE_INTERVAL_SECONDS: int = 30*60
-    PURGE_ARTICLE_AGE_DAYS: int = 7
-    PURGE_UNREAD_ARTICLES: bool = False
+    PURGE_AGE_DAYS: int = 7
+    PURGE_UNREAD: bool = False
+    PURGE_OFFSET: int = 100
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///rss_reader.sqlite"
     SQLALCHEMY_ECHO: bool = False
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False

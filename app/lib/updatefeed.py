@@ -8,9 +8,9 @@ from lib.feedparser import parse
 
 
 class Result(TypedDict):
-    new_items: int
-    updated_items: int
-    skipped_items: int
+    created: int
+    updated: int
+    skipped: int
 
 
 def update_subscription(subscription: Subscription) -> Result:
@@ -18,16 +18,16 @@ def update_subscription(subscription: Subscription) -> Result:
     app.logger.debug(repr(subscription))
 
     result: Result = {
-        "new_items": 0,
-        "updated_items": 0,
-        "skipped_items": 0
+        "created": 0,
+        "updated": 0,
+        "skipped": 0
     }
 
     parser = parse(subscription.feed_url)
 
     if subscription.hash == parser.hash:
         app.logger.info(f"{subscription} is up-to-date.")
-        result["skipped_items"] = len(parser.items)
+        result["skipped"] = len(parser.items)
         return result
 
     articles = Article.query.filter(
@@ -45,7 +45,7 @@ def update_subscription(subscription: Subscription) -> Result:
 
             if article.hash == item.hash:
                 app.logger.info(f"{article} is up-to-date")
-                result["skipped_items"] += 1
+                result["skipped"] += 1
             else:
                 app.logger.info(f"{item} has changed, updating {article}.")
 
@@ -54,7 +54,7 @@ def update_subscription(subscription: Subscription) -> Result:
                 app.logger.info(f"{article} updated")
                 app.logger.debug(repr(article))
 
-                result["updated_items"] += 1
+                result["updated"] += 1
         else:
             app.logger.info("No matching article found, creating new one.")
 
@@ -67,7 +67,7 @@ def update_subscription(subscription: Subscription) -> Result:
             app.logger.info(f"{article} created")
             app.logger.debug(repr(article))
 
-            result["new_items"] += 1
+            result["created"] += 1
 
     subscription.hash = parser.hash
     subscription.time_updated = datetime.now()

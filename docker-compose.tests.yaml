@@ -11,5 +11,6 @@ services:
       SHELL: "sh"
       FLASK_ENV: "testing"
       SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
+      DEBUG: "true"
     command: >
       sh -c "python -m pytest -v --color=yes /tests"
