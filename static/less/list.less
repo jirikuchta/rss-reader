@@ -10,7 +10,6 @@
 	article {
 		padding: 16px;
 		cursor: pointer;
-		border-left: 4px solid transparent;
 		border-bottom: 1px solid var(--color-border);
 
 		&:hover { background-color: var(--color-hover); }
@@ -44,10 +43,7 @@
 			.subscription-icon { opacity: .5; }
 		}
 
-		&.is-selected {
-			border-left-color: var(--color-active);
-			h3 { color: var(--color-active); }
-		}
+		&.is-selected h3 { color: var(--color-active); }
 	}
  }
 

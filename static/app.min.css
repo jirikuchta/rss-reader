@@ -240,7 +240,6 @@ nav li:hover {
 #list article {
   padding: 16px;
   cursor: pointer;
-  border-left: 4px solid transparent;
   border-bottom: 1px solid var(--color-border);
 }
 #list article:hover {
@@ -278,9 +277,6 @@ nav li:hover {
 }
 #list article.is-read:not(.is-selected) .subscription-icon {
   opacity: 0.5;
-}
-#list article.is-selected {
-  border-left-color: var(--color-active);
 }
 #list article.is-selected h3 {
   color: var(--color-active);

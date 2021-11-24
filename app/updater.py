@@ -98,7 +98,7 @@ def purge_subscriptions(options: PurgeOptions,
         except Exception as e:
             app.logger.warning(f"{subscription} purge failed: err={e}")
 
-    app.logger.info("{count} articles deleted")
+    app.logger.info(f"{count} articles deleted")
 
     g.ctx = None
 
