@@ -30,7 +30,7 @@ def test_purge_max_age_days(
             "max_age_days": max_age_days,
             "purge_unread": True,
             "offset": 0
-        }) == expected_count
+        })["count"] == expected_count
 
 
 @pytest.mark.parametrize("purge_unread,expected_count", [
@@ -42,7 +42,7 @@ def test_purge_unread(purge_unread, expected_count, app, create_subscription):
             "max_age_days": -1,
             "purge_unread": purge_unread,
             "offset": 0
-        }) == expected_count
+        })["count"] == expected_count
 
 
 def test_purge_subscription_id(app, client, create_subscription):
@@ -54,14 +54,14 @@ def test_purge_subscription_id(app, client, create_subscription):
             "max_age_days": -1,
             "purge_unread": True,
             "offset": 0
-        }) == 0
+        })["count"] == 0
 
         assert purge_subscriptions({
             "subscription_id": subscription_id,
             "max_age_days": -1,
             "purge_unread": True,
             "offset": 0
-        }) == FEED_ARTICLE_COUNT
+        })["count"] == FEED_ARTICLE_COUNT
 
 
 def test_do_not_purge_starred(app, client, create_subscription):
@@ -75,7 +75,7 @@ def test_do_not_purge_starred(app, client, create_subscription):
             "max_age_days": -1,
             "purge_unread": True,
             "offset": 0
-        }) == FEED_ARTICLE_COUNT - 1
+        })["count"] == FEED_ARTICLE_COUNT - 1
 
 
 @pytest.mark.parametrize("offset,expected_count", [
@@ -88,4 +88,4 @@ def test_purge_offset(
             "max_age_days": -1,
             "purge_unread": True,
             "offset": offset
-        }) == expected_count
+        })["count"] == expected_count
