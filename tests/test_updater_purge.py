@@ -50,16 +50,18 @@ def test_purge_subscription_id(app, client, create_subscription):
 
     with app.app_context():
         assert purge_subscriptions({
+            "subscription_id": 666,
             "max_age_days": -1,
             "purge_unread": True,
             "offset": 0
-        }, subscription_id=666) == 0
+        }) == 0
 
         assert purge_subscriptions({
+            "subscription_id": subscription_id,
             "max_age_days": -1,
             "purge_unread": True,
             "offset": 0
-        }, subscription_id=subscription_id) == FEED_ARTICLE_COUNT
+        }) == FEED_ARTICLE_COUNT
 
 
 def test_do_not_purge_starred(app, client, create_subscription):

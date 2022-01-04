@@ -32,6 +32,7 @@ class UpdateResult(TypedDict):
 
 
 def update_subscriptions(options: UpdateOptions) -> UpdateResult:
+    start_time = datetime.utcnow().timestamp()
     g.ctx = "update"
     app.logger.info("Started")
     app.logger.debug(json.dumps(options))
@@ -65,7 +66,10 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
             app.logger.warning(f"{subscription} update failed: err={e}")
             result["failed_ids"].append(subscription.id)
 
-    app.logger.info("Finished")
+    now = datetime.utcnow().timestamp()
+    duration_sec = now - start_time
+
+    app.logger.info(f"Finished ({round(duration_sec, 4)}s)")
     app.logger.debug(json.dumps(result))
 
     g.ctx = None
@@ -77,32 +81,30 @@ class PurgeResult(TypedDict):
     count: int
 
 
-def purge_subscriptions(options: PurgeOptions,
-                        subscription_id: Optional[int] = None) -> PurgeResult:
+def purge_subscriptions(options: PurgeOptions) -> PurgeResult:
+    start_time = datetime.utcnow().timestamp()
     g.ctx = "purge"
     app.logger.info("Started")
     app.logger.debug(json.dumps(options))
 
-    filters = []
+    result: PurgeResult = {
+        "count": 0
+    }
 
-    if subscription_id is not None:
-        filters.append(Subscription.id == subscription_id)
+    try:
+        result["count"] = purge_subscription(options)
+    except Exception as e:
+        app.logger.warning(f"purge failed: err={e}")
 
-    subscriptions = Subscription.query.filter(*filters).all()
+    now = datetime.utcnow().timestamp()
+    duration_sec = now - start_time
 
-    count = 0
-
-    for subscription in subscriptions:
-        try:
-            count += purge_subscription(subscription, options)
-        except Exception as e:
-            app.logger.warning(f"{subscription} purge failed: err={e}")
-
-    app.logger.info(f"{count} articles deleted")
+    app.logger.info(f"Finished ({round(duration_sec, 4)}s)")
+    app.logger.debug(json.dumps(result))
 
     g.ctx = None
 
-    return count
+    return result
 
 
 def main(loop: bool = False, subscription_id: Optional[int] = None):
@@ -114,10 +116,11 @@ def main(loop: bool = False, subscription_id: Optional[int] = None):
                     "subscription_id": subscription_id,
                 })
                 purge_subscriptions({
+                    "subscription_id": subscription_id,
                     "max_age_days": app.config["PURGE_AGE_DAYS"],
                     "purge_unread": app.config["PURGE_UNREAD"],
                     "offset": app.config["PURGE_OFFSET"]
-                }, subscription_id=subscription_id)
+                })
             except Exception as e:
                 app.logger.critical(f"Failed to run updater, err={e}")
 
