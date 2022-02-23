@@ -14,10 +14,12 @@ DEFAULT = b64decode(
 
 def fetch(subscription: Subscription) -> Response:
     icon = DEFAULT
+    mime = "image/gif"
+
     web_url = subscription.web_url
 
     if web_url is None:
-        return Response(BytesIO(icon), mimetype="image/x-icon")
+        return Response(BytesIO(icon), mimetype=mime)
 
     try:
         try:
@@ -33,12 +35,14 @@ def fetch(subscription: Subscription) -> Response:
                     parser.icons[0])["href"]
                 with http_request(icon_url) as res:
                     icon = res.read()
+                    mime = res.headers.get_content_type()
         except Exception:
             pass
     except Exception:
         with http_request(ensure_abs_url(web_url, "favicon.ico")) as res:
             icon = res.read()
+            mime = "image/x-icon"
             if len(icon) == 0:
                 raise Exception
 
-    return Response(BytesIO(icon), mimetype="image/x-icon")
+    return Response(BytesIO(icon), mimetype=mime)
