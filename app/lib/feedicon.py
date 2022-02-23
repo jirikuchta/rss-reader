@@ -20,11 +20,6 @@ def fetch(subscription: Subscription) -> Response:
         return Response(BytesIO(icon), mimetype="image/x-icon")
 
     try:
-        with http_request(ensure_abs_url(web_url, "favicon.ico")) as res:
-            icon = res.read()
-            if len(icon) == 0:
-                raise Exception
-    except Exception:
         try:
             with http_request(web_url) as response:
                 charset = response.headers.get_content_charset("utf-8")
@@ -40,5 +35,10 @@ def fetch(subscription: Subscription) -> Response:
                     icon = res.read()
         except Exception:
             pass
+    except Exception:
+        with http_request(ensure_abs_url(web_url, "favicon.ico")) as res:
+            icon = res.read()
+            if len(icon) == 0:
+                raise Exception
 
     return Response(BytesIO(icon), mimetype="image/x-icon")
