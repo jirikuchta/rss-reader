@@ -5,6 +5,7 @@ from models import db, Subscription, Category, Article
 from api import api_bp, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
 from lib.feedparser import parse, AmbiguousFeedUrl
+from lib.updatefeed import update_subscription as update_subscription2
 
 
 def get_subscription_or_raise(subscription_id: int) -> Subscription:
@@ -48,24 +49,15 @@ def create_subscription() -> TReturnValue:
         raise ClientError(ErrorType.AlreadyExists)
 
     subscription = Subscription.from_parser(parser, category_id=category_id)
+
     db.session.add(subscription)
     db.session.flush()
 
     app.logger.info(f"{subscription} created")
     app.logger.debug(repr(subscription))
 
-    for item in parser.items:
-        app.logger.info(f"Creating article for {item}")
-        app.logger.debug(repr(item))
-
-        article = Article.from_parser(item, subscription_id=subscription.id)
-        db.session.add(article)
-        db.session.flush()
-
-        app.logger.info(f"{article} created")
-        app.logger.debug(repr(article))
-
-    db.session.commit()
+    subscription.hash = ""
+    update_subscription2(subscription)
 
     return subscription.to_json(), 201
 

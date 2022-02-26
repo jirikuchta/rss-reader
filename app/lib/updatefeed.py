@@ -71,6 +71,7 @@ def update_subscription(subscription: Subscription) -> Result:
 
     subscription.hash = parser.hash
     subscription.time_updated = datetime.now()
+    subscription.last_article_count = len(parser.items)
 
     db.session.commit()
 

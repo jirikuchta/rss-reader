@@ -8,7 +8,7 @@ from flask import Flask, g
 
 from lib.config import init as init_config
 from lib.logger import init as init_logger
-from lib.purgefeed import purge_subscription, PurgeOptions
+from lib.purgefeed import purge_subscription
 from lib.updatefeed import update_subscription, \
     Result as SubscriptionUpdateResult
 from models import init as init_db, Subscription
@@ -81,18 +81,18 @@ class PurgeResult(TypedDict):
     count: int
 
 
-def purge_subscriptions(options: PurgeOptions) -> PurgeResult:
+def purge_subscriptions(subscription_id: int = None) -> PurgeResult:
     start_time = datetime.utcnow().timestamp()
     g.ctx = "purge"
     app.logger.info("Started")
-    app.logger.debug(json.dumps(options))
+    app.logger.debug(json.dumps(subscription_id))
 
     result: PurgeResult = {
         "count": 0
     }
 
     try:
-        result["count"] = purge_subscription(options)
+        result["count"] = purge_subscription(subscription_id)
     except Exception as e:
         app.logger.warning(f"purge failed: err={e}")
 
@@ -107,7 +107,7 @@ def purge_subscriptions(options: PurgeOptions) -> PurgeResult:
     return result
 
 
-def main(loop: bool = False, subscription_id: Optional[int] = None):
+def main(loop: bool = False, subscription_id: int = None):
     with app.app_context():
         while True:
             try:
@@ -115,12 +115,7 @@ def main(loop: bool = False, subscription_id: Optional[int] = None):
                     "interval": app.config["SUBSCRIPTION_UPDATE_INTERVAL_SECONDS"],
                     "subscription_id": subscription_id,
                 })
-                purge_subscriptions({
-                    "subscription_id": subscription_id,
-                    "max_age_days": app.config["PURGE_AGE_DAYS"],
-                    "purge_unread": app.config["PURGE_UNREAD"],
-                    "offset": app.config["PURGE_OFFSET"]
-                })
+                purge_subscriptions(subscription_id)
             except Exception as e:
                 app.logger.critical(f"Failed to run updater, err={e}")
 

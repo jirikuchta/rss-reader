@@ -20,48 +20,20 @@ def create_subscription(client, updater_feed_server):
     assert res.status_code == 201, res
 
 
-@pytest.mark.parametrize("max_age_days,expected_count", [
-    (60, 0),
-    (-1, FEED_ARTICLE_COUNT)])
-def test_purge_max_age_days(
-        max_age_days, expected_count, app, create_subscription):
-    with app.app_context():
-        assert purge_subscriptions({
-            "max_age_days": max_age_days,
-            "purge_unread": True,
-            "offset": 0
-        })["count"] == expected_count
-
-
 @pytest.mark.parametrize("purge_unread,expected_count", [
     (False, 0),
     (True, FEED_ARTICLE_COUNT)])
 def test_purge_unread(purge_unread, expected_count, app, create_subscription):
     with app.app_context():
-        assert purge_subscriptions({
-            "max_age_days": -1,
-            "purge_unread": purge_unread,
-            "offset": 0
-        })["count"] == expected_count
+        assert purge_subscriptions()["count"] == expected_count
 
 
 def test_purge_subscription_id(app, client, create_subscription):
     subscription_id = client.get("/api/subscriptions/").json[0]["id"]
 
     with app.app_context():
-        assert purge_subscriptions({
-            "subscription_id": 666,
-            "max_age_days": -1,
-            "purge_unread": True,
-            "offset": 0
-        })["count"] == 0
-
-        assert purge_subscriptions({
-            "subscription_id": subscription_id,
-            "max_age_days": -1,
-            "purge_unread": True,
-            "offset": 0
-        })["count"] == FEED_ARTICLE_COUNT
+        assert purge_subscriptions(666)["count"] == 0
+        assert purge_subscriptions(subscription_id)["count"] == FEED_ARTICLE_COUNT
 
 
 def test_do_not_purge_starred(app, client, create_subscription):
@@ -71,21 +43,4 @@ def test_do_not_purge_starred(app, client, create_subscription):
     assert res.status_code == 200, res
 
     with app.app_context():
-        assert purge_subscriptions({
-            "max_age_days": -1,
-            "purge_unread": True,
-            "offset": 0
-        })["count"] == FEED_ARTICLE_COUNT - 1
-
-
-@pytest.mark.parametrize("offset,expected_count", [
-    (0, FEED_ARTICLE_COUNT),
-    (3, 2)])
-def test_purge_offset(
-        offset, expected_count, app, client, create_subscription):
-    with app.app_context():
-        assert purge_subscriptions({
-            "max_age_days": -1,
-            "purge_unread": True,
-            "offset": offset
-        })["count"] == expected_count
+        assert purge_subscriptions()["count"] == FEED_ARTICLE_COUNT - 1
