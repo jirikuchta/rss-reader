@@ -1,12 +1,12 @@
 import re
 import os
-from typing import TypedDict
+import secrets
 from flask import Flask
 
 
-class Config(TypedDict):
+class Config:
     DEBUG: bool = False
-    SECRET_KEY: str = os.urandom(16)
+    SECRET_KEY: str = secrets.token_hex(16)
     UPDATER_RUN_INTERVAL_SECONDS: int = 5*60
     SUBSCRIPTION_UPDATE_INTERVAL_SECONDS: int = 30*60
     SQLALCHEMY_DATABASE_URI: str = "sqlite:///rss_reader.sqlite"

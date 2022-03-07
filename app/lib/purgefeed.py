@@ -16,8 +16,6 @@ def purge_subscription(subscription_id: int = None) -> int:
         ).all()
     }
 
-    app.logger.info(json.dumps(offsets))
-
     filters = [
         Article.starred.is_(False),
         Article.read.is_(True)
@@ -28,6 +26,7 @@ def purge_subscription(subscription_id: int = None) -> int:
 
     articles = Article.query.with_entities(
         Article.id,
+        Article.subscription_id,
         func.row_number().over(
             partition_by=Article.subscription_id,
             order_by=Article.time_published).label("rn")
