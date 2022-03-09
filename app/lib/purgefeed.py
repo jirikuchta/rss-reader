@@ -33,7 +33,7 @@ def purge_subscription(subscription_id: int = None) -> int:
         ).filter(*filters).all()
 
     article_ids = [a.id for a in filter(
-        lambda a: a.rn > offsets.get(a.subscription_id), articles)]
+        lambda a: a.rn < offsets.get(a.subscription_id), articles)]
 
     count = Article.query.filter(
         Article.id.in_(article_ids)).delete(synchronize_session=False)
