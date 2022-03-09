@@ -54,7 +54,6 @@ class Subscription(Model, db.Model):  # type: ignore
     hash = db.Column(db.String(255), nullable=False)
     title = db.Column(db.Text)
     web_url = db.Column(db.String(255))
-    last_article_count = db.Column(db.Integer, default=100, nullable=False)
 
     category_id = db.Column(
         db.Integer,
@@ -96,9 +95,6 @@ class Article(Model, db.Model):  # type: ignore
     read = db.Column(db.Boolean, nullable=False, default=False, index=True)
     starred = db.Column(db.Boolean, nullable=False, default=False, index=True)
     time_published = db.Column(
-        db.DateTime,
-        nullable=False, server_default=func.now())
-    time_created = db.Column(
         db.DateTime,
         nullable=False, server_default=func.now(), index=True)
     subscription_id = db.Column(

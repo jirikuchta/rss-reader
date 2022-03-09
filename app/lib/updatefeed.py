@@ -11,16 +11,18 @@ class Result(TypedDict):
     created: int
     updated: int
     skipped: int
+    deleted: int
 
 
-def update_subscription(subscription: Subscription) -> Result:
+def update_subscription(
+        subscription: Subscription, purge: bool = True) -> Result:
     app.logger.info(f"Updating {subscription}")
-    app.logger.debug(repr(subscription))
 
     result: Result = {
         "created": 0,
         "updated": 0,
-        "skipped": 0
+        "skipped": 0,
+        "deleted": 0
     }
 
     parser = parse(subscription.feed_url)
@@ -69,9 +71,23 @@ def update_subscription(subscription: Subscription) -> Result:
 
             result["created"] += 1
 
+    if purge:
+        app.logger.info(f"Purging {subscription}")
+
+        articles = Article.query.order_by(
+            Article.time_published
+        ).filter(
+            Article.subscription_id.is_(subscription.id),
+            Article.starred.is_(False),
+            Article.read.is_(True)
+        ).limit(1000000).offset(len(parser.items)).all()
+
+        result["deleted"] = Article.query.filter(
+            Article.id.in_([a.id for a in articles])
+        ).delete(synchronize_session=False)
+
     subscription.hash = parser.hash
     subscription.time_updated = datetime.now()
-    subscription.last_article_count = len(parser.items)
 
     db.session.commit()
 

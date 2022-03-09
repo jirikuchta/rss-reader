@@ -8,7 +8,6 @@ from flask import Flask, g
 
 from lib.config import init as init_config
 from lib.logger import init as init_logger
-from lib.purgefeed import purge_subscription
 from lib.updatefeed import update_subscription, \
     Result as SubscriptionUpdateResult
 from models import init as init_db, Subscription
@@ -77,36 +76,6 @@ def update_subscriptions(options: UpdateOptions) -> UpdateResult:
     return result
 
 
-class PurgeResult(TypedDict):
-    count: int
-
-
-def purge_subscriptions(subscription_id: int = None) -> PurgeResult:
-    start_time = datetime.utcnow().timestamp()
-    g.ctx = "purge"
-    app.logger.info("Started")
-    app.logger.debug(json.dumps(subscription_id))
-
-    result: PurgeResult = {
-        "count": 0
-    }
-
-    try:
-        result["count"] = purge_subscription(subscription_id)
-    except Exception as e:
-        app.logger.warning(f"purge failed: err={e}")
-
-    now = datetime.utcnow().timestamp()
-    duration_sec = now - start_time
-
-    app.logger.info(f"Finished ({round(duration_sec, 4)}s)")
-    app.logger.debug(json.dumps(result))
-
-    g.ctx = None
-
-    return result
-
-
 def main(loop: bool = False, subscription_id: int = None):
     with app.app_context():
         while True:
@@ -115,7 +84,6 @@ def main(loop: bool = False, subscription_id: int = None):
                     "interval": app.config["SUBSCRIPTION_UPDATE_INTERVAL_SECONDS"],
                     "subscription_id": subscription_id,
                 })
-                purge_subscriptions(subscription_id)
             except Exception as e:
                 app.logger.critical(f"Failed to run updater, err={e}")
 
