@@ -75,7 +75,7 @@ def update_subscription(
         app.logger.info(f"Purging {subscription}")
 
         articles = Article.query.order_by(
-            Article.time_published
+            Article.time_published.desc()
         ).filter(
             Article.subscription_id.is_(subscription.id),
             Article.starred.is_(False),
