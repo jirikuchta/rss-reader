@@ -5,7 +5,7 @@ from models import db, Subscription, Category, Article
 from api import api_bp, TReturnValue, make_api_response, ErrorType, \
     ClientError, MissingFieldError, InvalidFieldError
 from lib.feedparser import parse, AmbiguousFeedUrl
-from lib.updatefeed import update_subscription as update_subscription2
+from lib.updatefeed import update_subscription as update_subscription_articles
 
 
 def get_subscription_or_raise(subscription_id: int) -> Subscription:
@@ -57,7 +57,7 @@ def create_subscription() -> TReturnValue:
     app.logger.debug(repr(subscription))
 
     subscription.hash = ""
-    update_subscription2(subscription)
+    update_subscription_articles(subscription, purge=False)
 
     return subscription.to_json(), 201
 

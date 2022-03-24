@@ -36,39 +36,6 @@ class FeedLinkParser(HTMLParser):
                 "title": attrs_dict.get("title")})
 
 
-class Favicon(TypedDict):
-    href: str
-    size: Optional[int]
-
-
-class FaviconParser(HTMLParser):
-
-    def __init__(self, html: str, base_url: str) -> None:
-        super().__init__()
-        self._base_url = base_url
-        self._icons: List[Favicon] = []
-        self.feed(html)
-
-    @property
-    def icons(self) -> List[Favicon]:
-        return self._icons
-
-    def handle_starttag(self, tag: str,
-                        attrs: List[Tuple[str, Optional[str]]]) -> None:
-        if tag != "link":
-            return
-
-        attrs_dict = {k: v for k, v in attrs}
-        rel = attrs_dict.get("rel")
-        href = attrs_dict.get("href")
-
-        if href and rel and "icon" in rel.split(" "):
-            size = attrs_dict.get("sizes")
-            self._icons.append({
-                "href": ensure_abs_url(self._base_url, href),
-                "size": int(size.split("x")[0]) if size else None})
-
-
 class TextParser(HTMLParser):
 
     @staticmethod
