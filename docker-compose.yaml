@@ -8,11 +8,15 @@ services:
       - ./app:/rss_reader/app
       - ./templates:/rss_reader/templates
       - ./static:/rss_reader/static
+      - db:/db
     ports:
-      - 5000:5000
+      - 8080:80
     environment:
       FLASK_ENV: development
       DEBUG: "true"
+    command: >
+      sh -c "uwsgi uwsgi.ini --py-autoreload 2"
+
   static:
     build:
       context: .
@@ -26,3 +30,6 @@ services:
       SHELL: sh
     command: >
       sh -c "npm run build && npm run watch"
+
+volumes:
+  db:

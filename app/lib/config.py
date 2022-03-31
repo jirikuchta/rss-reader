@@ -9,7 +9,7 @@ class Config:
     SECRET_KEY: str = secrets.token_hex(16)
     UPDATER_RUN_INTERVAL_SECONDS: int = 5*60
     SUBSCRIPTION_UPDATE_INTERVAL_SECONDS: int = 30*60
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///rss_reader.sqlite"
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:////db/rss_reader.sqlite"
     SQLALCHEMY_ECHO: bool = False
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 

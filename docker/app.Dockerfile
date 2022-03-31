@@ -11,6 +11,6 @@ RUN pip install -r /rss_reader/requirements.txt
 
 WORKDIR /rss_reader/app
 
-EXPOSE 5000
+EXPOSE 80
 
 CMD ["uwsgi", "uwsgi.ini"]
