@@ -50,7 +50,6 @@ export function init() {
 		if (e.code == "ArrowRight") {
 			let item = items[selectedIndex + 1];
 			item && (item.isSelected = true) && item.focus();
-
 		}
 
 		if (e.code == "ArrowLeft") {
@@ -84,11 +83,15 @@ function getFilters() {
 		offset: items.filter(i => !i.isRead).length
 	};
 
-	if (navigation.selected) {
-		if (navigation.selected.type == "subscription") {
-			filters["subscription_id"] = navigation.selected.id;
-		} else {
-			filters["category_id"] = navigation.selected.id;
+	let navItem = navigation.selected;
+
+	if (navItem && navItem.id) {
+		if (navItem.type == "subscription") {
+			filters["subscription_id"] = navItem.id;
+		}
+
+		if (navItem.type == "category") {
+			filters["category_id"] = navigation.selected.data.id;
 		}
 	}
 
