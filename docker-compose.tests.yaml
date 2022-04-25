@@ -8,7 +8,6 @@ services:
       - ./app:/rss_reader
       - ./tests:/tests
     environment:
-      SHELL: "sh"
       FLASK_ENV: "testing"
       SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
       DEBUG: "true"

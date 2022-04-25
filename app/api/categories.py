@@ -28,11 +28,12 @@ def list_subscriptions(category: Category) -> List[Subscription]:
 @api_bp.route("/categories/", methods=["POST"])
 @make_api_response
 def create_category() -> TReturnValue:
-    if request.json is None:
+    try:
+        data = request.json
+    except Exception:
         raise ClientError(ErrorType.BadRequest)
 
-    title = request.json.get("title")
-
+    title = data.get("title")
     if not title:
         raise MissingFieldError("title")
 
@@ -62,12 +63,14 @@ def get_category(category_id: int) -> TReturnValue:
 @api_bp.route("/categories/<int:category_id>/", methods=["PATCH"])
 @make_api_response
 def update_category(category_id: int) -> TReturnValue:
-    category = get_category_or_raise(category_id)
-
-    if request.json is None:
+    try:
+        data = request.json
+    except Exception:
         raise ClientError(ErrorType.BadRequest)
 
-    title = request.json.get("title")
+    category = get_category_or_raise(category_id)
+
+    title = data.get("title")
 
     if title and title != category.title:
         title_exists = Category.query.filter_by(title=title).first()

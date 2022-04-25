@@ -1,4 +1,4 @@
-from lib.htmlparser import FeedLinkParser, FaviconParser, TextParser
+from lib.htmlparser import FeedLinkParser, TextParser
 
 
 def test_feedlink_parser():
@@ -15,22 +15,6 @@ def test_feedlink_parser():
     assert parser.links[1]["title"] is None
     assert parser.links[2]["href"] == "http://foo/bar"
     assert parser.links[2]["title"] is None
-
-
-def test_favicon_parser():
-    parser = FaviconParser("""<head>
-        <link rel="icon" href="bar">
-        <link rel="shortcut icon" href="http://bar">
-        <link rel="icon" sizes="16x16" href="bar">
-    </head>""", "http://foo")
-
-    assert len(parser.icons) == 3
-    assert parser.icons[0]["href"] == "http://foo/bar"
-    assert parser.icons[0]["size"] is None
-    assert parser.icons[1]["href"] == "http://bar"
-    assert parser.icons[1]["size"] is None
-    assert parser.icons[2]["href"] == "http://foo/bar"
-    assert parser.icons[2]["size"] == 16
 
 
 def test_text_parser():
