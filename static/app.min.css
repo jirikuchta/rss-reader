@@ -226,6 +226,10 @@ nav li button:not(.btn-chevron) {
 nav li .btn-chevron {
   margin-right: 4px;
 }
+nav li > .icon:first-child {
+  margin: 0 10px 0 5px;
+  color: var(--color-text);
+}
 nav li:hover {
   background-color: var(--color-hover);
 }

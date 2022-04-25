@@ -1,4 +1,5 @@
 import { Category, Subscription } from "data/types";
+import * as articles from "data/articles";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 import * as counters from "data/counters";
@@ -13,47 +14,51 @@ import { open as openSettings } from "ui/widget/settings";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
-
 const SELECTED_CSS_CLASS = "is-selected";
 
 export const node = html.node("nav");
 export let selected: Item;
+
 let items: Item[] = [];
+const scroll = html.node("div", {className: "scroll"}, "", node);
 
-type ItemType = "all" | "today" | "category" | "subscription" | "custom";
-
-interface ItemData {
-	id?: number;
-	title: string;
-}
+interface HasTitle {
+	title: string;}
 
 export function init() {
-	build();
+	buildList();
+	node.appendChild(buildFooter());
 
 	// FIXME: may cause two consecutive builds
-	pubsub.subscribe("subscriptions-changed", build);
-	pubsub.subscribe("categories-changed", build);
+	pubsub.subscribe("subscriptions-changed", buildList);
+	pubsub.subscribe("categories-changed", buildList);
 
 	pubsub.subscribe("counters-updated", updateCounters);
 }
 
-async function build() {
-	html.clear(node);
+async function buildList() {
+	html.clear(scroll);
 	items = [];
 
-	let scroll = html.node("div", {className: "scroll"}, "", node);
+	let list: HTMLElement;
 
-	categories.list().forEach(c => scroll.appendChild(buildCategory(c)));
+	list = html.node("ul", {}, "", scroll);
+	let allItem = new AllItem();
+	list.appendChild(allItem.node);
 
-	let uncategorized = html.node("ul", {}, "", scroll);
+	categories.list().forEach(c => buildCategory(c));
+
+	list = html.node("ul", {}, "", scroll);
 	subscriptions.list()
-		.filter(s => s.category_id === null)
-		.forEach(s => {
-			let item = new SubscriptionItem(s);
-			uncategorized.appendChild(item.node);
-		});
+		.filter(s => !s.category_id)
+		.forEach(s => list.appendChild(new SubscriptionItem(s).node));
 
-	let footer = html.node("footer", {}, "", node);
+	updateCounters();
+	select(allItem);
+}
+
+function buildFooter() {
+	let footer = html.node("footer");
 
 	let addBtn = html.button({icon: "plus"}, "", footer);
 	addBtn.addEventListener("click", e => SubscriptionForm.open());
@@ -61,27 +66,22 @@ async function build() {
 	let settingsBtn = html.button({icon: "gear"}, "", footer);
 	settingsBtn.addEventListener("click", e => openSettings());
 
-	updateCounters();
+	return footer;
 }
 
 function buildCategory(category: Category) {
-	let list = html.node("ul");
-	let categoryItem = new CategoryItem(category);
+	let list = html.node("ul", {}, "", scroll);
+	let item = new CategoryItem(category);
 
-	list.appendChild(categoryItem.node);
-	items.push(categoryItem);
+	list.appendChild(item.node);
+	items.push(item);
 
 	subscriptions.list()
 		.filter(s => s.category_id == category.id)
-		.forEach(s => {
-			let item = new SubscriptionItem(s);
-			list.appendChild(item.node);
-		});
-
-	return list;
+		.forEach(s => list.appendChild(new SubscriptionItem(s).node));
 }
 
-function selectItem(item: Item) {
+function select(item: Item) {
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
 	item.node.classList.add(SELECTED_CSS_CLASS);
 	selected = item;
@@ -93,13 +93,11 @@ function updateCounters() {
 }
 
 class Item {
-	_type: ItemType;
-	_data: ItemData;
+	_data: HasTitle;
 	_node!: HTMLLIElement;
 	_counter!: HTMLElement;
 
-	constructor(data: ItemData, type?: ItemType) {
-		this._type = type || "custom";
+	constructor(data: HasTitle) {
 		this._data = data;
 
 		this.build();
@@ -112,16 +110,8 @@ class Item {
 		return this._data;
 	}
 
-	get id() {
-		return this._data.id;
-	}
-
 	get node() {
 		return this._node;
-	}
-
-	get type() {
-		return this._type;
 	}
 
 	updateCounter() {};
@@ -129,12 +119,8 @@ class Item {
 	handleEvent(e: MouseEvent) {
 		e.preventDefault();
 		switch (e.type) {
-			case "contextmenu":
-				showContextMenu(this, e);
-			break;
-			case "click":
-				selectItem(this);
-			break;
+			case "contextmenu": showContextMenu(this, e); break;
+			case "click": select(this); break;
 		}
 	}
 
@@ -153,14 +139,24 @@ class Item {
 	}
 }
 
+export class AllItem extends Item {
 
-class CategoryItem extends Item {
-	_opener!: HTMLButtonElement;
+	constructor() { super({title: "All articles"}); }
 
-	constructor(data: Category) {
-		super(data, "category");
-		this.node.classList.add("category");
+	updateCounter() {
+		html.clear(this._counter);
+		let count = counters.sum();
+		count && this._counter.appendChild(html.text(`${count}`));
 	}
+
+	protected build() {
+		super.build();
+		this.node.insertAdjacentElement("afterbegin", html.icon("stack"));
+	}
+}
+
+export class CategoryItem extends Item {
+	_opener!: HTMLButtonElement;
 
 	get data() {
 		return this._data as Category;
@@ -168,7 +164,6 @@ class CategoryItem extends Item {
 
 	updateCounter() {
 		html.clear(this._counter);
-
 		let count = subscriptions.list()
 			.filter(s => s.category_id == this.data.id)
 			.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
@@ -176,7 +171,8 @@ class CategoryItem extends Item {
 	}
 
 	handleEvent(e: MouseEvent) {
-		if (e.type == "click" && e.target == this._opener) {
+		if (e.type == "click" && e.currentTarget == this._opener) {
+			e.stopPropagation();
 			return this.toggle();
 		}
 		super.handleEvent(e);
@@ -184,9 +180,12 @@ class CategoryItem extends Item {
 
 	protected build() {
 		super.build();
-		let opener = html.button({icon: "chevron-down", className: "plain btn-chevron"});
-		this.node.insertAdjacentElement("afterbegin", opener);
-		this._opener = opener;
+
+		this._opener = html.button({icon: "chevron-down", className: "plain btn-chevron"});
+		this._opener.addEventListener("click", this);
+
+		this.node.classList.add("category");
+		this.node.insertAdjacentElement("afterbegin", this._opener);
 	}
 
 	protected toggle() {
@@ -194,11 +193,7 @@ class CategoryItem extends Item {
 	}
 }
 
-class SubscriptionItem extends Item {
-
-	constructor(data: Subscription) {
-		super(data, "subscription");
-	}
+export class SubscriptionItem extends Item {
 
 	get data() {
 		return this._data as Subscription;
@@ -206,7 +201,7 @@ class SubscriptionItem extends Item {
 
 	updateCounter() {
 		html.clear(this._counter);
-		let count = counters.get(this.data.id) || 0;
+		let count = counters.get(this.data.id);
 		count && this._counter.appendChild(html.text(`${count}`));
 	}
 
@@ -221,14 +216,20 @@ function showContextMenu(item: Item, e: MouseEvent) {
 
 	let menu = new PopupMenu();
 
-	if (item.type == "subscription") {
-		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead((item.data as Subscription).id));
-		menu.addItem("Edit subscription", "pencil", () => SubscriptionForm.open(item.data as Subscription));
-		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(item.data as Subscription));
-	} else {
-		menu.addItem("Mark as read", "check-all", () => categories.markRead((item.data as Category).id));
-		menu.addItem("Edit category", "pencil", () => CategoryForm.open(item.data as Category));
-		menu.addItem("Delete category", "trash", () => deleteCategory(item.data as Category));
+	if (item instanceof AllItem) {
+		menu.addItem("Mark as read", "check-all", () => articles.markRead());
+	}
+
+	if (item instanceof CategoryItem) {
+		menu.addItem("Mark as read", "check-all", () => categories.markRead(item.data.id));
+		menu.addItem("Edit category", "pencil", () => CategoryForm.open(item.data));
+		menu.addItem("Delete category", "trash", () => deleteCategory(item.data));
+	}
+
+	if (item instanceof SubscriptionItem) {
+		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead(item.data.id));
+		menu.addItem("Edit subscription", "pencil", () => SubscriptionForm.open(item.data));
+		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(item.data));
 	}
 
 	menu.open(item.node, "below", [
@@ -244,7 +245,7 @@ async function deleteCategory(category: Category) {
 }
 
 async function deleteSubscription(subscription: Subscription) {
-	   if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
-			   subscriptions.remove(subscription.id);
-	   }
+	if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
+		subscriptions.remove(subscription.id);
+	}
 }

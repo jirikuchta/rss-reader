@@ -26,9 +26,15 @@ export async function get(id: ArticleId) {
 	return articles.get(id)!;
 }
 
-export async function markRead(ids: ArticleId[]) {
-	let res = await api("POST", "/api/articles/mark-read/", {ids});
-	ids.forEach(id => articles.has(id) && articles.set(id, Object.assign(articles.get(id)!, {read: true})));
-	res.ok && counters.sync();
+export async function markRead(ids?: ArticleId[]) {
+	let res = await api("POST", "/api/articles/mark-read/", ids ? {ids} : {all: true});
+	if (!res.ok) { return; }
+
+	articles.forEach(a => {
+		if (ids && !ids.includes(a.id)) { return; }
+		articles.set(a.id, Object.assign(a, {read: true}));
+	});
+
+	counters.sync();
 	pubsub.publish("articles-read");
 }

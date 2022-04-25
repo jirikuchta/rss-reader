@@ -26,6 +26,6 @@ export async function sync() {
 export function list() { return counters; }
 export function get(id: SubscriptionId) { return counters.get(id); }
 
-function sum() {
+export function sum() {
 	return Array.from(counters.values()).reduce((res, count) => res + count, 0);
 }

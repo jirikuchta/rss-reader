@@ -83,16 +83,12 @@ function getFilters() {
 		offset: items.filter(i => !i.isRead).length
 	};
 
-	let navItem = navigation.selected;
+	if (navigation.selected instanceof navigation.SubscriptionItem) {
+		filters["subscription_id"] = navigation.selected.data.id;
+	}
 
-	if (navItem && navItem.id) {
-		if (navItem.type == "subscription") {
-			filters["subscription_id"] = navItem.id;
-		}
-
-		if (navItem.type == "category") {
-			filters["category_id"] = navigation.selected.data.id;
-		}
+	if (navigation.selected instanceof navigation.CategoryItem) {
+		filters["category_id"] = navigation.selected.data.id;
 	}
 
 	return filters;
