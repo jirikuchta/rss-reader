@@ -7,6 +7,6 @@ COPY tests /tests
 COPY requirements.txt /requirements.txt
 
 RUN pip install -r requirements.txt
-RUN pip install pytest requests
+RUN pip install pytest
 
 WORKDIR rss_reader

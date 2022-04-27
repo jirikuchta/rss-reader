@@ -1,41 +1,28 @@
-import requests
-from flask import Flask
 from threading import Thread
 from xml.etree import ElementTree as ET
 
-# https://gist.github.com/eruvanos/f6f62edb368a20aaa880e12976620db8
+from werkzeug import Request, Response
+from werkzeug.serving import make_server
 
 
-class FeedServer(Thread):
-    def __init__(self, feed, port=3333):
-        super().__init__()
-        self._port = port
-        self._app = Flask(__name__)
-
-        self._url = f"http://localhost:{port}"
-
+class FeedServer():
+    def __init__(self, feed):
         self.feed = feed
-
-        self._app.add_url_rule("/", view_func=self._make_response)
-        self._app.add_url_rule("/shutdown", view_func=self._shutdown)
 
     @property
     def url(self):
-        return self._url
+        return "http://localhost:3333"
 
-    def _make_response(self):
-        return ET.tostring(self.feed.build())
+    @Request.application
+    def _make_response(self, request):
+        return Response(ET.tostring(self.feed.build()), 200)
 
-    def _shutdown(self):
-        from flask import request
-        if "werkzeug.server.shutdown" not in request.environ:
-            raise RuntimeError("Not running the development server")
-        request.environ["werkzeug.server.shutdown"]()
-        return "Server shutting down..."
+    def start(self):
+        self._server = make_server("localhost", 3333, self._make_response)
+
+        self._thread = Thread(target=self._server.serve_forever)
+        self._thread.start()
 
     def stop(self):
-        requests.get(f"http://localhost:{self._port}/shutdown")
-        self.join()
-
-    def run(self):
-        self._app.run(port=self._port)
+        self._server.shutdown()
+        self._thread.join()

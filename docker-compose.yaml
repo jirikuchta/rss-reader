@@ -26,6 +26,8 @@ services:
       - ./static/ts:/rss_reader/ts
       - ./static/app.min.css:/rss_reader/app.min.css
       - ./static/app.min.js:/rss_reader/app.min.js
+    environment:
+      SHELL: sh
     command: >
       sh -c "npm run build && npm run watch"
 
