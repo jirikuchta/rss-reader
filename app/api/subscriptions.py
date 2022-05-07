@@ -84,14 +84,21 @@ def update_subscription(subscription_id: int) -> TReturnValue:
         raise ClientError(ErrorType.BadRequest)
 
     title = request.json.get("title")
-    if title == "":
-        raise MissingFieldError("title")
-    if title:
+    if title is not None:
+        if title == "":
+            raise MissingFieldError("title")
         subscription.title = title
 
     category_id = request.json.get("category_id")
-    raise_for_invalid_category_id(category_id)
-    subscription.category_id = category_id
+    if category_id is not None:
+        raise_for_invalid_category_id(category_id)
+        subscription.category_id = category_id
+
+    favorite = request.json.get("favorite")
+    if favorite is not None:
+        if type(favorite) is not bool:
+            raise InvalidFieldError("favorite")
+        subscription.favorite = favorite
 
     db.session.commit()
 

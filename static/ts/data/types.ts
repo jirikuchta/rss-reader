@@ -6,6 +6,7 @@ export interface Subscription {
 	id: SubscriptionId;
 	title: string;
 	feed_url: string;
+	favorite: boolean;
 	web_url?: string;
 	category_id?: CategoryId;
 }

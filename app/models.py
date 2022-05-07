@@ -54,6 +54,7 @@ class Subscription(Model, db.Model):  # type: ignore
     hash = db.Column(db.String(255), nullable=False)
     title = db.Column(db.Text)
     web_url = db.Column(db.String(255))
+    favorite = db.Column(db.Boolean, nullable=False, default=False)
 
     category_id = db.Column(
         db.Integer,
@@ -75,7 +76,8 @@ class Subscription(Model, db.Model):  # type: ignore
             **kwargs)
 
     def to_json(self):
-        keys = ("id", "title", "feed_url", "web_url", "category_id")
+        keys = ("id", "title", "feed_url", "web_url",
+                "category_id", "favorite")
         return {key: getattr(self, key) for key in keys}
 
 

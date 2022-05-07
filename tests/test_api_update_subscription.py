@@ -9,6 +9,22 @@ def test_ok(create_category, create_subscription, client, rand_str):
     assert res.json["category_id"] == category["id"]
 
 
+def test_favorite_ok(create_subscription, client):
+    subscription = create_subscription()
+
+    res = client.patch(
+        f"/api/subscriptions/{subscription['id']}/",
+        json={"favorite": True})
+    assert res.status_code == 200, res
+    assert res.json["favorite"] is True
+
+    res = client.patch(
+        f"/api/subscriptions/{subscription['id']}/",
+        json={"favorite": False})
+    assert res.status_code == 200, res
+    assert res.json["favorite"] is False
+
+
 def test_category_not_found(create_subscription, client):
     subscription = create_subscription()
     res = client.patch(f"/api/subscriptions/{subscription['id']}/",

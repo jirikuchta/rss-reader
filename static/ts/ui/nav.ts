@@ -46,6 +46,13 @@ async function buildList() {
 	let allItem = new AllItem();
 	list.appendChild(allItem.node);
 
+
+	if (subscriptions.list().some(s => s.favorite)) {
+		buildFavorites();
+	}
+
+	html.node("h3", {}, "Feeds", scroll);
+
 	categories.list().forEach(c => buildCategory(c));
 
 	list = html.node("ul", {}, "", scroll);
@@ -67,6 +74,13 @@ function buildFooter() {
 	settingsBtn.addEventListener("click", e => openSettings());
 
 	return footer;
+}
+
+function buildFavorites() {
+	html.node("h3", {}, "Favorites", scroll);
+	subscriptions.list().filter(s => s.favorite).forEach(s => {
+		scroll.appendChild(new SubscriptionItem(s).node);
+	});
 }
 
 function buildCategory(category: Category) {
@@ -228,6 +242,7 @@ function showContextMenu(item: Item, e: MouseEvent) {
 
 	if (item instanceof SubscriptionItem) {
 		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead(item.data.id));
+		menu.addItem(`${item.data.favorite ? "Remove from" : "Add to"} favorites`, item.data.favorite ? "heart-fill" : "heart", () => subscriptions.edit(item.data.id, {favorite: !item.data.favorite}))
 		menu.addItem("Edit subscription", "pencil", () => SubscriptionForm.open(item.data));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(item.data));
 	}
