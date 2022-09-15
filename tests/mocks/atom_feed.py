@@ -41,6 +41,7 @@ class MockAtomFeedItem:
             summary: str = None,
             content: str = None,
             comments: Union["MockAtomLink", str] = None,
+            image: "MockAtomLink" = None,
             author: "MockAtomAuthor" = None,
             published: str = None) -> None:
         self.item_id = item_id
@@ -49,6 +50,7 @@ class MockAtomFeedItem:
         self.summary = summary
         self.content = content
         self.comments = comments
+        self.image = image
         self.author = author
         self.published = published
 
@@ -87,6 +89,9 @@ class MockAtomFeedItem:
             else:
                 comments = ET.SubElement(root, "comments")
                 comments.text = self.comments
+
+        if self.image is not None:
+            root.append(self.image.build())
 
         return root
 
