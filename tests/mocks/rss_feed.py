@@ -50,6 +50,7 @@ class MockRSSFeedItem:
             description: str = None,
             content_encoded: str = None,
             comments: str = None,
+            enclosure: "MockRSSFeedItemEnclosure" = None,
             author: str = None,
             pubdate: str = None,
             dc_creator: str = None,
@@ -60,6 +61,7 @@ class MockRSSFeedItem:
         self.description = description
         self.content_encoded = content_encoded
         self.comments = comments
+        self.enclosure = enclosure
         self.author = author
         self.pubdate = pubdate
         self.dc_creator = dc_creator
@@ -91,6 +93,9 @@ class MockRSSFeedItem:
         if self.comments is not None:
             comments = ET.SubElement(root, "comments")
             comments.text = self.comments
+
+        if self.enclosure is not None:
+            root.append(self.enclosure.build())
 
         if self.author is not None:
             author = ET.SubElement(root, "author")

@@ -93,6 +93,7 @@ class Article(Model, db.Model):  # type: ignore
     summary = db.Column(db.Text)
     content = db.Column(db.Text)
     comments_url = db.Column(db.String(255))
+    image_url = db.Column(db.String(255))
     author = db.Column(db.String(255))
     read = db.Column(db.Boolean, nullable=False, default=False, index=True)
     starred = db.Column(db.Boolean, nullable=False, default=False, index=True)

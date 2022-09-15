@@ -260,6 +260,24 @@ class FeedItemParser(RootNode):
         return ensure_abs_url(self._base_url, url) if url else None
 
     @cached_property
+    def image_url(self) -> Optional[str]:
+        url = None
+
+        if self.feed_type is FeedType.RSS:
+            url = attr(next(filter(
+                lambda n: n.attrib.get("type").startswith("image"),
+                self.findall("enclosure")), None), "url")
+
+        if self.feed_type is FeedType.ATOM:
+            url = attr(next(filter(
+                lambda n: (
+                    n.attrib.get("rel") == "enclosure" and
+                    n.attrib.get("type").startswith("image")),
+                self.findall("link")), None), "href")
+
+        return ensure_abs_url(self._base_url, url) if url else None
+
+    @cached_property
     def author(self) -> Optional[str]:
         if self.feed_type is FeedType.RSS:
             return text(self.find("author")) or text(self.find("dc:creator"))

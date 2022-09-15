@@ -103,6 +103,25 @@ class TestParserAtomItem:
         assert FeedItemParser(item.build(), FeedType.ATOM,
                               "http://a").comments_url == "http://a/bar"
 
+    def test_image_url(self) -> None:
+        item = MockAtomFeedItem()
+        assert FeedItemParser(
+            item.build(), FeedType.ATOM, "").image_url is None
+
+        item.comments = MockAtomLink(href="foo", rel="replies")
+        assert FeedItemParser(item.build(), FeedType.ATOM,
+                              "http://a").image_url is None
+
+        item.comments = MockAtomLink(
+            href="foo", rel="enclosure", type_attr="text/html")
+        assert FeedItemParser(item.build(), FeedType.ATOM,
+                              "http://a").image_url is None
+
+        item.comments = MockAtomLink(
+            href="foo", rel="enclosure", type_attr="image/png")
+        assert FeedItemParser(item.build(), FeedType.ATOM,
+                              "http://a").image_url == "http://a/foo"
+
     def test_author(self) -> None:
         item = MockAtomFeedItem()
         assert FeedItemParser(item.build(), FeedType.ATOM, "").author is None
