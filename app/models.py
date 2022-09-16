@@ -111,7 +111,7 @@ class Article(Model, db.Model):  # type: ignore
 
     def update(self, parser: FeedItemParser, **kwargs):
         parser_attrs = ["guid", "hash", "title", "url", "summary", "content",
-                        "comments_url", "author"]
+                        "comments_url", "author", "image_url"]
         for attr in parser_attrs:
             setattr(self, attr, getattr(parser, attr))
 
@@ -126,5 +126,5 @@ class Article(Model, db.Model):  # type: ignore
     def to_json(self):
         keys = ("id", "title", "url", "summary", "content", "comments_url",
                 "author", "subscription_id", "time_published", "read",
-                "starred",)
+                "starred", "image_url",)
         return {key: getattr(self, key) for key in keys}

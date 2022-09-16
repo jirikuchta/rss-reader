@@ -153,6 +153,7 @@ class Item {
 		header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
 		header.appendChild(html.node("time", {}, format.date(this.data.time_published)));
 
+		this.data.image_url && elm.appendChild(html.node("img", {src:this.data.image_url}));
 		elm.appendChild(html.node("h3", {}, this.data.title));
 		elm.appendChild(html.node("p", {}, this.data.summary));
 
