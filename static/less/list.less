@@ -17,6 +17,24 @@
 		header {
 			display: flex;
 			align-items: center;
+			margin-bottom: 4px;
+		}
+
+		.body {
+			display: flex;
+			gap: 8px;
+		}
+
+		.text {
+			overflow: hidden;
+		}
+
+		.picture {
+			flex: 0 0 120px;
+
+			img {
+				max-width: 100%;
+			}
 		}
 
 		h6 {
@@ -30,7 +48,7 @@
 			font-size: 1rem;
 		}
 
-		h3, h6, p {
+		h6, p {
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;
@@ -38,9 +56,12 @@
 
 		h3, p { font-size: 1.4rem; }
 
+		h3 { margin-bottom: 4px; }
+
 		&.is-read:not(.is-selected) {
 			h3, h6, p, time { color: var(--color-grey); }
 			.subscription-icon { opacity: .5; }
+			.picture { opacity: .5; }
 		}
 
 		&.is-selected h3 { color: var(--color-active); }

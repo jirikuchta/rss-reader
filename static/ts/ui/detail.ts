@@ -30,7 +30,13 @@ export async function build() {
 	html.node("a", {href: article.url, target: "_blank", rel: "noopener noreferrer"}, article.title, title);
 
 	let content = html.node("div", {}, "", frag);
-	content.innerHTML = article.content || article.summary || "";
+	if (article.content) {
+		content.innerHTML = article.content
+	} else {
+		article.image_url && html.node("img", {src:article.image_url}, "", content);
+		article.summary && html.node("p", {}, article.summary, content);
+	}
+
 
 	node.appendChild(frag);
 

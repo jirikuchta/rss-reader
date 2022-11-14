@@ -145,18 +145,25 @@ class Item {
 	protected build() {
 		let subscription = subscriptions.get(this.data.subscription_id)!;
 
-		let elm = html.node("article");
-		elm.dataset.id = this.id.toString();
+		let node = html.node("article");
+		node.dataset.id = this.id.toString();
 
-		let header = html.node("header", {}, "", elm);
+		let header = html.node("header", {}, "", node);
+		let body = html.node("div", {className:"body"}, "", node);
+
 		header.appendChild(subscriptionIcon(subscription));
 		header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
 		header.appendChild(html.node("time", {}, format.date(this.data.time_published)));
 
-		this.data.image_url && elm.appendChild(html.node("img", {src:this.data.image_url}));
-		elm.appendChild(html.node("h3", {}, this.data.title));
-		elm.appendChild(html.node("p", {}, this.data.summary));
+		let text = html.node("div", {className:"text"}, "", body);
+		text.appendChild(html.node("h3", {}, this.data.title));
+		text.appendChild(html.node("p", {}, this.data.summary));
 
-		return elm;
+		if (this.data.image_url) {
+			let picture = html.node("div", {className:"picture"}, "", body);
+			picture.appendChild(html.node("img", {src:this.data.image_url}));
+		}
+
+		return node;
 	}
 }
