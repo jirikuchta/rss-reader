@@ -1,5 +1,6 @@
 {
     "devDependencies": {
+        "google-closure-compiler": "^20230103.0.0",
         "chokidar": "^3.5.3",
         "chokidar-cli": "^3.0.0",
         "concurrently": "^7.6.0",
@@ -11,9 +12,11 @@
     "scripts": {
         "build": "npm run build-js && npm run build-css",
         "build-js": "tsc && rollup --config",
-        "build-css": "lessc less/app.less app.min.css",
+        "build-css": "lessc src/less/app.less dist/app.css",
+        "minify-js": "google-closure-compiler < dist/app.js --js_output_file dist/app.js --language_out=ECMASCRIPT5",
+        "minify-css": "lessc -x src/less/app.less dist/app.css",
         "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\"",
-        "watch-js": "chokidar \"ts/**/*.ts\" -c \"npm run build-js\"",
-        "watch-css": "chokidar \"less/**/*.less\" -c \"npm run build-css\""
+        "watch-js": "chokidar \"src/ts/**/*.ts\" -c \"npm run build-js\"",
+        "watch-css": "chokidar \"src/less/**/*.less\" -c \"npm run build-css\""
     }
 }

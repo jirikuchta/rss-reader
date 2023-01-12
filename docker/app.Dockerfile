@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y build-essential
 
 COPY app /rss_reader/app
 COPY templates /rss_reader/templates
-COPY static /rss_reader/static
+COPY static/dist /rss_reader/static/dist
 COPY requirements.txt /rss_reader/requirements.txt
 
 RUN pip install -r /rss_reader/requirements.txt

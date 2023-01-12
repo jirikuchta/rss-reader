@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:18-alpine
 
 COPY static /rss_reader
 

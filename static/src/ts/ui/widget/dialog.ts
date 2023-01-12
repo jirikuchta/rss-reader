@@ -48,7 +48,7 @@ export async function alert(text: string, description?: string): Promise<null> {
 
 	dialog.open();
 
-	return new Promise(resolve => dialog.onClose = resolve);
+	return new Promise(resolve => dialog.onClose = resolve as () => void);
 }
 
 export async function confirm(text: string, ok?: string, cancel?: string): Promise<boolean> {

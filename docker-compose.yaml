@@ -22,10 +22,10 @@ services:
       context: .
       dockerfile: ./docker/static.Dockerfile
     volumes:
-      - ./static/less:/rss_reader/less
-      - ./static/ts:/rss_reader/ts
-      - ./static/app.min.css:/rss_reader/app.min.css
-      - ./static/app.min.js:/rss_reader/app.min.js
+      - ./static/src/less:/rss_reader/src/less
+      - ./static/src/ts:/rss_reader/src/ts
+      - ./static/dist/app.css:/rss_reader/dist/app.css
+      - ./static/dist/app.js:/rss_reader/dist/app.js
     environment:
       SHELL: sh
     command: >
