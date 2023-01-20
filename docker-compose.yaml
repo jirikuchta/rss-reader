@@ -3,7 +3,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: ./docker/app.Dockerfile
+      dockerfile: ./docker/Dockerfile
     volumes:
       - ./app:/rss_reader/app
       - ./templates:/rss_reader/templates
@@ -22,10 +22,7 @@ services:
       context: .
       dockerfile: ./docker/static.Dockerfile
     volumes:
-      - ./static/src/less:/rss_reader/src/less
-      - ./static/src/ts:/rss_reader/src/ts
-      - ./static/dist/app.css:/rss_reader/dist/app.css
-      - ./static/dist/app.js:/rss_reader/dist/app.js
+      - ./static:/home/node/rss_reader
     environment:
       SHELL: sh
     command: >
