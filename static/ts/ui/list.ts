@@ -28,12 +28,8 @@ const showMoreObserver = new IntersectionObserver(
 export function init() {
 	build();
 
-	pubsub.subscribe("nav-item-selected", () => {
-		html.clear(node);
-		items = [];
-		build();
-	});
-
+	pubsub.subscribe("nav-item-selected", rebuild);
+	pubsub.subscribe("settings-changed", rebuild);
 	pubsub.subscribe("articles-read", () => items.forEach(i => i.sync()));
 
 	node.addEventListener("scroll", () => {
@@ -62,6 +58,12 @@ export function init() {
 
 export function selected() {
 	return items.find(i => i.isSelected)?.id;
+}
+
+function rebuild() {
+	html.clear(node);
+	items = [];
+	build();
 }
 
 async function build() {
@@ -165,7 +167,7 @@ class Item {
 		text.appendChild(html.node("h3", {}, this.data.title));
 		text.appendChild(html.node("p", {}, this.data.summary));
 
-		if (this.data.image_url) {
+		if (this.data.image_url && settings.getItem("showImages")) {
 			let picture = html.node("div", {className:"picture"}, "", body);
 			picture.appendChild(html.node("img", {src:this.data.image_url}));
 		}

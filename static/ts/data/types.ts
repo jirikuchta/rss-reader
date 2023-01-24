@@ -56,4 +56,5 @@ export interface Settings {
 	collapsedCategories: CategoryId[];
 	unreadOnly: boolean;
 	markAsReadOnScroll: boolean;
+	showImages: boolean;
 }

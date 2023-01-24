@@ -27,17 +27,22 @@ function buildDisplaySection() {
 
 	html.node("h3", {}, "General", node);
 
-	let label, input: HTMLInputElement;
+	let label;
 
 	label = html.node("label", {}, "Hide Read Articles", node);
-	input = html.node("input", {type:"checkbox"}, "", label);
-	input.checked = settings.getItem("unreadOnly");
-	input.addEventListener("change", e => settings.setItem("unreadOnly", input.checked));
+	let input1 = html.node("input", {type:"checkbox"}, "", label);
+	input1.checked = settings.getItem("unreadOnly");
+	input1.addEventListener("change", e => settings.setItem("unreadOnly", input1.checked));
 
 	label = html.node("label", {}, "Auto-Mark As Read On Scroll", node);
-	input = html.node("input", {type:"checkbox"}, "", label);
-	input.checked = settings.getItem("markAsReadOnScroll");
-	input.addEventListener("change", e => settings.setItem("markAsReadOnScroll", input.checked));
+	let input2 = html.node("input", {type:"checkbox"}, "", label);
+	input2.checked = settings.getItem("markAsReadOnScroll");
+	input2.addEventListener("change", e => settings.setItem("markAsReadOnScroll", input2.checked));
+
+	label = html.node("label", {}, "Show images in article list", node);
+	let input3 = html.node("input", {type:"checkbox"}, "", label);
+	input3.checked = settings.getItem("showImages");
+	input3.addEventListener("change", e => settings.setItem("showImages", input3.checked));
 
 	return node
 }
