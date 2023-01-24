@@ -1,9 +1,25 @@
 import { Settings } from "data/types";
 
+const DEFAULTS: Settings = {
+	navWidth: 15,
+	articlesWidth: 30,
+	collapsedCategories: [],
+	unreadOnly: true,
+	markAsReadOnScroll: true
+}
+
+export function init() {
+	let key: keyof Settings;
+	for (key in DEFAULTS) {
+		if (getItem(key) === undefined) {
+			setItem(key, DEFAULTS[key]!);
+		}
+	}
+}
 
 export function getItem<K extends keyof Settings>(key: K) {
 	let data = localStorage.getItem(key);
-	if (data) { return (JSON.parse(data) as Settings[K]); }
+	return (JSON.parse(data!) as Settings[K]);
 }
 
 export function setItem<K extends keyof Settings>(key: K, value: NonNullable<Settings[K]>) {

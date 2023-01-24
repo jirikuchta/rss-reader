@@ -1,4 +1,5 @@
 import { Category, Subscription } from "data/types";
+import * as settings from "data/settings";
 import * as articles from "data/articles";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
@@ -200,10 +201,22 @@ export class CategoryItem extends Item {
 
 		this.node.classList.add("category");
 		this.node.insertAdjacentElement("afterbegin", this._opener);
+
+		if (settings.getItem("collapsedCategories").includes(this.data.id)) {
+			this.toggle(true);
+		}
 	}
 
-	protected toggle() {
-		this.node.classList.toggle("is-collapsed");
+	protected toggle(force?: boolean) {
+		this.node.classList.toggle("is-collapsed", force);
+
+		let data = settings.getItem("collapsedCategories");
+		if (this.node.classList.contains("is-collapsed")) {
+			data.push(this.data.id);
+		} else {
+			data = data.filter(id => id != this.data.id);
+		}
+		settings.setItem("collapsedCategories", data);
 	}
 }
 

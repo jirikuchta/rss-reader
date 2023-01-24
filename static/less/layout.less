@@ -5,12 +5,10 @@ main {
 	position: relative;
 
 	--col-min-width: 48px;
-	--layout-sidebar-width: 15%;
-	--layout-entries-width: 30%;
 }
 
 main > nav {
-	flex: 0 0 var(--layout-sidebar-width);
+	flex: 0 0 auto;
 	min-width: 24px;
 	max-width: calc(100% - 800px);
 	overflow: auto;
@@ -19,7 +17,7 @@ main > nav {
 }
 
 #list {
-	flex: 0 0 var(--layout-entries-width);
+	flex: 0 0 auto;
 	min-width: var(--col-min-width);
 	max-width: calc(100% - 2 * var(--col-min-width));
 	overflow: auto;

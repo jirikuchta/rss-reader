@@ -1,4 +1,5 @@
 import { OPMLItem, Subscription } from "data/types";
+import * as settings from "data/settings";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
@@ -10,19 +11,41 @@ import Dialog from "ui/widget/dialog";
 
 export function open() {
 	let dialog = new Dialog();
+	dialog.node.classList.add("settings");
 
 	let header = html.node("header", {}, "Settings", dialog.node);
 	header.appendChild(dialog.closeButton());
 
-	dialog.node.appendChild(buildOPML());
+	dialog.node.appendChild(buildDisplaySection());
+	dialog.node.appendChild(buildOPMLSection());
 
 	dialog.open();
 }
 
-function buildOPML() {
-	let node = html.node("section", {id: "opml"});
+function buildDisplaySection() {
+	let node = html.node("section");
 
-	html.node("h3", {}, "Import from OPML file", node);
+	html.node("h3", {}, "General", node);
+
+	let label, input: HTMLInputElement;
+
+	label = html.node("label", {}, "Hide Read Articles", node);
+	input = html.node("input", {type:"checkbox"}, "", label);
+	input.checked = settings.getItem("unreadOnly");
+	input.addEventListener("change", e => settings.setItem("unreadOnly", input.checked));
+
+	label = html.node("label", {}, "Auto-Mark As Read On Scroll", node);
+	input = html.node("input", {type:"checkbox"}, "", label);
+	input.checked = settings.getItem("markAsReadOnScroll");
+	input.addEventListener("change", e => settings.setItem("markAsReadOnScroll", input.checked));
+
+	return node
+}
+
+function buildOPMLSection() {
+	let node = html.node("section");
+
+	html.node("h3", {}, "OPML import/export", node);
 
 	let droparea = html.node("label", {className: "droparea"}, "Click to choose OPML file or drop one here", node);
 	droparea.addEventListener("dragover", e => e.preventDefault());

@@ -1,5 +1,6 @@
 import { Article, ArticleFilters } from "data/types";
 
+import * as settings from "data/settings";
 import * as subscriptions from "data/subscriptions";
 import * as articles from "data/articles";
 
@@ -37,7 +38,7 @@ export function init() {
 
 	node.addEventListener("scroll", () => {
 		clearTimeout(markReadTimeout);
-		markReadTimeout = setTimeout(() => markRead(), 300);
+		markReadTimeout = setTimeout(() => onScroll(), 300);
 	});
 
 	document.body.addEventListener("keydown", e => {
@@ -79,9 +80,12 @@ async function build() {
 
 function getFilters() {
 	let filters: ArticleFilters = {
-		unread_only: true,
-		offset: items.filter(i => !i.isRead).length
+		offset: items.filter(i => settings.getItem("unreadOnly") ? !i.isRead : true).length
 	};
+
+	if (settings.getItem("unreadOnly")) {
+		filters.unread_only = true;
+	}
 
 	if (navigation.selected instanceof navigation.SubscriptionItem) {
 		filters["subscription_id"] = navigation.selected.data.id;
@@ -94,7 +98,8 @@ function getFilters() {
 	return filters;
 }
 
-function markRead() {
+function onScroll() {
+	if (!settings.getItem("markAsReadOnScroll")) { return; }
 	let markReadItems = items.filter(i => !i.isRead && i.node.getBoundingClientRect().bottom <= 0)
 	markReadItems.length && articles.markRead(markReadItems.map(i => i.id));
 }
@@ -147,6 +152,7 @@ class Item {
 
 		let node = html.node("article");
 		node.dataset.id = this.id.toString();
+		node.classList.toggle(READ_CSS_CLASS, this.data.read);
 
 		let header = html.node("header", {}, "", node);
 		let body = html.node("div", {className:"body"}, "", node);

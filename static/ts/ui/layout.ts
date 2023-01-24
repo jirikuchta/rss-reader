@@ -41,7 +41,7 @@ class Resizer {
 		this._node.insertAdjacentElement("afterend", node);
 
 		let width = settings.getItem(this._storageId);
-		width && (this._node.style.flexBasis = `${width}%`);
+		this._node.style.flexBasis = `${width}%`;
 	}
 
 	handleEvent(ev: MouseEvent) {
