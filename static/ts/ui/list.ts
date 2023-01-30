@@ -169,7 +169,7 @@ class Item {
 
 		if (this.data.image_url && settings.getItem("showImages")) {
 			let picture = html.node("div", {className:"picture"}, "", body);
-			picture.appendChild(html.node("img", {src:this.data.image_url}));
+			picture.appendChild(html.node("img", {src:this.data.image_url, loading:"lazy"}));
 		}
 
 		return node;

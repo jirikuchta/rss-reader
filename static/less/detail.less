@@ -1,5 +1,5 @@
 #detail {
-	> header, > div {
+	> header, .content {
 		@padding: 24px;
 
 		padding: 0 @padding;
@@ -7,15 +7,46 @@
 		max-width: calc(768px + 2 * @padding);
 	}
 
-	> div > * { margin: 24px 0; }
+	> header {
+		a.feed {
+			display: flex;
+			align-items: center;
+			margin-bottom: 8px;
+			color: var(--color-text);
+			text-decoration: none;
 
-	h1 a { color: var(--color-text); }
+			&:hover { text-decoration: underline; }
 
-	figure, img {
-		display: block;
-		margin: auto;
-		max-width: 100%;
-		height: auto !important;
+			.subscription-icon { margin-right: 8px; }
+		}
 
+		h1 {
+			font-size: 2.4rem;
+			line-height: 3rem;
+			margin-bottom: 8px;
+			a { color: var(--color-text); }
+		}
+
+		.publish-info {
+			display: flex;
+			align-items: center;
+
+			> *:not(:last-child)::after {
+				content: "//";
+				margin: 0 8px;
+			}
+		}
+	}
+
+	.content {
+		> * { margin: 24px 0; }
+		* { max-width: 100% !important; }
+
+		iframe, video, figure, img {
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+			height: auto !important;
+		}
 	}
 }
