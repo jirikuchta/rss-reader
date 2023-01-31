@@ -3,11 +3,20 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
-		<title>{% block title %}{% endblock %}</title>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='app.css') }}" />
+		<title>RSS Reader</title>
+
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
+		<link rel="manifest" href="/static/favicon/site.webmanifest">
+		<link rel="mask-icon" href="/static/favicon/safari-pinned-tab.svg" color="#5bbad5">
+		<meta name="msapplication-TileColor" content="#da532c">
+		<meta name="theme-color" content="#ffffff">
+
+		<link rel="stylesheet" type="text/css" href="/static/app.css" />
 	</head>
 	<body>
 		<main></main>
-		<script src="{{ url_for('static', filename='app.js') }}"></script>
+		<script src="/static/app.js"></script>
 	</body>
 </html>
