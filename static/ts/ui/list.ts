@@ -62,6 +62,7 @@ export function selected() {
 
 function rebuild() {
 	html.clear(node);
+	node.scrollTo(0, 0);
 	items = [];
 	build();
 }

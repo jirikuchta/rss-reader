@@ -2,6 +2,7 @@ import { Settings } from "data/types";
 import * as settings from "data/settings";
 
 import * as html from "util/html";
+import * as pubsub from "util/pubsub";
 
 import * as nav from "ui/nav";
 import * as list from "ui/list";
@@ -15,14 +16,36 @@ export async function init() {
 	list.init();
 	detail.init();
 
+	let wrap = html.node("div", {}, "", node);
+	wrap.appendChild(list.node);
+	wrap.appendChild(detail.node);
+
 	node.appendChild(nav.node);
-	node.appendChild(list.node);
-	node.appendChild(detail.node);
+	node.appendChild(wrap);
+
+	html.button({type:"button", icon: "cross", classList:"close"}, "", node)
+		.addEventListener("click", (e) => {
+			toggleNav(false);
+			toggleDetail(false);
+		});
+
+	html.button({type:"button", icon: "menu", classList:"menu"}, "", node)
+		.addEventListener("click", (e) => toggleNav(true));
+
+	pubsub.subscribe("article-selected", () => toggleDetail(true));
+	pubsub.subscribe("nav-item-selected", () => toggleNav(false));
 
 	new Resizer(nav.node, "navWidth");
 	new Resizer(list.node, "articlesWidth");
 }
 
+export function toggleNav(force?: boolean) {
+	node.classList.toggle("nav-open", force);
+}
+
+export function toggleDetail(force?: boolean) {
+	node.classList.toggle("detail-open", force);
+}
 
 class Resizer {
 	_node: HTMLElement;
@@ -35,7 +58,7 @@ class Resizer {
 	}
 
 	_build() {
-		let node = html.node("div", {className: "resizer"});
+		let node = html.node("span", {className: "resizer"});
 		node.addEventListener("mousedown", this);
 
 		this._node.insertAdjacentElement("afterend", node);

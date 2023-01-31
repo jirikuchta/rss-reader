@@ -1,5 +1,5 @@
 #detail {
-	> header, .content {
+	> header, .body {
 		@padding: 24px;
 
 		padding: 0 @padding;
@@ -38,7 +38,7 @@
 		}
 	}
 
-	.content {
+	.body {
 		> * { margin: 24px 0; }
 		* { max-width: 100% !important; }
 
@@ -48,5 +48,11 @@
 			margin-right: auto;
 			height: auto !important;
 		}
+	}
+
+	.close { display: none; }
+
+	@media(max-width: @breakpoint-tablet) {
+		background-color: #fff;
 	}
 }

@@ -37,6 +37,10 @@ export function init() {
 	pubsub.subscribe("counters-updated", updateCounters);
 }
 
+export function toggle(force?: boolean) {
+	node.classList.toggle("is-open", force);
+}
+
 async function buildList() {
 	html.clear(scroll);
 	items = [];
