@@ -40,24 +40,27 @@ export function init() {
 	document.body.addEventListener("keydown", e => {
 		if (["Alt", "Control", "Shift", "OS", "Meta"].some(key => e.getModifierState(key))) { return; }
 		if (e.isComposing) { return; }
-
-		let selectedIndex = items.findIndex(i => i.isSelected);
-		if (selectedIndex == -1) { return; }
-
-		if (e.code == "ArrowRight") {
-			let item = items[selectedIndex + 1];
-			item && (item.isSelected = true) && item.focus();
-		}
-
-		if (e.code == "ArrowLeft") {
-			let item = items[selectedIndex - 1];
-			item && (item.isSelected = true) && item.focus();
-		}
+		e.code == "ArrowRight" && next();
+		e.code == "ArrowLeft" && prev();
 	});
 }
 
 export function selected() {
-	return items.find(i => i.isSelected)?.id;
+	return items.find(i => i.isSelected)?.data;
+}
+
+export function next() {
+	let selectedIndex = items.findIndex(i => i.isSelected);
+	if (selectedIndex == -1) { return; }
+	let item = items[selectedIndex + 1];
+	item && (item.isSelected = true) && item.focus();
+}
+
+export function prev() {
+	let selectedIndex = items.findIndex(i => i.isSelected);
+	if (selectedIndex == -1) { return; }
+	let item = items[selectedIndex - 1];
+	item && (item.isSelected = true) && item.focus();
 }
 
 function rebuild() {
@@ -109,7 +112,7 @@ function onScroll() {
 
 class Item {
 	node: HTMLElement;
-	protected data: Article;
+	data: Article;
 
 	constructor(data: Article) {
 		this.data = data;
