@@ -4,50 +4,49 @@ export default class Swipe {
 	movetreshold = 5 // px
 
 	protected node: HTMLElement;
-	protected pointerdownEvent: PointerEvent | null;
+	protected startTouch: Touch | null;
 
 	constructor(node: HTMLElement) {
 		this.node = node;
-		this.pointerdownEvent = null;
+		this.startTouch = null;
 
-		node.addEventListener("pointerdown", this);
+		node.addEventListener("touchstart", this);
 	}
 
 	onSwipeRight() {}
 	onSwipeLeft() {}
 
-	handleEvent(e: PointerEvent) {
+	handleEvent(e: TouchEvent) {
 		switch (e.type) {
-			case "pointerdown": this.start(e); break;
-			case "pointercancel": this.stop(); break;
-			case "pointerup": this.onPointerUp(e); break;
+			case "touchstart": this.start(e); break;
+			case "touchcancel": this.stop(); break;
+			case "touchend": this.onTouchEnd(e); break;
 		}
 	}
 
-	protected start(e: PointerEvent) {
-		this.pointerdownEvent = e;
-		document.body.addEventListener("pointerup", this);
-		document.body.addEventListener("pointercancel", this);
+	protected start(e: TouchEvent) {
+		this.startTouch = e.touches[0];
+		document.body.addEventListener("touchend", this);
+		document.body.addEventListener("touchcancel", this);
 	}
 
 	protected stop() {
-		this.node.style.transform = "";
-		this.pointerdownEvent = null;
-		document.body.removeEventListener("pointerup", this);
-		document.body.removeEventListener("pointercancel", this);
+		this.startTouch = null;
+		document.body.removeEventListener("touchend", this);
+		document.body.removeEventListener("touchcancel", this);
 	}
 
-	protected onPointerUp(e: PointerEvent) {
-		if (!this.pointerdownEvent) { return; }
+	protected onTouchEnd(e: TouchEvent) {
+		if (!this.startTouch) { return; }
 		this.swipe(e);
 		this.stop();
 	}
 
-	protected swipe(e: PointerEvent) {
-		if (!this.pointerdownEvent) { return; }
+	protected swipe(e: TouchEvent) {
+		if (!this.startTouch) { return; }
 
-		let movementX = this.pointerdownEvent.x - e.x;
-		let movementY = this.pointerdownEvent.y - e.y;
+		let movementX = this.startTouch.clientX - e.changedTouches[0].clientX;
+		let movementY = this.startTouch.clientY - e.changedTouches[0].clientY;
 
 		if (Math.abs(movementX) > this.threshold) {
 			if (Math.abs(movementX) > Math.abs(movementY)) {
