@@ -23,13 +23,13 @@ export async function init() {
 	node.appendChild(nav.node);
 	node.appendChild(wrap);
 
-	html.button({type:"button", icon: "cross", classList:"close"}, "", node)
+	html.button({type:"button", icon: "cross", classList:"close plain"}, "", node)
 		.addEventListener("click", (e) => {
 			toggleNav(false);
 			toggleDetail(false);
 		});
 
-	html.button({type:"button", icon: "menu", classList:"menu"}, "", node)
+	html.button({type:"button", icon: "menu", classList:"menu plain"}, "", node)
 		.addEventListener("click", (e) => toggleNav(true));
 
 	pubsub.subscribe("article-selected", () => toggleDetail(true));
