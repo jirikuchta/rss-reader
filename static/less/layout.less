@@ -1,5 +1,5 @@
 main {
-	.flex-row;
+	display: flex;
 	height: 100vh;
 	overflow: hidden;
 }
@@ -14,7 +14,7 @@ main {
 
 	> div {
 		flex-grow: 1;
-		.flex-row;
+		display: flex;
 		overflow: hidden;
 	}
 
@@ -78,7 +78,7 @@ main {
 
 	main.detail-open {
 		#detail { transform: none; }
-		> button.close { .flex-row; }
+		> button.close { display: flex; }
 		> button.menu { display: none; }
 	}
 
@@ -105,11 +105,11 @@ main {
 		+ .resizer { display: none; }
 	}
 
-	main > button.menu { .flex-row; }
+	main > button.menu { display: flex; }
 
 	main.nav-open {
 		> nav { transform: none; }
-		> button.close { .flex-row; }
+		> button.close { display: flex; }
 		> button.menu { display: none; }
 	}
 }
