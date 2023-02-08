@@ -3,7 +3,7 @@ import * as pubsub from "util/pubsub";
 
 const DEFAULTS: Settings = {
 	navWidth: 15,
-	articlesWidth: 30,
+	listWidth: 30,
 	collapsedCategories: [],
 	unreadOnly: true,
 	markAsReadOnScroll: true,

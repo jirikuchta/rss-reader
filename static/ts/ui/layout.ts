@@ -35,8 +35,8 @@ export async function init() {
 	pubsub.subscribe("article-selected", () => toggleDetail(true));
 	pubsub.subscribe("nav-item-selected", () => toggleNav(false));
 
-	new Resizer(nav.node, "navWidth");
-	new Resizer(list.node, "articlesWidth");
+	new Resizer(nav.node, document.body, "navWidth");
+	new Resizer(list.node, wrap, "listWidth");
 }
 
 export function toggleNav(force?: boolean) {
@@ -48,50 +48,52 @@ export function toggleDetail(force?: boolean) {
 }
 
 class Resizer {
-	_node: HTMLElement;
-	_storageId: keyof Settings;
+	protected node: HTMLElement;
+	protected parent: HTMLElement;
+	protected storageKey: keyof Settings;
 
-	constructor(node: HTMLElement, storageId: keyof Settings) {
-		this._node = node;
-		this._storageId = storageId;
+	constructor(node: HTMLElement, parent: HTMLElement, storageKey: keyof Settings) {
+		this.node = node;
+		this.parent = parent;
+		this.storageKey = storageKey;
 		this._build();
 	}
 
 	_build() {
 		let node = html.node("span", {className: "resizer"});
-		node.addEventListener("mousedown", this);
+		node.addEventListener("pointerdown", this);
 
-		this._node.insertAdjacentElement("afterend", node);
+		this.node.insertAdjacentElement("afterend", node);
 
-		let width = settings.getItem(this._storageId);
-		this._node.style.flexBasis = `${width}%`;
+		let width = settings.getItem(this.storageKey);
+		this.node.style.flexBasis = `${width}%`;
 	}
 
 	handleEvent(ev: MouseEvent) {
 		switch(ev.type) {
-			case "mousedown":
-				document.addEventListener("mousemove", this);
-				document.addEventListener("mouseup", this);
+			case "pointerdown":
+				document.addEventListener("pointermove", this);
+				document.addEventListener("pointerup", this);
 				document.body.style.userSelect = "none";
 				break;
-			case "mouseup":
-				document.removeEventListener("mousemove", this);
-				document.removeEventListener("mouseup", this);
+			case "pointerup":
+				document.removeEventListener("pointermove", this);
+				document.removeEventListener("pointerup", this);
 				document.body.style.userSelect = "";
 
-				let width = (this._node.offsetWidth / document.body.offsetWidth) * 100;
-				settings.setItem(this._storageId, width);
+				let width = (this.node.offsetWidth / document.body.offsetWidth) * 100;
+				settings.setItem(this.storageKey, width);
 
 				break;
-			case "mousemove":
-				this._resize(ev.clientX);
+			case "pointermove":
+				this._resize(ev.x);
 				break;
 		}
 	}
 
 	_resize(pos: number) {
-		let widthPx = pos - this._node.offsetLeft;
-		let widthPerc = (widthPx / document.body.offsetWidth) * 100;
-		this._node.style.flexBasis = `${widthPerc}%`;
+		let widthPx = pos - this.parent.offsetLeft;
+		let widthPerc = (widthPx / this.parent.offsetWidth) * 100;
+		this.node.style.flexBasis = `${widthPerc}%`;
 	}
 }
