@@ -1,5 +1,4 @@
 import { Settings } from "data/types";
-import * as pubsub from "util/pubsub";
 
 const DEFAULTS: Settings = {
 	navWidth: 15,
@@ -24,7 +23,6 @@ export function getItem<K extends keyof Settings>(key: K) {
 
 export function setItem<K extends keyof Settings>(key: K, value: NonNullable<Settings[K]>) {
 	localStorage.setItem(key, JSON.stringify(value));
-	pubsub.publish("settings-changed", key);
 }
 
 export function removeItem<K extends keyof Settings>(key: K) {

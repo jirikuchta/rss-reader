@@ -30,10 +30,11 @@ export async function init() {
 		});
 
 	html.button({type:"button", icon: "menu", classList:"menu plain"}, "", node)
-		.addEventListener("click", (e) => toggleNav(true));
+		.addEventListener("click", e => { e.stopPropagation(); toggleNav(true); });
+
+	document.body.addEventListener("click", onBodyClick);
 
 	pubsub.subscribe("article-selected", () => toggleDetail(true));
-	pubsub.subscribe("nav-item-selected", () => toggleNav(false));
 
 	new Resizer(nav.node, document.body, "navWidth");
 	new Resizer(list.node, wrap, "listWidth");
@@ -45,6 +46,10 @@ export function toggleNav(force?: boolean) {
 
 export function toggleDetail(force?: boolean) {
 	node.classList.toggle("detail-open", force);
+}
+
+function onBodyClick(e: Event) {
+	toggleNav(false);
 }
 
 class Resizer {

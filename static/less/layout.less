@@ -108,8 +108,18 @@ main {
 	main > button.menu { display: flex; }
 
 	main.nav-open {
-		> nav { transform: none; }
-		> button.close { display: flex; }
+		&::after {
+			content: "";
+			position: fixed;
+			top: 0; bottom: 0; right: 0; left: 0;
+			background-color: rgba(0,0,0,.65);
+		}
+
+		> nav {
+			transform: none;
+			width: 280px;
+		}
+
 		> button.menu { display: none; }
 	}
 }

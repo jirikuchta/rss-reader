@@ -34,7 +34,7 @@ export function init() {
 	pubsub.subscribe("subscriptions-changed", buildList);
 	pubsub.subscribe("categories-changed", buildList);
 
-	pubsub.subscribe("counters-updated", updateCounters);
+	pubsub.subscribe("counters-updated", syncCounters);
 }
 
 export function toggle(force?: boolean) {
@@ -65,7 +65,7 @@ async function buildList() {
 		.filter(s => !s.category_id)
 		.forEach(s => list.appendChild(new SubscriptionItem(s).node));
 
-	updateCounters();
+	syncCounters();
 	select(allItem);
 }
 
@@ -107,20 +107,20 @@ function select(item: Item) {
 	pubsub.publish("nav-item-selected");
 }
 
-function updateCounters() {
-	items.forEach(i => i.updateCounter());
+function syncCounters() {
+	items.forEach(i => i.syncCounter());
 }
 
 class Item {
-	_data: HasTitle;
-	_node!: HTMLLIElement;
-	_counter!: HTMLElement;
+	protected _data: HasTitle;
+	protected _node!: HTMLLIElement;
+	protected counter!: HTMLElement;
 
 	constructor(data: HasTitle) {
 		this._data = data;
 
 		this.build();
-		this.updateCounter();
+		this.syncCounter();
 
 		items.push(this);
 	}
@@ -133,7 +133,7 @@ class Item {
 		return this._node;
 	}
 
-	updateCounter() {};
+	syncCounter() {};
 
 	handleEvent(e: MouseEvent) {
 		e.preventDefault();
@@ -154,7 +154,7 @@ class Item {
 		node.addEventListener("contextmenu", this);
 
 		this._node = node;
-		this._counter = counter;
+		this.counter = counter;
 	}
 }
 
@@ -162,10 +162,10 @@ export class AllItem extends Item {
 
 	constructor() { super({title: "All articles"}); }
 
-	updateCounter() {
-		html.clear(this._counter);
+	syncCounter() {
+		html.clear(this.counter);
 		let count = counters.sum();
-		count && this._counter.appendChild(html.text(`${count}`));
+		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
 	protected build() {
@@ -175,22 +175,22 @@ export class AllItem extends Item {
 }
 
 export class CategoryItem extends Item {
-	_opener!: HTMLButtonElement;
+	protected opener!: HTMLButtonElement;
 
 	get data() {
 		return this._data as Category;
 	}
 
-	updateCounter() {
-		html.clear(this._counter);
+	syncCounter() {
+		html.clear(this.counter);
 		let count = subscriptions.list()
 			.filter(s => s.category_id == this.data.id)
 			.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
-		count && this._counter.appendChild(html.text(`${count}`));
+		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
 	handleEvent(e: MouseEvent) {
-		if (e.type == "click" && e.currentTarget == this._opener) {
+		if (e.type == "click" && e.currentTarget == this.opener) {
 			e.stopPropagation();
 			return this.toggle();
 		}
@@ -200,11 +200,11 @@ export class CategoryItem extends Item {
 	protected build() {
 		super.build();
 
-		this._opener = html.button({icon: "chevron-down", className: "plain btn-chevron"});
-		this._opener.addEventListener("click", this);
+		this.opener = html.button({icon: "chevron-down", className: "plain btn-chevron"});
+		this.opener.addEventListener("click", this);
 
 		this.node.classList.add("category");
-		this.node.insertAdjacentElement("afterbegin", this._opener);
+		this.node.insertAdjacentElement("afterbegin", this.opener);
 
 		if (settings.getItem("collapsedCategories").includes(this.data.id)) {
 			this.toggle(true);
@@ -230,10 +230,10 @@ export class SubscriptionItem extends Item {
 		return this._data as Subscription;
 	}
 
-	updateCounter() {
-		html.clear(this._counter);
+	syncCounter() {
+		html.clear(this.counter);
 		let count = counters.get(this.data.id);
-		count && this._counter.appendChild(html.text(`${count}`));
+		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
 	protected build() {

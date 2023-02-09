@@ -28,11 +28,10 @@ const showMoreObserver = new IntersectionObserver(
 export function init() {
 	build();
 
+	pubsub.subscribe("articles-read", sync);
 	pubsub.subscribe("nav-item-selected", rebuild);
-	pubsub.subscribe("settings-changed", rebuild);
-	pubsub.subscribe("articles-read", () => items.forEach(i => i.sync()));
 
-	node.addEventListener("scroll", () => {
+	node.addEventListener("scroll", e => {
 		clearTimeout(markReadTimeout);
 		markReadTimeout = setTimeout(() => onScroll(), 300);
 	});
@@ -63,7 +62,11 @@ export function prev() {
 	item && (item.isSelected = true) && item.focus();
 }
 
-function rebuild() {
+export function sync() {
+	items.forEach(i => i.sync());
+}
+
+export function rebuild() {
 	html.clear(node);
 	node.scrollTo(0, 0);
 	items = [];
@@ -111,12 +114,12 @@ function onScroll() {
 }
 
 class Item {
-	node: HTMLElement;
+	node = html.node("article");
 	data: Article;
 
 	constructor(data: Article) {
 		this.data = data;
-		this.node = this.build();
+		this.build();
 	}
 
 	get id() {
@@ -150,18 +153,18 @@ class Item {
 
 	async sync() {
 		this.data = await articles.get(this.data.id);
-		this.isRead = this.data.read;
+		html.clear(this.node);
+		this.build();
 	}
 
 	protected build() {
 		let subscription = subscriptions.get(this.data.subscription_id)!;
 
-		let node = html.node("article");
-		node.dataset.id = this.id.toString();
-		node.classList.toggle(READ_CSS_CLASS, this.data.read);
+		this.node.dataset.id = this.id.toString();
+		this.node.classList.toggle(READ_CSS_CLASS, this.data.read);
 
-		let header = html.node("header", {}, "", node);
-		let body = html.node("div", {className:"body"}, "", node);
+		let header = html.node("header", {}, "", this.node);
+		let body = html.node("div", {className:"body"}, "", this.node);
 
 		header.appendChild(subscriptionIcon(subscription));
 		header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
@@ -175,7 +178,5 @@ class Item {
 			let picture = html.node("div", {className:"picture"}, "", body);
 			picture.appendChild(html.node("img", {src:this.data.image_url, loading:"lazy"}));
 		}
-
-		return node;
 	}
 }
