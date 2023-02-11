@@ -1,5 +1,6 @@
 import { SubscriptionId, Subscription, Category, CategoryId } from "data/types";
 import * as counters from "data/counters";
+import * as articles from "data/articles";
 import * as pubsub from "util/pubsub";
 import api from "util/api";
 
@@ -49,6 +50,9 @@ export async function remove(id: SubscriptionId) {
 export async function markRead(id: SubscriptionId) {
 	let res = await api("POST", `/api/subscriptions/${id}/mark-read/`);
 	res.ok && counters.sync();
+	articles.syncRead([id]);
+	counters.sync();
+	pubsub.publish("articles-read");
 }
 
 export function isSubscription(entity: Category | Subscription) {

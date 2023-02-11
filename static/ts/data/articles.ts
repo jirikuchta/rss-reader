@@ -1,4 +1,4 @@
-import { Article, ArticleFilters, ArticleId } from "data/types";
+import { Article, ArticleFilters, ArticleId, SubscriptionId } from "data/types";
 import * as counters from "data/counters";
 import * as pubsub from "util/pubsub";
 import api from "util/api";
@@ -30,11 +30,16 @@ export async function markRead(ids?: ArticleId[]) {
 	let res = await api("POST", "/api/articles/mark-read/", ids ? {ids} : {all: true});
 	if (!res.ok) { return; }
 
-	articles.forEach(a => {
-		if (ids && !ids.includes(a.id)) { return; }
-		articles.set(a.id, Object.assign(a, {read: true}));
-	});
+	Array.from(articles.values())
+		.filter(a => ids ? ids.includes(a.id) : true)
+		.forEach(a => a.read = true);
 
 	counters.sync();
 	pubsub.publish("articles-read");
+}
+
+export function syncRead(ids: SubscriptionId[]) {
+	Array.from(articles.values())
+		.filter(a => ids.includes(a.subscription_id))
+		.forEach(a => a.read = true);
 }

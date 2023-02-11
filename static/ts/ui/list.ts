@@ -28,7 +28,7 @@ const showMoreObserver = new IntersectionObserver(
 export function init() {
 	build();
 
-	pubsub.subscribe("articles-read", sync);
+	pubsub.subscribe("articles-read", syncRead);
 	pubsub.subscribe("nav-item-selected", rebuild);
 
 	node.addEventListener("scroll", e => {
@@ -113,6 +113,10 @@ function onScroll() {
 	markReadItems.length && articles.markRead(markReadItems.map(i => i.id));
 }
 
+function syncRead() {
+	items.forEach(i => i.syncRead());
+}
+
 class Item {
 	node = html.node("article");
 	data: Article;
@@ -149,6 +153,11 @@ class Item {
 		if (rect.y <= 0 || rect.bottom > node.clientHeight) {
 			(this.node.previousElementSibling || this.node).scrollIntoView(true);
 		}
+	}
+
+	async syncRead() {
+		this.data = await articles.get(this.data.id);
+		this.isRead = this.data.read;
 	}
 
 	async sync() {
