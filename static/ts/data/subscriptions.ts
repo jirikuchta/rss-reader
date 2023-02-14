@@ -1,4 +1,4 @@
-import { SubscriptionId, Subscription, Category, CategoryId } from "data/types";
+import { SubscriptionId, Subscription, CategoryId } from "data/types";
 import * as counters from "data/counters";
 import * as articles from "data/articles";
 import * as pubsub from "util/pubsub";
@@ -52,9 +52,4 @@ export async function markRead(id: SubscriptionId) {
 	res.ok && counters.sync();
 	articles.syncRead([id]);
 	counters.sync();
-	pubsub.publish("articles-read");
-}
-
-export function isSubscription(entity: Category | Subscription) {
-	return (entity as Subscription).feed_url != undefined
 }

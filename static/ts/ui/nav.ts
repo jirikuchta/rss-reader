@@ -27,12 +27,12 @@ interface HasTitle {
 	title: string;}
 
 export function init() {
-	buildList();
+	build();
 	node.appendChild(buildFooter());
 
 	// FIXME: may cause two consecutive builds
-	pubsub.subscribe("subscriptions-changed", buildList);
-	pubsub.subscribe("categories-changed", buildList);
+	pubsub.subscribe("subscriptions-changed", build);
+	pubsub.subscribe("categories-changed", build);
 
 	pubsub.subscribe("counters-updated", syncCounters);
 }
@@ -41,7 +41,7 @@ export function toggle(force?: boolean) {
 	node.classList.toggle("is-open", force);
 }
 
-async function buildList() {
+async function build() {
 	html.clear(scroll);
 	items = [];
 
@@ -50,7 +50,6 @@ async function buildList() {
 	list = html.node("ul", {}, "", scroll);
 	let allItem = new AllItem();
 	list.appendChild(allItem.node);
-
 
 	if (subscriptions.list().some(s => s.favorite)) {
 		buildFavorites();
@@ -104,7 +103,7 @@ function select(item: Item) {
 	node.querySelector(`.${SELECTED_CSS_CLASS}`)?.classList.remove(SELECTED_CSS_CLASS);
 	item.node.classList.add(SELECTED_CSS_CLASS);
 	selected = item;
-	pubsub.publish("nav-item-selected");
+	articles.clear();
 }
 
 function syncCounters() {

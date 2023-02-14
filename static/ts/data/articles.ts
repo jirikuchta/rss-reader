@@ -5,10 +5,6 @@ import api from "util/api";
 
 const articles: Map<ArticleId, Article> = new Map();
 
-export async function init() {
-	pubsub.subscribe("nav-item-selected", () => articles.clear());
-}
-
 export async function list(filters?: ArticleFilters) {
 	let res = await api("GET", "/api/articles/", filters) as {data: Article[]};
 	res.data.forEach(article => {
@@ -20,8 +16,9 @@ export async function list(filters?: ArticleFilters) {
 
 export async function get(id: ArticleId) {
 	if (!articles.has(id)) {
-		let res = await api("GET", `/api/articles/${id}/`);
-		articles.set(id, res.data as Article);
+		let res = await api("GET", `/api/articles/${id}/`) as {data: Article};
+		res.data.time_published = new Date(res.data.time_published);
+		articles.set(id, res.data);
 	}
 	return articles.get(id)!;
 }
@@ -42,4 +39,10 @@ export function syncRead(ids: SubscriptionId[]) {
 	Array.from(articles.values())
 		.filter(a => ids.includes(a.subscription_id))
 		.forEach(a => a.read = true);
+	pubsub.publish("articles-read");
+}
+
+export function clear() {
+	articles.clear();
+	pubsub.publish("articles-cleared");
 }

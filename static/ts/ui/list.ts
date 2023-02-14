@@ -9,6 +9,7 @@ import * as pubsub from "util/pubsub";
 import * as format from "util/format";
 
 import * as navigation from "ui/nav";
+import * as detail from "ui/detail";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 
@@ -28,8 +29,8 @@ const showMoreObserver = new IntersectionObserver(
 export function init() {
 	build();
 
-	pubsub.subscribe("articles-read", syncRead);
-	pubsub.subscribe("nav-item-selected", rebuild);
+	pubsub.subscribe("articles-read", () => items.forEach(i => i.syncRead()));
+	pubsub.subscribe("articles-cleared", () => { clear(); build(); });
 
 	node.addEventListener("scroll", e => {
 		clearTimeout(markReadTimeout);
@@ -44,33 +45,24 @@ export function init() {
 	});
 }
 
-export function selected() {
-	return items.find(i => i.isSelected)?.data;
-}
-
 export function next() {
-	let selectedIndex = items.findIndex(i => i.isSelected);
+	let selectedIndex = items.findIndex(i => i.selected);
 	if (selectedIndex == -1) { return; }
 	let item = items[selectedIndex + 1];
-	item && (item.isSelected = true) && item.focus();
+	item && (item.selected = true) && item.focus();
 }
 
 export function prev() {
-	let selectedIndex = items.findIndex(i => i.isSelected);
+	let selectedIndex = items.findIndex(i => i.selected);
 	if (selectedIndex == -1) { return; }
 	let item = items[selectedIndex - 1];
-	item && (item.isSelected = true) && item.focus();
+	item && (item.selected = true) && item.focus();
 }
 
-export function sync() {
-	items.forEach(i => i.sync());
-}
-
-export function rebuild() {
+function clear() {
 	html.clear(node);
 	node.scrollTo(0, 0);
 	items = [];
-	build();
 }
 
 async function build() {
@@ -78,7 +70,7 @@ async function build() {
 
 	data.forEach(article => {
 		let item = new Item(article);
-		item.node.addEventListener("click", () => item.isSelected = true);
+		item.node.addEventListener("click", () => item.selected = true);
 		node.appendChild(item.node);
 		items.push(item);
 	});
@@ -89,7 +81,7 @@ async function build() {
 
 function getFilters() {
 	let filters: ArticleFilters = {
-		offset: items.filter(i => settings.getItem("unreadOnly") ? !i.isRead : true).length
+		offset: items.filter(i => settings.getItem("unreadOnly") ? !i.read : true).length
 	};
 
 	if (settings.getItem("unreadOnly")) {
@@ -109,12 +101,8 @@ function getFilters() {
 
 function onScroll() {
 	if (!settings.getItem("markAsReadOnScroll")) { return; }
-	let markReadItems = items.filter(i => !i.isRead && i.node.getBoundingClientRect().bottom <= 0)
+	let markReadItems = items.filter(i => !i.read && i.node.getBoundingClientRect().bottom <= 0)
 	markReadItems.length && articles.markRead(markReadItems.map(i => i.id));
-}
-
-function syncRead() {
-	items.forEach(i => i.syncRead());
 }
 
 class Item {
@@ -130,22 +118,23 @@ class Item {
 		return this.data.id;
 	}
 
-	get isRead() {
-		return this.node.classList.contains(READ_CSS_CLASS);
+	get read() {
+		return this.data.read;
 	}
 
-	set isRead(value: boolean) {
+	set read(value: boolean) {
+		this.data.read = value;
 		this.node.classList.toggle(READ_CSS_CLASS, value);
 	}
 
-	get isSelected() {
+	get selected() {
 		return this.node.classList.contains(SELECTED_CSS_CLASS);
 	}
 
-	set isSelected(value: boolean) {
+	set selected(selected: boolean) {
 		items.forEach(i => i.node.classList.toggle(
-			SELECTED_CSS_CLASS, i.id == this.id ? value : (value ? false : i.isSelected)));
-		value && pubsub.publish("article-selected");
+			SELECTED_CSS_CLASS, i.id == this.id ? selected : (selected ? false : i.selected)));
+		selected && detail.show(this.data);
 	}
 
 	focus() {
@@ -156,14 +145,7 @@ class Item {
 	}
 
 	async syncRead() {
-		this.data = await articles.get(this.data.id);
-		this.isRead = this.data.read;
-	}
-
-	async sync() {
-		this.data = await articles.get(this.data.id);
-		html.clear(this.node);
-		this.build();
+		this.read = (await articles.get(this.data.id)).read;
 	}
 
 	protected build() {

@@ -6,7 +6,6 @@ import * as subscriptions from "data/subscriptions";
 import * as html from "util/html";
 import * as opml from "util/opml";
 
-import * as list from "ui/list";
 import Dialog from "ui/widget/dialog";
 
 
@@ -33,10 +32,7 @@ function buildDisplaySection() {
 	label = html.node("label", {}, "Hide Read Articles", node);
 	let input1 = html.node("input", {type:"checkbox"}, "", label);
 	input1.checked = settings.getItem("unreadOnly");
-	input1.addEventListener("change", e => {
-		settings.setItem("unreadOnly", input1.checked);
-		list.rebuild();
-	});
+	input1.addEventListener("change", e => settings.setItem("unreadOnly", input1.checked));
 
 	label = html.node("label", {}, "Auto-Mark As Read On Scroll", node);
 	let input2 = html.node("input", {type:"checkbox"}, "", label);
@@ -46,10 +42,7 @@ function buildDisplaySection() {
 	label = html.node("label", {}, "Show images in article list", node);
 	let input3 = html.node("input", {type:"checkbox"}, "", label);
 	input3.checked = settings.getItem("showImages");
-	input3.addEventListener("change", e => {
-		settings.setItem("showImages", input3.checked);
-		list.sync();
-	});
+	input3.addEventListener("change", e => settings.setItem("showImages", input3.checked));
 
 	return node
 }

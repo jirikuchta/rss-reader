@@ -3,7 +3,6 @@ import * as articles from "data/articles";
 import * as subscriptions from "data/subscriptions";
 
 import * as html from "util/html";
-import * as pubsub from "util/pubsub";
 import * as format from "util/format";
 import * as uitools from "util/uitools";
 import Swipe from "util/swipe";
@@ -15,19 +14,12 @@ import subscriptionIcon from "ui/widget/subscription-icon";
 export const node = html.node("section", {"id": "detail"});
 
 export function init() {
-	build();
-
 	let swipe = new Swipe(node);
 	swipe.onSwipeRight = list.next;
 	swipe.onSwipeLeft = list.prev;
-
-	pubsub.subscribe("article-selected", build);
 }
 
-export function build() {
-	let article = list.selected();
-	if (!article) { return; }
-
+export function show(article: Article) {
 	html.clear(node);
 	node.scrollTo(0, 0);
 

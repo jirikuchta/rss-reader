@@ -58,5 +58,4 @@ export async function markRead(id: CategoryId) {
 	res.ok && counters.sync();
 	articles.syncRead(subscriptions.list(id).map(s => s.id));
 	counters.sync();
-	pubsub.publish("articles-read");
 }
