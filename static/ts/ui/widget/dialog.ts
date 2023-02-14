@@ -1,25 +1,20 @@
 import * as html from "util/html";
 
 
-let current: Dialog | null = null;
-
 export default class Dialog {
-	node: HTMLElement;
+	node: HTMLDialogElement;
 
 	constructor() {
-		this.node = html.node("div", {id: "dialog"});
+		this.node = html.node("dialog");
 	}
 
 	open() {
-		current?.close();
-		current = this;
-		document.body.classList.add("with-dialog");
-		document.body.appendChild(this.node);
+		document.body.append(this.node);
+		this.node.showModal();
 	}
 
 	close() {
-		current = null;
-		document.body.classList.remove("with-dialog");
+		this.node.close();
 		this.node.parentNode?.removeChild(this.node);
 		this.onClose();
 	}
@@ -73,5 +68,3 @@ export async function confirm(text: string, ok?: string, cancel?: string): Promi
 		btnCancel.addEventListener("click", e => dialog.close());
 	});
 }
-
-window.addEventListener("keydown", e => e.keyCode == 27 && current?.close());
