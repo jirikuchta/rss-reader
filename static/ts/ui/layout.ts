@@ -2,12 +2,11 @@ import { Settings } from "data/types";
 import * as settings from "data/settings";
 
 import * as html from "util/html";
-import * as pubsub from "util/pubsub";
+import * as command from "util/command";
 
 import * as nav from "ui/nav";
 import * as list from "ui/list";
 import * as detail from "ui/detail";
-
 
 let node = document.querySelector("main") as HTMLElement;
 
@@ -34,7 +33,7 @@ export async function init() {
 
 	document.body.addEventListener("click", onBodyClick);
 
-	pubsub.subscribe("article-selected", () => toggleDetail(true));
+	command.register("detail:show", () => toggleDetail(true));
 
 	new Resizer(nav.node, document.body, "navWidth");
 	new Resizer(list.node, wrap, "listWidth");

@@ -5,11 +5,11 @@ import * as subscriptions from "data/subscriptions";
 import * as html from "util/html";
 import * as format from "util/format";
 import * as uitools from "util/uitools";
+import * as command from "util/command";
 import Swipe from "util/swipe";
 
 import * as list from "ui/list";
 import subscriptionIcon from "ui/widget/subscription-icon";
-
 
 export const node = html.node("section", {"id": "detail"});
 
@@ -17,9 +17,10 @@ export function init() {
 	let swipe = new Swipe(node);
 	swipe.onSwipeRight = list.next;
 	swipe.onSwipeLeft = list.prev;
+	command.register("list:article-selected", show);
 }
 
-export function show(article: Article) {
+function show(article: Article) {
 	html.clear(node);
 	node.scrollTo(0, 0);
 
@@ -27,6 +28,8 @@ export function show(article: Article) {
 	node.appendChild(buildBody(article));
 
 	!article.read && articles.markRead([article.id]);
+
+	command.execute("detail:show");
 }
 
 function buildHeader(article: Article) {

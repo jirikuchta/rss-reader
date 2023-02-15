@@ -7,9 +7,9 @@ import * as articles from "data/articles";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 import * as format from "util/format";
+import * as command from "util/command";
 
 import * as navigation from "ui/nav";
-import * as detail from "ui/detail";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 
@@ -134,7 +134,7 @@ class Item {
 	set selected(selected: boolean) {
 		items.forEach(i => i.node.classList.toggle(
 			SELECTED_CSS_CLASS, i.id == this.id ? selected : (selected ? false : i.selected)));
-		selected && detail.show(this.data);
+		selected && command.execute("list:article-selected", this.data)
 	}
 
 	focus() {
