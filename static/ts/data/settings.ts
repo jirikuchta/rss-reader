@@ -15,7 +15,7 @@ export function init() {
 	for (key in DEFAULTS) {
 		localStorage.getItem(key) === null && setItem(key, DEFAULTS[key]!);
 	}
-	document.documentElement.classList.add(getItem("theme")!);
+	onThemeChange();
 }
 
 export function getItem<K extends keyof Settings>(key: K) {
@@ -25,8 +25,15 @@ export function getItem<K extends keyof Settings>(key: K) {
 
 export function setItem<K extends keyof Settings>(key: K, value: NonNullable<Settings[K]>) {
 	localStorage.setItem(key, JSON.stringify(value));
+	key == "theme" && onThemeChange();
 }
 
 export function removeItem<K extends keyof Settings>(key: K) {
 	localStorage.removeItem(key);
+}
+
+function onThemeChange() {
+	let theme = getItem("theme");
+	document.documentElement.classList.toggle("light", theme == "light");
+	document.documentElement.classList.toggle("dark", theme == "dark");
 }
