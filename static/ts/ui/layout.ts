@@ -33,7 +33,7 @@ export async function init() {
 
 	document.body.addEventListener("click", onBodyClick);
 
-	command.register("detail:show", () => toggleDetail(true));
+	command.register("layout:showDetail", () => toggleDetail(true));
 
 	new Resizer(nav.node, document.body, "navWidth");
 	new Resizer(list.node, wrap, "listWidth");

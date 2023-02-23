@@ -134,7 +134,7 @@ class Item {
 	set selected(selected: boolean) {
 		items.forEach(i => i.node.classList.toggle(
 			SELECTED_CSS_CLASS, i.id == this.id ? selected : (selected ? false : i.selected)));
-		selected && command.execute("list:article-selected", this.data)
+		selected && command.execute("detail:show", this.data)
 	}
 
 	focus() {

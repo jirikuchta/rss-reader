@@ -17,7 +17,7 @@ export function init() {
 	let swipe = new Swipe(node);
 	swipe.onSwipeRight = list.next;
 	swipe.onSwipeLeft = list.prev;
-	command.register("list:article-selected", show);
+	command.register("detail:show", show);
 }
 
 function show(article: Article) {
@@ -29,7 +29,7 @@ function show(article: Article) {
 
 	!article.read && articles.markRead([article.id]);
 
-	command.execute("detail:show");
+	command.execute("layout:showDetail");
 }
 
 function buildHeader(article: Article) {

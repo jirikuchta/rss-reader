@@ -58,4 +58,5 @@ export interface Settings {
 	unreadOnly: boolean;
 	markAsReadOnScroll: boolean;
 	showImages: boolean;
+	theme: "system" | "light" | "dark";
 }

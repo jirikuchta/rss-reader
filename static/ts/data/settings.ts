@@ -1,12 +1,13 @@
 import { Settings } from "data/types";
 
 const DEFAULTS: Settings = {
-	navWidth: 15,
-	listWidth: 30,
+	navWidth: 20,
+	listWidth: 40,
 	collapsedCategories: [],
 	unreadOnly: true,
 	markAsReadOnScroll: true,
-	showImages: true
+	showImages: true,
+	theme: "system"
 }
 
 export function init() {
@@ -14,6 +15,7 @@ export function init() {
 	for (key in DEFAULTS) {
 		localStorage.getItem(key) === null && setItem(key, DEFAULTS[key]!);
 	}
+	document.documentElement.classList.add(getItem("theme")!);
 }
 
 export function getItem<K extends keyof Settings>(key: K) {
