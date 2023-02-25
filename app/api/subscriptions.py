@@ -90,17 +90,14 @@ def update_subscription(subscription_id: int) -> TReturnValue:
         subscription.title = title
 
     feed_url = request.json.get("feed_url")
-    if not feed_url:
-        raise MissingFieldError("feed_url")
-
-    try:
-        parser = parse(feed_url)
-    except AmbiguousFeedUrl as e:
-        raise ClientError(ErrorType.AmbiguousFeedUrl, links=e.feed_links)
-    except Exception:
-        raise ClientError(ErrorType.ParserError)
-
-    subscription.feed_url = parser.feed_url
+    if feed_url is not None:
+        try:
+            parser = parse(feed_url)
+        except AmbiguousFeedUrl as e:
+            raise ClientError(ErrorType.AmbiguousFeedUrl, links=e.feed_links)
+        except Exception:
+            raise ClientError(ErrorType.ParserError)
+        subscription.feed_url = parser.feed_url
 
     category_id = request.json.get("category_id")
     if category_id is not None:
