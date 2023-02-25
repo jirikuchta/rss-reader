@@ -32,14 +32,13 @@ def update_subscription(
         result["skipped"] = len(parser.items)
         return result
 
-    articles = Article.query.filter(
-        Article.subscription_id == subscription.id).all()
-
     for item in parser.items:
         app.logger.info(f"Processing {item}")
         app.logger.debug(repr(item))
 
-        article = next(filter(lambda a: a.guid == item.guid, articles), None)
+        article = Article.query.filter(
+            Article.subscription_id == subscription.id,
+            Article.guid == item.guid).first()
 
         if article:
             app.logger.info(f"{item} already exists as {article}")

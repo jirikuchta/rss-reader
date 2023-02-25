@@ -80,7 +80,6 @@ export default class SubscriptionForm {
 		if (this._subscription) {
 			this._title.value = this._subscription.title;
 			this._url.value = this._subscription.feed_url;
-			this._url.disabled = true;
 			if (this._subscription.category_id) {
 				let cat = categories.get(this._subscription.category_id);
 				cat && (this._category.value = cat.title);

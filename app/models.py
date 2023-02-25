@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from sqlalchemy import func, event, engine  # type: ignore
@@ -116,7 +118,8 @@ class Article(Model, db.Model):  # type: ignore
             setattr(self, attr, getattr(parser, attr))
 
         if getattr(parser, "time_published") is not None:
-            setattr(self, "time_published", getattr(parser, "time_published"))
+            setattr(self, "time_published",
+                    min(datetime.now(), getattr(parser, "time_published")))
 
         for key in kwargs:
             setattr(self, key, kwargs[key])
