@@ -52,8 +52,8 @@ export interface OPMLItem {
 }
 
 export interface Settings {
-	navWidth: number;
-	listWidth: number;
+	navWidth: string;
+	listWidth: string;
 	collapsedCategories: CategoryId[];
 	unreadOnly: boolean;
 	markAsReadOnScroll: boolean;

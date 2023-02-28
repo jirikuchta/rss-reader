@@ -1,4 +1,3 @@
-import { Settings } from "data/types";
 import * as settings from "data/settings";
 
 import * as html from "util/html";
@@ -54,9 +53,9 @@ function onBodyClick(e: Event) {
 class Resizer {
 	protected node: HTMLElement;
 	protected parent: HTMLElement;
-	protected storageKey: keyof Settings;
+	protected storageKey: "navWidth" | "listWidth";
 
-	constructor(node: HTMLElement, parent: HTMLElement, storageKey: keyof Settings) {
+	constructor(node: HTMLElement, parent: HTMLElement, storageKey: "navWidth" | "listWidth") {
 		this.node = node;
 		this.parent = parent;
 		this.storageKey = storageKey;
@@ -66,11 +65,8 @@ class Resizer {
 	_build() {
 		let node = html.node("span", {className: "resizer"});
 		node.addEventListener("pointerdown", this);
-
 		this.node.insertAdjacentElement("afterend", node);
-
-		let width = settings.getItem(this.storageKey);
-		this.node.style.flexBasis = `${width}%`;
+		this.node.style.flexBasis = settings.getItem(this.storageKey);
 	}
 
 	handleEvent(ev: MouseEvent) {
@@ -83,11 +79,8 @@ class Resizer {
 			case "pointerup":
 				document.removeEventListener("pointermove", this);
 				document.removeEventListener("pointerup", this);
+				settings.setItem(this.storageKey, this.node.style.flexBasis);
 				document.body.style.userSelect = "";
-
-				let width = (this.node.offsetWidth / document.body.offsetWidth) * 100;
-				settings.setItem(this.storageKey, width);
-
 				break;
 			case "pointermove":
 				this._resize(ev.x);
