@@ -11,7 +11,7 @@ import Swipe from "util/swipe";
 import * as list from "ui/list";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
-export const node = html.node("section", {"id": "detail"});
+export const node = document.getElementById("detail") as HTMLElement;
 
 export function init() {
 	let swipe = new Swipe(node);

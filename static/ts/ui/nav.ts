@@ -17,7 +17,7 @@ import { confirm } from "ui/widget/dialog";
 
 const SELECTED_CSS_CLASS = "is-selected";
 
-export const node = html.node("nav");
+export const node = document.querySelector("main > nav") as HTMLElement;
 export let selected: Item;
 
 let items: Item[] = [];

@@ -14,7 +14,7 @@ export async function init() {
 	list.init();
 	detail.init();
 
-	let wrap = html.node("div", {}, "", node);
+	let wrap = document.querySelector("main > div") as HTMLElement;
 	wrap.appendChild(list.node);
 	wrap.appendChild(detail.node);
 

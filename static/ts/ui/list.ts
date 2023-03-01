@@ -16,7 +16,7 @@ import subscriptionIcon from "ui/widget/subscription-icon";
 const SELECTED_CSS_CLASS = "is-selected";
 const READ_CSS_CLASS = "is-read";
 
-export const node = html.node("section", {"id": "list"});
+export const node = document.getElementById("list") as HTMLElement;
 let items: Item[] = [];
 
 let markReadTimeout: number;

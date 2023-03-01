@@ -10,7 +10,7 @@ export default class Swipe {
 		this.node = node;
 		this.startTouch = null;
 
-		node.addEventListener("touchstart", this);
+		node.addEventListener("touchstart", this, {passive: true});
 	}
 
 	onSwipeRight() {}
@@ -26,8 +26,8 @@ export default class Swipe {
 
 	protected start(e: TouchEvent) {
 		this.startTouch = e.touches[0];
-		document.body.addEventListener("touchend", this);
-		document.body.addEventListener("touchcancel", this);
+		document.body.addEventListener("touchend", this, {passive: true});
+		document.body.addEventListener("touchcancel", this, {passive: true});
 	}
 
 	protected stop() {
