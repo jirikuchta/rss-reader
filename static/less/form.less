@@ -12,19 +12,15 @@ label {
 input:not([type]),
 input[type=text],
 input[type=password],
-input[type=url] {
+input[type=url],
+select {
 	width: 100%;
 	padding: 8px;
 	margin-bottom: 8px;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius);
 	background-color: var(--color-bg);
-}
-
-select {
-	width: 100%;
-	margin-bottom: 8px;
-	border-radius: var(--radius);
+	color: var(--color-text);
 }
 
 form.invalid input:invalid {

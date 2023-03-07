@@ -79,7 +79,7 @@ def update_subscription(
             Article.subscription_id.is_(subscription.id),
             Article.starred.is_(False),
             Article.read.is_(True)
-        ).limit(1000000).offset(len(parser.items)).all()
+        ).limit(1000000).offset(len(parser.items)*3).all()
 
         result["deleted"] = Article.query.filter(
             Article.id.in_([a.id for a in articles])

@@ -1,9 +1,10 @@
 dialog {
 	border: none;
-	border-radius: var(--radius);
 	padding: 0;
-	background: #fff;
+	background: var(--color-bg);
 	box-shadow: var(--shadow);
+	border-radius: var(--radius);
+	color: var(--color-text);
 
 	button.close {
 		position: absolute;
@@ -24,8 +25,6 @@ dialog {
 		justify-content: center;
 		gap: 16px;
 		text-align: center;
-		background: var(--color-bg);
-
 
 		button {
 			min-width: 100px;
