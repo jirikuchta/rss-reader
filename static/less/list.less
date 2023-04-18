@@ -7,6 +7,19 @@
 		flex: 0 0 100%;
 	}
 
+	> header {
+		padding: 16px;
+		border-bottom: 1px solid var(--color-border);
+		background-color: var(--color-bg);
+		position: sticky;
+		top: 0;
+		z-index: 1;
+
+		h2 {
+			font-size: 1.6rem;
+		}
+	}
+
 	article {
 		padding: 16px;
 		cursor: pointer;
@@ -55,6 +68,10 @@
 			font-size: 1rem;
 		}
 
+		.read-later {
+			margin-left: 8px;
+		}
+
 		h6, p {
 			.overflow-ellipsis;
 		}
@@ -70,6 +87,9 @@
 		}
 
 		&.is-selected h3 { color: var(--color-active); }
+
+		&:not(.is-starred) .read-later .icon-bookmark-fill { display: none; }
+		&.is-starred .read-later .icon-bookmark { display: none; }
 	}
  }
 

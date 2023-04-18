@@ -35,6 +35,12 @@ export async function markRead(ids?: ArticleId[]) {
 	pubsub.publish("articles-read");
 }
 
+export async function edit(id: ArticleId, data: Partial<Article>) {
+	let res = await api("PATCH", `/api/articles/${id}/`, data);
+	res.ok && articles.set(id, res.data as Article);
+	return articles.get(id);
+}
+
 export function syncRead(ids: SubscriptionId[]) {
 	Array.from(articles.values())
 		.filter(a => ids.includes(a.subscription_id))

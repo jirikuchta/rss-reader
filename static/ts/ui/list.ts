@@ -15,6 +15,7 @@ import subscriptionIcon from "ui/widget/subscription-icon";
 
 const SELECTED_CSS_CLASS = "is-selected";
 const READ_CSS_CLASS = "is-read";
+const STARRED_CSS_CLASS = "is-starred";
 
 export const node = document.getElementById("list") as HTMLElement;
 let items: Item[] = [];
@@ -84,8 +85,14 @@ function getFilters() {
 		offset: items.filter(i => settings.getItem("unreadOnly") ? !i.read : true).length
 	};
 
-	if (settings.getItem("unreadOnly")) {
+	if (settings.getItem("unreadOnly") && !(navigation.selected instanceof navigation.ReadLaterItem)) {
 		filters.unread_only = true;
+	}
+
+	if (navigation.selected instanceof navigation.ReadLaterItem) {
+		filters.starred_only = true;
+		filters.offset = items.length;
+		delete filters.unread_only;
 	}
 
 	if (navigation.selected instanceof navigation.SubscriptionItem) {
@@ -152,14 +159,18 @@ class Item {
 		let subscription = subscriptions.get(this.data.subscription_id)!;
 
 		this.node.dataset.id = this.id.toString();
-		this.node.classList.toggle(READ_CSS_CLASS, this.data.read);
+		this.node.classList.toggle(READ_CSS_CLASS, this.data.read && !this.data.starred);
+		this.node.classList.toggle(STARRED_CSS_CLASS, this.data.starred);
 
 		let header = html.node("header", {}, "", this.node);
 		let body = html.node("div", {className:"body"}, "", this.node);
 
 		header.appendChild(subscriptionIcon(subscription));
-		header.appendChild(html.node("h6", {}, subscription.title || subscription.feed_url));
-		header.appendChild(html.node("time", {}, format.date(this.data.time_published)));
+		header.append(
+			html.node("h6", {}, subscription.title || subscription.feed_url),
+			html.node("time", {}, format.date(this.data.time_published)),
+			this.buildReadLaterButton()
+		);
 
 		let text = html.node("div", {className:"text"}, "", body);
 		text.appendChild(html.node("h3", {}, this.data.title));
@@ -169,5 +180,16 @@ class Item {
 			let picture = html.node("div", {className:"picture"}, "", body);
 			picture.appendChild(html.node("img", {src:this.data.image_url, loading:"lazy"}));
 		}
+	}
+
+	protected buildReadLaterButton() {
+		let btn = html.button({title:"Read later", className:"read-later"});
+		btn.append(html.icon("bookmark"), html.icon("bookmark-fill"));
+		btn.addEventListener("click", async (e) => {
+			e.stopPropagation();
+			let data = await articles.edit(this.data.id, {"starred": !this.data.starred});
+			this.node.classList.toggle(STARRED_CSS_CLASS, data!.starred);
+		});
+		return btn;
 	}
 }

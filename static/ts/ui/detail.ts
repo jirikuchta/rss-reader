@@ -66,5 +66,3 @@ function buildBody(article: Article) {
 
 	return node;
 }
-
-

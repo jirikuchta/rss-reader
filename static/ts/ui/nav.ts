@@ -48,8 +48,11 @@ async function build() {
 	let list: HTMLElement;
 
 	list = html.node("ul", {}, "", scroll);
+
 	let allItem = new AllItem();
 	list.appendChild(allItem.node);
+
+	list.appendChild((new ReadLaterItem()).node);
 
 	if (subscriptions.list().some(s => s.favorite)) {
 		buildFavorites();
@@ -132,6 +135,10 @@ class Item {
 		return this._node;
 	}
 
+	count() {
+
+	}
+
 	syncCounter() {};
 
 	handleEvent(e: MouseEvent) {
@@ -170,6 +177,18 @@ export class AllItem extends Item {
 	protected build() {
 		super.build();
 		this.node.insertAdjacentElement("afterbegin", html.icon("stack"));
+	}
+}
+
+export class ReadLaterItem extends Item {
+
+	constructor() { super({title: "Read later"}); }
+
+	syncCounter() {}
+
+	protected build() {
+		super.build();
+		this.node.insertAdjacentElement("afterbegin", html.icon("bookmark-fill"));
 	}
 }
 
