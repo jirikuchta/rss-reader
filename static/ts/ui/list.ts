@@ -159,7 +159,7 @@ class Item {
 		let subscription = subscriptions.get(this.data.subscription_id)!;
 
 		this.node.dataset.id = this.id.toString();
-		this.node.classList.toggle(READ_CSS_CLASS, this.data.read && !this.data.starred);
+		this.node.classList.toggle(READ_CSS_CLASS, this.data.read);
 		this.node.classList.toggle(STARRED_CSS_CLASS, this.data.starred);
 
 		let header = html.node("header", {}, "", this.node);
@@ -187,8 +187,13 @@ class Item {
 		btn.append(html.icon("bookmark"), html.icon("bookmark-fill"));
 		btn.addEventListener("click", async (e) => {
 			e.stopPropagation();
-			let data = await articles.edit(this.data.id, {"starred": !this.data.starred});
-			this.node.classList.toggle(STARRED_CSS_CLASS, data!.starred);
+			let data = await articles.edit(this.data.id, {
+				"starred": !this.data.starred,
+				"read": false
+			});
+			if (!data) { return; }
+			this.node.classList.toggle(STARRED_CSS_CLASS, data.starred);
+			this.data = data;
 		});
 		return btn;
 	}
