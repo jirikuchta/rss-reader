@@ -55,7 +55,7 @@ function buildBody(article: Article) {
 	let node = html.node("div", {className: "body"});
 	if (article.content) {
 		node.innerHTML = article.content;
-		if (article.content.indexOf("<img") == -1 && article.image_url) {
+		if (!node.querySelector("img") && article.image_url) {
 			node.insertAdjacentElement("afterbegin", html.node("img", {src:article.image_url}));
 		}
 	} else {

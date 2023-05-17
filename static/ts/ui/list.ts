@@ -69,12 +69,14 @@ function clear() {
 async function build() {
 	let data = await articles.list(getFilters());
 
-	data.forEach(article => {
-		let item = new Item(article);
-		item.node.addEventListener("click", () => item.selected = true);
-		node.appendChild(item.node);
-		items.push(item);
-	});
+	data
+		.filter(article => !items.find(item => item.id == article.id))
+		.forEach(article => {
+			let item = new Item(article);
+			item.node.addEventListener("click", () => item.selected = true);
+			node.appendChild(item.node);
+			items.push(item);
+		});
 
 	showMoreObserver.disconnect();
 	data.length && showMoreObserver.observe(items[items.length - 1].node);
