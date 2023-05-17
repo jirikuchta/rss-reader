@@ -26,14 +26,16 @@ def raise_for_invalid_category_id(category_id: Optional[int]) -> None:
 @api_bp.route("/subscriptions/", methods=["POST"])
 @make_api_response
 def create_subscription() -> TReturnValue:
-    if request.json is None:
+    data = request.get_json(silent=True)
+
+    if data is None:
         raise ClientError(ErrorType.BadRequest)
 
-    feed_url = request.json.get("feed_url")
+    feed_url = data.get("feed_url")
     if not feed_url:
         raise MissingFieldError("feed_url")
 
-    category_id = request.json.get("category_id")
+    category_id = data.get("category_id")
     raise_for_invalid_category_id(category_id)
 
     try:
