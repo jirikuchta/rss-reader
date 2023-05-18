@@ -10,6 +10,7 @@ COPY app /rss_reader/app
 COPY templates /rss_reader/templates
 COPY requirements.txt /rss_reader/requirements.txt
 COPY static/favicon /rss_reader/static/favicon
+COPY static/manifest.json /rss_reader/static/manifest.json
 COPY --from=static /rss_reader/app.js /rss_reader/static/app.js
 COPY --from=static /rss_reader/app.css /rss_reader/static/app.css
 
