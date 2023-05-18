@@ -25,7 +25,8 @@ const header = node.querySelector("header") as HTMLElement;
 const scroll = node.querySelector(".scroll") as HTMLElement;
 
 interface HasTitle {
-	title: string;}
+	title: string;
+}
 
 export function init() {
 	buildHeader();
@@ -75,14 +76,17 @@ async function build() {
 function buildHeader() {
 	let buttons = html.node("div", {className: "buttons"}, "", header);
 
-	let addBtn = html.button({icon: "plus"}, "", buttons);
+	let addBtn = html.button({icon: "plus", title: "Add feed"}, "", buttons);
 	addBtn.addEventListener("click", e => SubscriptionForm.open());
 
-	let themeBtn = html.button({className:"theme"}, "", buttons);
+	let themeBtn = html.button({className:"theme", title: "Set theme"}, "", buttons);
 	themeBtn.append(html.icon("circle-half"), html.icon("sun-fill"), html.icon("moon-fill"));
-	themeBtn.addEventListener("click", e => showThemeMenu(themeBtn, e));
+	themeBtn.addEventListener("click", e => {
+		e.stopPropagation();
+		showThemeMenu(themeBtn, e);
+	});
 
-	let settingsBtn = html.button({icon: "gear-fill"}, "", buttons);
+	let settingsBtn = html.button({icon: "gear-fill", title: "Settings"}, "", buttons);
 	settingsBtn.addEventListener("click", e => openSettings());
 }
 

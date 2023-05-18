@@ -1,17 +1,21 @@
 .light() {
-	--color-bg-primary: #fff;
-	--color-bg-secondary: #fafafa;
-	--color-text: #333;
-	--color-border: #eee;
-	--color-hover: #f4ecd8;
+	--color-bg-primary: #f7f6f4;
+	--color-bg-secondary: #edecea;
+	--color-text-primary: #424242;
+	--color-text-secondary: #aeaeac;
+	--color-border: #e3e3e3;
+	--color-hover: #d4d4d2;
+	--shadow: 0 0 1px 0 rgba(0,0,0,0.2), 0 1px 4px 0 rgba(0,0,0,0.2), 0 16px 24px -8px rgba(0,0,0,0.3);
 }
 
 .dark() {
 	--color-bg-primary: #1e1e1e;
 	--color-bg-secondary: #232323;
-	--color-text: #eee;
+	--color-text-primary: #eee;
+	--color-text-secondary: #aeaeac;
 	--color-border: #3c3c3c;
 	--color-hover: #393939;
+	--shadow: 0 0 1px 0 rgba(0,0,0,0.4), 0 1px 4px 0 rgba(0,0,0,0.2), 0 16px 24px -8px rgba(0,0,0,0.6);
 }
 
 :root {
@@ -19,7 +23,6 @@
 	--color-active: #d87c2a;
 	--color-darkred: #d57079;
 	--color-lightred: #ffe5e7;
-	--shadow: 0px 2px 8px rgba(0, 0, 0, 0.2), 0px 0px 2px rgba(0, 0, 0, 0.38);
 
 	&.light {
 		.light();
