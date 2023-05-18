@@ -21,14 +21,15 @@ export const node = document.querySelector("main > nav") as HTMLElement;
 export let selected: Item;
 
 let items: Item[] = [];
-const scroll = html.node("div", {className: "scroll"}, "", node);
+const header = node.querySelector("header") as HTMLElement;
+const scroll = node.querySelector(".scroll") as HTMLElement;
 
 interface HasTitle {
 	title: string;}
 
 export function init() {
+	buildHeader();
 	build();
-	node.appendChild(buildFooter());
 
 	// FIXME: may cause two consecutive builds
 	pubsub.subscribe("subscriptions-changed", build);
@@ -58,10 +59,10 @@ async function build() {
 		buildFavorites();
 	}
 
-	html.node("h3", {}, "Feeds", scroll);
-
+	html.node("h3", {}, "Folders", scroll);
 	categories.list().forEach(c => buildCategory(c));
 
+	html.node("h3", {}, "Feeds", scroll);
 	list = html.node("ul", {}, "", scroll);
 	subscriptions.list()
 		.filter(s => !s.category_id)
@@ -71,16 +72,18 @@ async function build() {
 	select(allItem);
 }
 
-function buildFooter() {
-	let footer = html.node("footer");
+function buildHeader() {
+	let buttons = html.node("div", {className: "buttons"}, "", header);
 
-	let addBtn = html.button({icon: "plus"}, "", footer);
+	let addBtn = html.button({icon: "plus"}, "", buttons);
 	addBtn.addEventListener("click", e => SubscriptionForm.open());
 
-	let settingsBtn = html.button({icon: "gear"}, "", footer);
-	settingsBtn.addEventListener("click", e => openSettings());
+	let themeBtn = html.button({className:"theme"}, "", buttons);
+	themeBtn.append(html.icon("circle-half"), html.icon("sun-fill"), html.icon("moon-fill"));
+	themeBtn.addEventListener("click", e => showThemeMenu(themeBtn, e));
 
-	return footer;
+	let settingsBtn = html.button({icon: "gear-fill"}, "", buttons);
+	settingsBtn.addEventListener("click", e => openSettings());
 }
 
 function buildFavorites() {
@@ -298,4 +301,12 @@ async function deleteSubscription(subscription: Subscription) {
 	if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
 		subscriptions.remove(subscription.id);
 	}
+}
+
+function showThemeMenu(node: HTMLElement, e: MouseEvent) {
+	let menu = new PopupMenu();
+	menu.addItem("OS Default", "circle-half", () => settings.setItem("theme", "system"));
+	menu.addItem("Light", "sun-fill", () => settings.setItem("theme", "light"));
+	menu.addItem("Dark", "moon-fill", () => settings.setItem("theme", "dark"));
+	menu.open(node, "side", [-8, 8]);
 }

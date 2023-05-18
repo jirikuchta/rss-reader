@@ -7,12 +7,13 @@ import * as layout from "ui/layout";
 
 async function init() {
 	settings.init();
+	layout.init();
+
 	await categories.init();
 	await subscriptions.init();
 	await articles.init();
 
 	counters.init();
-	layout.init();
 }
 
 init();

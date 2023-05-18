@@ -29,14 +29,6 @@ function buildDisplaySection() {
 
 	let label;
 
-	label = html.node("label", {}, "Theme", node);
-	let select = html.node("select", {}, "", label);
-	html.node("option", {value:"system"}, "System", select);
-	html.node("option", {value:"light"}, "Light", select);
-	html.node("option", {value:"dark"}, "Dark", select);
-	select.value = settings.getItem("theme");
-	select.addEventListener("change", e => settings.setItem("theme", select.value as "system" | "light" | "dark"));
-
 	label = html.node("label", {}, "Hide Read Articles", node);
 	let input1 = html.node("input", {type:"checkbox"}, "", label);
 	input1.checked = settings.getItem("unreadOnly");
