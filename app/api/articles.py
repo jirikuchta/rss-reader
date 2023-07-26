@@ -1,3 +1,6 @@
+import subprocess
+import json
+
 from flask import request
 
 from models import db, Article, Subscription
@@ -85,3 +88,14 @@ def mark_articles_read() -> TReturnValue:
     db.session.commit()
 
     return None, 204
+
+
+@api_bp.route("/articles/full-content/<int:article_id>/", methods=["GET"])
+@make_api_response
+def get_full_content(article_id: int) -> TReturnValue:
+    article = get_article_or_raise(article_id)
+    result = subprocess.run(
+        ["/rss_reader/bin/full-content.js", article.url],
+        capture_output=True, text=True
+    )
+    return json.loads(result.stdout), 200

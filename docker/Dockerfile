@@ -1,10 +1,9 @@
-FROM node:18-buster AS static
+FROM node:20-bookworm AS static
 WORKDIR /rss_reader
 COPY static .
 RUN npm install && npm run build
 
-
-FROM python:3.8-slim-buster
+FROM python:3.11-slim-bookworm
 
 COPY app /rss_reader/app
 COPY templates /rss_reader/templates
@@ -16,6 +15,12 @@ COPY --from=static /rss_reader/app.css /rss_reader/static/app.css
 
 RUN apt-get update && apt-get install -y build-essential
 RUN pip install -r /rss_reader/requirements.txt
+
+WORKDIR /rss_reader
+
+RUN apt-get install -y nodejs npm
+RUN npm install @mozilla/readability jsdom
+COPY bin/full-content.js /rss_reader/bin/full-content.js
 
 WORKDIR /rss_reader/app
 

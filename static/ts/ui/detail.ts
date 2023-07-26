@@ -12,6 +12,7 @@ import * as list from "ui/list";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 export const node = document.getElementById("detail") as HTMLElement;
+const body = html.node("div", {className: "body"});
 
 export function init() {
 	let swipe = new Swipe(node);
@@ -24,12 +25,31 @@ function show(article: Article) {
 	html.clear(node);
 	node.scrollTo(0, 0);
 
+	node.appendChild(buildToolbar(article));
 	node.appendChild(buildHeader(article));
 	node.appendChild(buildBody(article));
 
 	!article.read && articles.markRead([article.id]);
 
 	command.execute("layout:showDetail");
+}
+
+function buildToolbar(article: Article) {
+	let node = html.node("div", {className:"toolbar"});
+
+	let label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
+	let input = html.node("input", {type:"checkbox"});
+	input.addEventListener("change", async (e) => {
+		let full_content = input.checked ? (await articles.getFullContent(article.id)) : "";
+		buildBody(article, full_content);
+	});
+	label.append(
+		input,
+		html.icon("cup-hot"),
+		html.icon("cup-hot-fill")
+	);
+
+	return node;
 }
 
 function buildHeader(article: Article) {
@@ -51,18 +71,21 @@ function buildHeader(article: Article) {
 	return node;
 }
 
-function buildBody(article: Article) {
-	let node = html.node("div", {className: "body"});
-	if (article.content) {
-		node.innerHTML = article.content;
-		if (!node.querySelector("img") && article.image_url) {
-			node.insertAdjacentElement("afterbegin", html.node("img", {src:article.image_url}));
+function buildBody(article: Article, full_content?: string) {
+	html.clear(body);
+
+	if (article.content || full_content) {
+		body.innerHTML = full_content || article.content || "";
+		if (!body.querySelector("img") && article.image_url) {
+			body.insertAdjacentElement("afterbegin", html.node("img", {src:article.image_url}));
 		}
 	} else {
-		article.image_url && html.node("img", {src:article.image_url}, "", node);
-		article.summary && html.node("p", {}, article.summary, node);
+		article.image_url && html.node("img", {src:article.image_url}, "", body);
+		article.summary && html.node("p", {}, article.summary, body);
 	}
-	node.querySelectorAll("img").forEach(img => img.loading = "lazy");
 
-	return node;
+	body.querySelectorAll("img").forEach(img => img.loading = "lazy");
+	body.querySelectorAll("a").forEach(link => link.target = "_blank");
+
+	return body;
 }

@@ -7,6 +7,7 @@ export interface Subscription {
 	title: string;
 	feed_url: string;
 	favorite: boolean;
+	full_content: boolean;
 	web_url?: string;
 	category_id?: CategoryId;
 }

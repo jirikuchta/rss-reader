@@ -23,6 +23,11 @@ export async function get(id: ArticleId) {
 	return articles.get(id)!;
 }
 
+export async function getFullContent(id: ArticleId) {
+	let res = await api("GET", `/api/articles/full-content/${id}/`);
+	return res.data.content;
+}
+
 export async function markRead(ids?: ArticleId[]) {
 	let res = await api("POST", "/api/articles/mark-read/", ids ? {ids} : {all: true});
 	if (!res.ok) { return; }
