@@ -56,8 +56,8 @@ function buildHeader(article: Article) {
 
 	let feed = subscriptions.get(article.subscription_id);
 	if (feed && feed.web_url) {
-		let feedLink = html.node("a", {className:"feed", href:feed.web_url, target:"_blank"});
-		feedLink.append(subscriptionIcon(feed), html.text(feed.title));
+		html.node("a", {className:"feed", href:feed.web_url, target:"_blank"}, "", node)
+			.append(subscriptionIcon(feed), html.text(feed.title));
 	}
 
 	let title = html.node("h1", {}, "", node);
