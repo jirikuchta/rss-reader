@@ -4,7 +4,6 @@ import * as subscriptions from "data/subscriptions";
 
 import * as html from "util/html";
 import * as format from "util/format";
-import * as uitools from "util/uitools";
 import * as command from "util/command";
 import Swipe from "util/swipe";
 
@@ -57,12 +56,12 @@ function buildHeader(article: Article) {
 
 	let feed = subscriptions.get(article.subscription_id);
 	if (feed && feed.web_url) {
-		let feedLink = uitools.externalLink(html.node("a", {className:"feed", href:feed.web_url}, "", node));
+		let feedLink = html.node("a", {className:"feed", href:feed.web_url, target:"_blank"});
 		feedLink.append(subscriptionIcon(feed), html.text(feed.title));
 	}
 
 	let title = html.node("h1", {}, "", node);
-	title.append(uitools.externalLink(html.node("a", {href: article.url}, article.title)))
+	title.append(html.node("a", {href: article.url, target:"_blank"}, article.title));
 
 	let info = html.node("div", {className:"publish-info"}, "", node);
 	html.node("time", {}, format.date(article.time_published), info);
