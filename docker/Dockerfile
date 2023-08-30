@@ -13,12 +13,12 @@ COPY static/manifest.json /rss_reader/static/manifest.json
 COPY --from=static /rss_reader/app.js /rss_reader/static/app.js
 COPY --from=static /rss_reader/app.css /rss_reader/static/app.css
 
-RUN apt-get update && apt-get install -y build-essential
-RUN pip install -r /rss_reader/requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential
+RUN pip install --no-cache-dir -r /rss_reader/requirements.txt
 
 WORKDIR /rss_reader
 
-RUN apt-get install -y nodejs npm
+RUN apt-get install -y --no-install-recommends nodejs npm
 RUN npm install @mozilla/readability jsdom
 COPY bin/full-content.js /rss_reader/bin/full-content.js
 
