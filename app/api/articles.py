@@ -2,10 +2,12 @@ import subprocess
 import json
 
 from flask import request
+from readability import Document
 
 from models import db, Article, Subscription
 from api import api_bp, TReturnValue, make_api_response, \
     ClientError, ErrorType
+from lib.utils import http_request
 
 
 def get_article_or_raise(article_id: int) -> Article:
@@ -94,8 +96,7 @@ def mark_articles_read() -> TReturnValue:
 @make_api_response
 def get_full_content(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
-    result = subprocess.run(
-        ["/rss_reader/bin/full-content.js", article.url],
-        capture_output=True, text=True
-    )
-    return json.loads(result.stdout), 200
+    with http_request(article.url) as res:
+        doc = Document(res.read().decode(
+            res.headers.get_content_charset("utf-8")))
+    return {"content": doc.summary()}, 200

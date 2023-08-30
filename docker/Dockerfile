@@ -16,12 +16,6 @@ COPY --from=static /rss_reader/app.css /rss_reader/static/app.css
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 RUN pip install --no-cache-dir -r /rss_reader/requirements.txt
 
-WORKDIR /rss_reader
-
-RUN apt-get install -y --no-install-recommends nodejs npm
-RUN npm install @mozilla/readability jsdom
-COPY bin/full-content.js /rss_reader/bin/full-content.js
-
 WORKDIR /rss_reader/app
 
 EXPOSE 80
