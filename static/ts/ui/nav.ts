@@ -101,7 +101,7 @@ function buildHeader() {
 function buildFavorites() {
 	html.node("h3", {}, "Favorites", scroll);
 	subscriptions.list().filter(s => s.favorite).forEach(s => {
-		node.appendChild(new SubscriptionItem(s).node);
+		scroll.appendChild(new SubscriptionItem(s).node);
 	});
 }
 
