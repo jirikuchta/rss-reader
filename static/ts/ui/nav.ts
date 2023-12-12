@@ -34,7 +34,9 @@ export function init() {
 	buildHeader();
 	build();
 
-	node.addEventListener("click", e => e.stopPropagation());
+	node.addEventListener("click", onClick);
+	node.addEventListener("contextmenu", onContextMenu);
+
 	document.body.addEventListener("click", e => toggleOpen(false));
 
 	// FIXME: may cause two consecutive builds
@@ -147,23 +149,12 @@ abstract class Item {
 		return this._data;
 	}
 
-	handleEvent(e: MouseEvent) {
-		e.preventDefault();
-		switch (e.type) {
-			case "contextmenu": showContextMenu(this, e); break;
-			case "click": select(this); break;
-		}
-	}
-
 	protected build() {
 		let node = html.node("li");
 		let counter = html.node("span", {className: "count"});
 
 		node.appendChild(html.node("span", {className: "title"}, this.data.title));
 		node.appendChild(counter)
-
-		node.addEventListener("click", this);
-		node.addEventListener("contextmenu", this);
 
 		this.node = node;
 		this.counter = counter;
@@ -245,19 +236,14 @@ export class CategoryItem extends Item {
 		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
-	handleEvent(e: MouseEvent) {
-		if (e.type == "click" && e.currentTarget == this.opener) {
-			e.stopPropagation();
-			return this.toggle();
-		}
-		super.handleEvent(e);
-	}
-
 	protected build() {
 		super.build();
 
 		this.opener = html.button({icon: "chevron-down", className: "plain btn-chevron"});
-		this.opener.addEventListener("click", this);
+		this.opener.addEventListener("click", e => {
+			e.stopPropagation();
+			this.toggle();
+		});
 
 		this.node.classList.add("category");
 		this.node.insertAdjacentElement("afterbegin", this.opener);
@@ -305,9 +291,25 @@ export class SubscriptionItem extends Item {
 	}
 }
 
-function showContextMenu(item: Item, e: MouseEvent) {
-	e.preventDefault();
+function findItem(e: Event) {
+	let itemNode: HTMLElement | null = (e.target as HTMLElement).closest("li");
+	if (!itemNode) { return; }
+	return items.find(item => item.node == itemNode);
+}
 
+function onClick(e: Event) {
+	e.stopPropagation();
+	let item = findItem(e);
+	item && select(item);
+}
+
+function onContextMenu(e: MouseEvent) {
+	e.preventDefault();
+	let item = findItem(e);
+	item && showContextMenu(item, e);
+}
+
+function showContextMenu(item: Item, e: MouseEvent) {
 	let menu = new PopupMenu();
 
 	if (item instanceof AllItem) {
