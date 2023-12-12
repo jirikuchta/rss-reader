@@ -12,8 +12,8 @@ import Dialog from "ui/widget/dialog";
 export default class CategoryForm {
 	node!: HTMLFormElement;
 	submitBtn!: HTMLButtonElement;
-	_title!: HTMLInputElement;
-	_category: Category;
+	protected title!: HTMLInputElement;
+	protected category: Category;
 
 	static open(category: Category) {
 		let dialog = new Dialog();
@@ -33,7 +33,7 @@ export default class CategoryForm {
 	}
 
 	constructor(category: Category) {
-		this._category = category;
+		this.category = category;
 		this._build();
 		this.node.addEventListener("submit", this);
 	}
@@ -42,8 +42,8 @@ export default class CategoryForm {
 		if (e.type == "submit") {
 			e.preventDefault();
 
-			let res = await categories.edit(this._category.id, {
-				title: this._title.value
+			let res = await categories.edit(this.category.id, {
+				title: this.title.value
 			});
 
 			this._validate(res);
@@ -60,9 +60,9 @@ export default class CategoryForm {
 		this.submitBtn = html.button({type: "submit"}, "Submit");
 		this.submitBtn.setAttribute("form", this.node.id);
 
-		this._title = html.node("input", {type: "text", required: "true", value: this._category.title});
+		this.title = html.node("input", {type: "text", required: "true", value: this.category.title});
 
-		this.node.appendChild(labelInput("Title", this._title));
+		this.node.appendChild(labelInput("Title", this.title));
 	}
 
 	_validate(res: ApiResponse) {
@@ -70,10 +70,10 @@ export default class CategoryForm {
 
 		switch (res.error?.code) {
 			case "missing_field":
-				this._title.setCustomValidity("Please fill out this field.");
+				this.title.setCustomValidity("Please fill out this field.");
 			break;
 			case "already_exists":
-				this._title.setCustomValidity(`Title already exists.`);
+				this.title.setCustomValidity(`Title already exists.`);
 			break;
 		}
 
@@ -82,6 +82,6 @@ export default class CategoryForm {
 	}
 
 	_clearValidation() {
-		this._title.setCustomValidity("");
+		this.title.setCustomValidity("");
 	}
 }

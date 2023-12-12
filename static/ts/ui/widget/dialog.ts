@@ -6,6 +6,7 @@ export default class Dialog {
 
 	constructor() {
 		this.node = html.node("dialog");
+		this.node.addEventListener("close", e => this.close());
 	}
 
 	open() {
@@ -15,7 +16,7 @@ export default class Dialog {
 
 	close() {
 		this.node.close();
-		this.node.parentNode?.removeChild(this.node);
+		this.node.remove();
 		this.onClose();
 	}
 

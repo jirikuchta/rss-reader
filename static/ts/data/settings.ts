@@ -2,7 +2,7 @@ import { Settings } from "data/types";
 
 const DEFAULTS: Settings = {
 	navWidth: "20%",
-	listWidth: "40%",
+	articlesWidth: "40%",
 	collapsedCategories: [],
 	unreadOnly: true,
 	markAsReadOnScroll: true,

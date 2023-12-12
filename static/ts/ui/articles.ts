@@ -13,17 +13,21 @@ import * as navigation from "ui/nav";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 
-const SELECTED_CSS_CLASS = "is-selected";
-const READ_CSS_CLASS = "is-read";
-const STARRED_CSS_CLASS = "is-starred";
+const SELECTED_CSS_CLASS = "selected";
+const READ_CSS_CLASS = "read";
+const STARRED_CSS_CLASS = "starred";
 
-export const node = document.getElementById("list") as HTMLElement;
+export const node = document.getElementById("articles") as HTMLElement;
+
+const header = html.node("header");
+const unreadCounter = html.node("span", {className:"count"});
 let items: Item[] = [];
 
 let markReadTimeout: number;
+let lastScrollTop = 0;
 
 const showMoreObserver = new IntersectionObserver(
-	entries => entries[0].isIntersecting && build(),
+	entries => entries[0].isIntersecting && buildItems(),
 	{root: node, rootMargin: "0% 0% 20% 0%"}
 );
 
@@ -32,11 +36,10 @@ export function init() {
 
 	pubsub.subscribe("articles-read", () => items.forEach(i => i.syncRead()));
 	pubsub.subscribe("articles-cleared", () => { clear(); build(); });
+	pubsub.subscribe("counters-updated", syncCounter);
 
-	node.addEventListener("scroll", e => {
-		clearTimeout(markReadTimeout);
-		markReadTimeout = setTimeout(() => onScroll(), 300);
-	});
+	node.addEventListener("scroll", onScroll);
+	node.addEventListener("click", onClick);
 
 	document.body.addEventListener("keydown", e => {
 		if (["Alt", "Control", "Shift", "OS", "Meta"].some(key => e.getModifierState(key))) { return; }
@@ -66,17 +69,53 @@ function clear() {
 	items = [];
 }
 
-async function build() {
+function build() {
+	buildHeader();
+	buildItems();
+}
+
+function syncCounter() {
+	html.clear(unreadCounter);
+	let count = navigation.selected.unreadCount;
+	count && unreadCounter.append(html.text(`${count}`));
+}
+
+function buildHeader() {
+	html.clear(header);
+
+	html.button({icon:"menu", className:"menu"}, "", header)
+		.addEventListener("click", e => {
+			e.stopPropagation();
+			navigation.toggleOpen(true);
+		});
+
+	let title = html.node("h4");
+	syncCounter();
+
+	title.append(
+		navigation.selected.icon,
+		html.text(navigation.selected.data.title),
+		unreadCounter
+	);
+
+
+	header.append(title);
+	node.append(header);
+}
+
+async function buildItems() {
 	let data = await articles.list(getFilters());
+	let frag = html.fragment();
 
 	data
 		.filter(article => !items.find(item => item.id == article.id))
 		.forEach(article => {
 			let item = new Item(article);
-			item.node.addEventListener("click", () => item.selected = true);
-			node.appendChild(item.node);
+			frag.append(item.node);
 			items.push(item);
 		});
+
+	node.append(frag);
 
 	showMoreObserver.disconnect();
 	data.length && showMoreObserver.observe(items[items.length - 1].node);
@@ -108,7 +147,26 @@ function getFilters() {
 	return filters;
 }
 
-function onScroll() {
+function onScroll(e: Event) {
+	header.classList.toggle("hidden", lastScrollTop < node.scrollTop);
+	header.classList.toggle("shadow", !!node.scrollTop);
+	lastScrollTop = node.scrollTop;
+
+	clearTimeout(markReadTimeout);
+	markReadTimeout = setTimeout(() => markRead(), 300);
+}
+
+function onClick(e: Event) {
+	let itemNode: HTMLElement | null = (e.target as HTMLElement).closest("[data-id]");
+	if (!itemNode) { return; }
+
+	let item = items.find(item => item.node == itemNode);
+	if (!item) { return; }
+
+	item.selected = true;
+}
+
+function markRead() {
 	if (!settings.getItem("markAsReadOnScroll")) { return; }
 	let markReadItems = items.filter(i => !i.read && i.node.getBoundingClientRect().bottom <= 0)
 	markReadItems.length && articles.markRead(markReadItems.map(i => i.id));
@@ -120,7 +178,7 @@ class Item {
 
 	constructor(data: Article) {
 		this.data = data;
-		this.build();
+		this.buildItems();
 	}
 
 	get id() {
@@ -157,7 +215,7 @@ class Item {
 		this.read = (await articles.get(this.data.id)).read;
 	}
 
-	protected build() {
+	protected buildItems() {
 		let subscription = subscriptions.get(this.data.subscription_id)!;
 
 		this.node.dataset.id = this.id.toString();

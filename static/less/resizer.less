@@ -1,0 +1,19 @@
+.resizer {
+	position: relative;
+
+	&::before {
+		content: "";
+		width: 5px;
+		position: absolute;
+		top: 0px; bottom: 0px; left: -2px;
+		cursor: ew-resize;
+	}
+
+	@media(max-width: @breakpoint-tablet) {
+		nav + .resizer { display: none; }
+	}
+
+	@media(max-width: @breakpoint-mobile) {
+		display: none;
+	}
+}

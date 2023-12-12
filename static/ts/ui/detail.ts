@@ -7,16 +7,17 @@ import * as format from "util/format";
 import * as command from "util/command";
 import Swipe from "util/swipe";
 
-import * as list from "ui/list";
+import * as uiarticles from "ui/articles";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 export const node = document.getElementById("detail") as HTMLElement;
 const body = html.node("div", {className: "body"});
 
+
 export function init() {
 	let swipe = new Swipe(node);
-	swipe.onSwipeRight = list.next;
-	swipe.onSwipeLeft = list.prev;
+	swipe.onSwipeRight = uiarticles.next;
+	swipe.onSwipeLeft = uiarticles.prev;
 	command.register("detail:show", show);
 }
 
@@ -24,13 +25,20 @@ function show(article: Article) {
 	html.clear(node);
 	node.scrollTo(0, 0);
 
-	node.appendChild(buildToolbar(article));
-	node.appendChild(buildHeader(article));
-	node.appendChild(buildBody(article));
+	node.append(
+		buildToolbar(article),
+		buildHeader(article),
+		buildBody(article),
+		buildCloseButton()
+	);
 
 	!article.read && articles.markRead([article.id]);
 
-	command.execute("layout:showDetail");
+	toggleOpen(true);
+}
+
+function toggleOpen(force?:boolean) {
+	node.classList.toggle("active", force);
 }
 
 function buildToolbar(article: Article) {
@@ -87,4 +95,10 @@ function buildBody(article: Article, full_content?: string) {
 	body.querySelectorAll("a").forEach(link => link.target = "_blank");
 
 	return body;
+}
+
+function buildCloseButton() {
+	let btn = html.button({type:"button", icon: "cross", classList:"close plain"});
+	btn.addEventListener("click", _ => toggleOpen(false));
+	return btn;
 }

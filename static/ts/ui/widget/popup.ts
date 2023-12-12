@@ -103,8 +103,9 @@ function position(windowNode: HTMLElement, referenceNode: HTMLElement, type: Pos
 export default class Popup {
 	node: HTMLElement;
 
-	constructor() {
-		this.node = html.node("div", {className: "popup"});
+	constructor(node?: HTMLElement) {
+		this.node = node || html.node("div");
+		this.node.classList.add("popup");
 		this.node.addEventListener("mousedown", e => e.stopPropagation());
 	}
 
@@ -126,29 +127,22 @@ export default class Popup {
 	}
 
 	onClose() {}
-
-	addMenuItem(title: string, icon: string, onClick: Function) {
-		let node = html.button({icon: icon}, title, this.node);
-		node.addEventListener("click", e => {
-			this.close();
-			onClick();
-		})
-	}
 }
 
 export class PopupMenu extends Popup {
 
 	constructor() {
-		super();
-		this.node.classList.add("popup-menu");
+		super(html.node("menu"));
 	}
 
 	addItem(title: string, icon: string, onClick: Function) {
-		let node = html.button({icon: icon}, title, this.node);
+		let node = html.node("li");
+		node.append(html.icon(icon), html.text(title));
 		node.addEventListener("click", e => {
 			this.close();
 			onClick();
 		});
+		this.node.append(node);
 		return node;
 	}
 }

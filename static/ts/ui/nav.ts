@@ -15,14 +15,16 @@ import { open as openSettings } from "ui/widget/settings";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
-const SELECTED_CSS_CLASS = "is-selected";
 
-export const node = document.querySelector("main > nav") as HTMLElement;
+const SELECTED_CSS_CLASS = "selected";
+const COLLAPSED_CSS_CLASS = "collapsed";
+
+export const node = document.querySelector("nav") as HTMLElement;
+const scroll = node.querySelector(".scroll") as HTMLElement;
+
 export let selected: Item;
 
 let items: Item[] = [];
-const header = node.querySelector("header") as HTMLElement;
-const scroll = node.querySelector(".scroll") as HTMLElement;
 
 interface HasTitle {
 	title: string;
@@ -32,6 +34,9 @@ export function init() {
 	buildHeader();
 	build();
 
+	node.addEventListener("click", e => e.stopPropagation());
+	document.body.addEventListener("click", e => toggleOpen(false));
+
 	// FIXME: may cause two consecutive builds
 	pubsub.subscribe("subscriptions-changed", build);
 	pubsub.subscribe("categories-changed", build);
@@ -39,16 +44,16 @@ export function init() {
 	pubsub.subscribe("counters-updated", syncCounters);
 }
 
-export function toggle(force?: boolean) {
-	node.classList.toggle("is-open", force);
+export function toggleOpen(force?: boolean) {
+	document.body.classList.toggle("nav-open", force);
 }
 
 async function build() {
 	html.clear(scroll);
+
 	items = [];
 
 	let list: HTMLElement;
-
 	list = html.node("ul", {}, "", scroll);
 
 	let allItem = new AllItem();
@@ -74,26 +79,29 @@ async function build() {
 }
 
 function buildHeader() {
-	let buttons = html.node("div", {className: "buttons"}, "", header);
+	let node = document.querySelector("nav header") as HTMLElement;
 
-	let addBtn = html.button({icon: "plus", title: "Add feed"}, "", buttons);
+	let logo = html.node("a", {id:"logo", href:"/"}, "", node);
+	html.icon("rss", "", logo);
+
+	let addBtn = html.button({icon: "plus", title: "Add feed"}, "", node);
 	addBtn.addEventListener("click", e => SubscriptionForm.open());
 
-	let themeBtn = html.button({className:"theme", title: "Set theme"}, "", buttons);
+	let themeBtn = html.button({className:"theme", title: "Set theme"}, "", node);
 	themeBtn.append(html.icon("circle-half"), html.icon("sun-fill"), html.icon("moon-fill"));
 	themeBtn.addEventListener("click", e => {
 		e.stopPropagation();
-		showThemeMenu(themeBtn, e);
+		showThemeMenu(themeBtn);
 	});
 
-	let settingsBtn = html.button({icon: "gear-fill", title: "Settings"}, "", buttons);
+	let settingsBtn = html.button({icon: "gear-fill", title: "Settings"}, "", node);
 	settingsBtn.addEventListener("click", e => openSettings());
 }
 
 function buildFavorites() {
 	html.node("h3", {}, "Favorites", scroll);
 	subscriptions.list().filter(s => s.favorite).forEach(s => {
-		scroll.appendChild(new SubscriptionItem(s).node);
+		node.appendChild(new SubscriptionItem(s).node);
 	});
 }
 
@@ -114,15 +122,16 @@ function select(item: Item) {
 	item.node.classList.add(SELECTED_CSS_CLASS);
 	selected = item;
 	articles.clear();
+	toggleOpen(false);
 }
 
 function syncCounters() {
 	items.forEach(i => i.syncCounter());
 }
 
-class Item {
+abstract class Item {
+	node!: HTMLLIElement;
 	protected _data: HasTitle;
-	protected _node!: HTMLLIElement;
 	protected counter!: HTMLElement;
 
 	constructor(data: HasTitle) {
@@ -137,16 +146,6 @@ class Item {
 	get data() {
 		return this._data;
 	}
-
-	get node() {
-		return this._node;
-	}
-
-	count() {
-
-	}
-
-	syncCounter() {};
 
 	handleEvent(e: MouseEvent) {
 		e.preventDefault();
@@ -166,36 +165,60 @@ class Item {
 		node.addEventListener("click", this);
 		node.addEventListener("contextmenu", this);
 
-		this._node = node;
+		this.node = node;
 		this.counter = counter;
 	}
+
+	abstract get icon(): HTMLElement | SVGElement;
+	abstract get unreadCount(): number;
+	abstract syncCounter(): void;
 }
 
 export class AllItem extends Item {
 
-	constructor() { super({title: "All articles"}); }
+	constructor() {
+		super({title: "All articles"});
+	}
+
+	get icon() {
+		return html.icon("stack");
+	}
+
+	get unreadCount() {
+		return counters.sum();
+	}
 
 	syncCounter() {
 		html.clear(this.counter);
-		let count = counters.sum();
+		let count = this.unreadCount;
 		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
 	protected build() {
 		super.build();
-		this.node.insertAdjacentElement("afterbegin", html.icon("stack"));
+		this.node.insertAdjacentElement("afterbegin", this.icon);
 	}
 }
 
 export class ReadLaterItem extends Item {
 
-	constructor() { super({title: "Read later"}); }
+	constructor() {
+		super({title: "Read later"});
+	}
+
+	get icon() {
+		return html.icon("bookmark-fill");
+	}
+
+	get unreadCount() {
+		return 0;
+	}
 
 	syncCounter() {}
 
 	protected build() {
 		super.build();
-		this.node.insertAdjacentElement("afterbegin", html.icon("bookmark-fill"));
+		this.node.insertAdjacentElement("afterbegin", this.icon);
 	}
 }
 
@@ -203,14 +226,22 @@ export class CategoryItem extends Item {
 	protected opener!: HTMLButtonElement;
 
 	get data() {
-		return this._data as Category;
+		return super.data as Category;
+	}
+
+	get icon() {
+		return html.icon("folder-fill");
+	}
+
+	get unreadCount() {
+		return subscriptions.list()
+			.filter(s => s.category_id == this.data.id)
+			.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
 	}
 
 	syncCounter() {
 		html.clear(this.counter);
-		let count = subscriptions.list()
-			.filter(s => s.category_id == this.data.id)
-			.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
+		let count = this.unreadCount;
 		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
@@ -237,10 +268,10 @@ export class CategoryItem extends Item {
 	}
 
 	protected toggle(force?: boolean) {
-		this.node.classList.toggle("is-collapsed", force);
+		this.node.classList.toggle(COLLAPSED_CSS_CLASS, force);
 
 		let data = settings.getItem("collapsedCategories");
-		if (this.node.classList.contains("is-collapsed")) {
+		if (this.node.classList.contains(COLLAPSED_CSS_CLASS)) {
 			data.push(this.data.id);
 		} else {
 			data = data.filter(id => id != this.data.id);
@@ -250,20 +281,27 @@ export class CategoryItem extends Item {
 }
 
 export class SubscriptionItem extends Item {
-
 	get data() {
-		return this._data as Subscription;
+		return super.data as Subscription;
+	}
+
+	get icon() {
+		return subscriptionIcon(this.data);
+	}
+
+	get unreadCount() {
+		return counters.get(this.data.id) || 0;
 	}
 
 	syncCounter() {
 		html.clear(this.counter);
-		let count = counters.get(this.data.id);
+		let count = this.unreadCount;
 		count && this.counter.appendChild(html.text(`${count}`));
 	}
 
 	protected build() {
 		super.build();
-		this.node.insertAdjacentElement("afterbegin", subscriptionIcon(this.data));
+		this.node.insertAdjacentElement("afterbegin", this.icon);
 	}
 }
 
@@ -295,6 +333,15 @@ function showContextMenu(item: Item, e: MouseEvent) {
 	]);
 }
 
+function showThemeMenu(node: HTMLElement) {
+	let menu = new PopupMenu();
+	menu.addItem("OS Default", "circle-half", () => settings.setItem("theme", "system"));
+	menu.addItem("Light", "sun-fill", () => settings.setItem("theme", "light"));
+	menu.addItem("Dark", "moon-fill", () => settings.setItem("theme", "dark"));
+	menu.open(node, "side", [-8, 8]);
+}
+
+
 async function deleteCategory(category: Category) {
 	if (await confirm(`Delete category ${category.title}? Any nested subscriptions will be moved to uncategorized.`)) {
 		categories.remove(category.id);
@@ -305,12 +352,4 @@ async function deleteSubscription(subscription: Subscription) {
 	if (await confirm(`Unsubscribe from ${subscription.title}?`)) {
 		subscriptions.remove(subscription.id);
 	}
-}
-
-function showThemeMenu(node: HTMLElement, e: MouseEvent) {
-	let menu = new PopupMenu();
-	menu.addItem("OS Default", "circle-half", () => settings.setItem("theme", "system"));
-	menu.addItem("Light", "sun-fill", () => settings.setItem("theme", "light"));
-	menu.addItem("Dark", "moon-fill", () => settings.setItem("theme", "dark"));
-	menu.open(node, "side", [-8, 8]);
 }
