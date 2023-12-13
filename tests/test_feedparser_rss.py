@@ -4,7 +4,8 @@ from datetime import datetime
 from lib.feedparser import FeedType, FeedParser, FeedItemParser
 
 from tests.mocks.rss_feed import MockRSSFeed, MockRSSFeedItem, \
-    MockRSSFeedItemGUID, MockAtomLink, MockRSSFeedItemEnclosure
+    MockRSSFeedItemGUID, MockAtomLink, MockRSSFeedItemEnclosure, \
+    MockRSSFeedItemMedia
 
 
 class TestParserRSS:
@@ -139,6 +140,26 @@ class TestParserRSSItem:
 
         item.enclosure = MockRSSFeedItemEnclosure(
             url="foo", type_attr="image/png", length=256)
+        assert FeedItemParser(
+            item.build(), FeedType.RSS, "http://a").image_url == "http://a/foo"
+
+        item.enclosure = None
+
+        item.media = MockRSSFeedItemMedia(url="foo", type_attr="text/html")
+        assert FeedItemParser(
+            item.build(), FeedType.RSS, "http://a").image_url is None
+
+        item.media = MockRSSFeedItemMedia(url="foo", type_attr="image/png")
+        assert FeedItemParser(
+            item.build(), FeedType.RSS, "http://a").image_url == "http://a/foo"
+
+        item.media = MockRSSFeedItemMedia(
+            url="bar", type_attr="image/png", group=False)
+        assert FeedItemParser(
+            item.build(), FeedType.RSS, "http://a").image_url == "http://a/bar"
+
+        item.media = None
+        item.description = "<img src='foo'>"
         assert FeedItemParser(
             item.build(), FeedType.RSS, "http://a").image_url == "http://a/foo"
 

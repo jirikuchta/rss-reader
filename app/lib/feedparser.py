@@ -9,7 +9,7 @@ from xml.etree import ElementTree as ET
 from flask import current_app as app
 
 from lib.utils import http_request, ensure_abs_url, HTTPResponseError
-from lib.htmlparser import FeedLinkParser, FeedLink, TextParser
+from lib.htmlparser import FeedLinkParser, FeedLink, TextParser, ImageSrcParser
 
 
 def parse(url: str) -> "FeedParser":
@@ -53,7 +53,8 @@ def attr(n: Optional[ET.Element], name: str) -> Optional[str]:
 NS = {
     "atom": "http://www.w3.org/2005/Atom",
     "dc": "http://purl.org/dc/elements/1.1/",
-    "content": "http://purl.org/rss/1.0/modules/content/"}
+    "content": "http://purl.org/rss/1.0/modules/content/",
+    "media": "http://search.yahoo.com/mrss/"}
 
 
 class AmbiguousFeedUrl(Exception):
@@ -274,6 +275,18 @@ class FeedItemParser(RootNode):
                     n.attrib.get("rel") == "enclosure" and
                     n.attrib.get("type").startswith("image")),
                 self.findall("link")), None), "href")
+
+        if url is None:
+            mediaRoot = None
+            mediaGroupNode = self.find("media:group")
+            if mediaGroupNode is not None:
+                mediaRoot = RootNode(mediaGroupNode, self.feed_type)
+            url = attr(next(filter(
+                lambda n: n.attrib.get("type").startswith("image"),
+                (mediaRoot or self).findall("media:content")), None), "url")
+
+        if url is None:
+            url = ImageSrcParser.parse(self.content) if self.content else None
 
         return ensure_abs_url(self._base_url, url) if url else None
 

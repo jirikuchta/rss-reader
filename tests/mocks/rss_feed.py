@@ -51,6 +51,7 @@ class MockRSSFeedItem:
             content_encoded: str = None,
             comments: str = None,
             enclosure: "MockRSSFeedItemEnclosure" = None,
+            media: "MockRSSFeedItemMedia" = None,
             author: str = None,
             pubdate: str = None,
             dc_creator: str = None,
@@ -62,6 +63,7 @@ class MockRSSFeedItem:
         self.content_encoded = content_encoded
         self.comments = comments
         self.enclosure = enclosure
+        self.media = media
         self.author = author
         self.pubdate = pubdate
         self.dc_creator = dc_creator
@@ -96,6 +98,9 @@ class MockRSSFeedItem:
 
         if self.enclosure is not None:
             root.append(self.enclosure.build())
+
+        if self.media is not None:
+            root.append(self.media.build())
 
         if self.author is not None:
             author = ET.SubElement(root, "author")
@@ -139,6 +144,36 @@ class MockRSSFeedItemEnclosure:
             attrib["length"] = str(self.length)
 
         return ET.Element("enclosure", attrib=attrib)
+
+
+class MockRSSFeedItemMedia:
+
+    def __init__(
+            self,
+            url: str,
+            type_attr: str,
+            group: bool = True) -> None:
+        self.url = url
+        self.type = type_attr
+        self.group = group
+
+    def build(self) -> ET.Element:
+        attrib = {}
+
+        if self.url is not None:
+            attrib["url"] = self.url
+
+        if self.type is not None:
+            attrib["type"] = self.type
+
+        elm = ET.Element(f"{{{ NS['media'] }}}content", attrib=attrib)
+
+        if self.group is True:
+            group = ET.Element(f"{{{ NS['media'] }}}group")
+            group.append(elm)
+            return group
+
+        return elm
 
 
 class MockRSSFeedItemGUID:

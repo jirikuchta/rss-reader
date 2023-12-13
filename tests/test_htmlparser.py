@@ -1,4 +1,4 @@
-from lib.htmlparser import FeedLinkParser, TextParser
+from lib.htmlparser import FeedLinkParser, TextParser, ImageSrcParser
 
 
 def test_feedlink_parser():
@@ -21,3 +21,8 @@ def test_text_parser():
     parser = TextParser()
     assert parser.parse("http://a/?a&amp;b&c") == "http://a/?a&b&c"
     assert parser.parse("<div>a<div>b<div>c</div>") == "abc"
+
+
+def test_img_src_parser():
+    parser = ImageSrcParser()
+    assert parser.parse("<img src='/image.jpg'>") == "/image.jpg"

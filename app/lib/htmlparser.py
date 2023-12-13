@@ -50,3 +50,29 @@ class TextParser(HTMLParser):
 
     def handle_data(self, data: str) -> None:
         self.data.append(data)
+
+
+class ImageSrcParser(HTMLParser):
+
+    def __init__(self):
+        super().__init__()
+        self._image_src = None
+
+    @staticmethod
+    def parse(html: str) -> str:
+        parser = ImageSrcParser()
+        parser.feed(f"<div>{html}</div>")
+        return parser._image_src
+
+    def handle_starttag(self, tag: str,
+                        attrs: List[Tuple[str, Optional[str]]]) -> None:
+        if self._image_src:
+            return
+
+        if tag != "img":
+            return
+
+        for attr, value in attrs:
+            if attr == "src":
+                self._image_src = value
+                break
