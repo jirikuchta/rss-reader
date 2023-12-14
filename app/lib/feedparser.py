@@ -46,15 +46,16 @@ def html(n: Optional[ET.Element]) -> Optional[str]:
     return n.text.strip() if n is not None and n.text else None
 
 
-def attr(n: Optional[ET.Element], name: str) -> Optional[str]:
-    return n.attrib.get(name) if n is not None else None
+def attr(n: Optional[ET.Element], name: str) -> str:
+    return n.attrib.get(name, "") if n is not None else ""
 
 
 NS = {
     "atom": "http://www.w3.org/2005/Atom",
     "dc": "http://purl.org/dc/elements/1.1/",
     "content": "http://purl.org/rss/1.0/modules/content/",
-    "media": "http://search.yahoo.com/mrss/"}
+    "media": "http://search.yahoo.com/mrss/"
+}
 
 
 class AmbiguousFeedUrl(Exception):
@@ -147,10 +148,10 @@ class FeedParser(RootNode):
 
         if self.feed_type is FeedType.ATOM:
             url = attr(next(filter(
-                lambda n: n.attrib.get("rel") in (None, "alternate"),
+                lambda n: attr(n, "rel") in ("", "alternate"),
                 self.findall("link")), None), "href")
 
-        return None if url is None else ensure_abs_url(self._feed_url, url)
+        return ensure_abs_url(self._feed_url, url) if url else None
 
     @cached_property
     def items(self) -> List["FeedItemParser"]:
@@ -203,12 +204,12 @@ class FeedItemParser(RootNode):
 
             if not url:
                 url = attr(next(filter(
-                    lambda n: n.attrib.get("rel") in (None, "alternate"),
+                    lambda n: attr(n, "rel") in ("", "alternate"),
                     self.findall("atom:link")), None), "href")
 
         if self.feed_type is FeedType.ATOM:
             url = attr(next(filter(
-                lambda n: n.attrib.get("rel") in (None, "alternate"),
+                lambda n: attr(n, "rel") in ("", "alternate"),
                 self.findall("link")), None), "href")
 
         return ensure_abs_url(self._base_url, url) if url else None
@@ -255,7 +256,7 @@ class FeedItemParser(RootNode):
 
         if not url and self.feed_type is FeedType.ATOM:
             url = attr(next(filter(
-                lambda n: n.attrib.get("rel") == "replies",
+                lambda n: attr(n, "rel") == "replies",
                 self.findall("link")), None), "href")
 
         return ensure_abs_url(self._base_url, url) if url else None
@@ -266,26 +267,26 @@ class FeedItemParser(RootNode):
 
         if self.feed_type is FeedType.RSS:
             url = attr(next(filter(
-                lambda n: n.attrib.get("type").startswith("image"),
+                lambda n: attr(n, "type").startswith("image"),
                 self.findall("enclosure")), None), "url")
 
         if self.feed_type is FeedType.ATOM:
             url = attr(next(filter(
                 lambda n: (
-                    n.attrib.get("rel") == "enclosure" and
-                    n.attrib.get("type").startswith("image")),
+                    attr(n, "rel") == "enclosure" and
+                    attr(n, "type").startswith("image")),
                 self.findall("link")), None), "href")
 
-        if url is None:
-            mediaRoot = None
-            mediaGroupNode = self.find("media:group")
-            if mediaGroupNode is not None:
-                mediaRoot = RootNode(mediaGroupNode, self.feed_type)
-            url = attr(next(filter(
-                lambda n: n.attrib.get("type").startswith("image"),
-                (mediaRoot or self).findall("media:content")), None), "url")
+        if not url:
+            groupElm = self.find("media:group")
+            rootElm = RootNode(groupElm, self.feed_type) if groupElm else self
+            url = attr(next(
+                filter(lambda n: (
+                    attr(n, "type").startswith("image") or
+                    attr(n, "medium") == "image"
+                ), rootElm.findall("media:content")), None), "url")
 
-        if url is None:
+        if not url:
             url = ImageSrcParser.parse(self.content) if self.content else None
 
         return ensure_abs_url(self._base_url, url) if url else None

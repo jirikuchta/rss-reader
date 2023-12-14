@@ -153,6 +153,10 @@ class TestParserRSSItem:
         assert FeedItemParser(
             item.build(), FeedType.RSS, "http://a").image_url == "http://a/foo"
 
+        item.media = MockRSSFeedItemMedia(url="foo", medium="image")
+        assert FeedItemParser(
+            item.build(), FeedType.RSS, "http://a").image_url == "http://a/foo"
+
         item.media = MockRSSFeedItemMedia(
             url="bar", type_attr="image/png", group=False)
         assert FeedItemParser(

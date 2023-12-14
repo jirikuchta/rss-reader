@@ -151,10 +151,12 @@ class MockRSSFeedItemMedia:
     def __init__(
             self,
             url: str,
-            type_attr: str,
+            type_attr: str = None,
+            medium: str = None,
             group: bool = True) -> None:
         self.url = url
         self.type = type_attr
+        self.medium = medium
         self.group = group
 
     def build(self) -> ET.Element:
@@ -165,6 +167,9 @@ class MockRSSFeedItemMedia:
 
         if self.type is not None:
             attrib["type"] = self.type
+
+        if self.medium is not None:
+            attrib["medium"] = self.medium
 
         elm = ET.Element(f"{{{ NS['media'] }}}content", attrib=attrib)
 
