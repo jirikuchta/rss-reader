@@ -7,7 +7,8 @@ body > nav {
 	overflow: hidden;
 
 	header {
-		.flex-column;
+		display: flex;
+ 		flex-direction: column;
 		align-items: center;
 
 		flex: 0 0 64px;
@@ -35,7 +36,8 @@ body > nav {
 		overflow: auto;
 		padding: 48px 0 24px 0;
 
-		.flex-column;
+		display: flex;
+ 		flex-direction: column;
 		line-height: 32px;
 		background-color: var(--color-bg-secondary);
 
@@ -49,7 +51,8 @@ body > nav {
 		}
 
 		li  {
-			.flex-row;
+			display: flex;
+			align-items: center;
 			padding: 0 14px 0 16px;
 			border-left: 4px solid transparent;
 			cursor: pointer;
@@ -76,7 +79,9 @@ body > nav {
 
 			.title {
 				flex-grow: 1;
-				.overflow-ellipsis;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
 			}
 
 			.count {
@@ -122,7 +127,8 @@ body > nav {
 	}
 
 	@media(max-width: @breakpoint-mobile) {
-		.flex-column;
+		display: flex;
+ 		flex-direction: column;
 
 		width: 280px;
 		max-width: none;
@@ -153,7 +159,8 @@ body > nav {
 }
 
 #logo {
-	.flex-row;
+	display: flex;
+	align-items: center;
 	justify-content: center;
 	color: var(--color-active);
 

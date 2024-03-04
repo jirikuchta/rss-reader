@@ -9,12 +9,10 @@ export default class Swipe {
 	constructor(node: HTMLElement) {
 		this.node = node;
 		this.startTouch = null;
-
 		node.addEventListener("touchstart", this, {passive: true});
 	}
 
-	onSwipeRight() {}
-	onSwipeLeft() {}
+	onSwipe(dir: "top" | "right" | "bottom" | "left") {}
 
 	handleEvent(e: TouchEvent) {
 		switch (e.type) {
@@ -45,13 +43,15 @@ export default class Swipe {
 	protected swipe(e: TouchEvent) {
 		if (!this.startTouch) { return; }
 
-		let movementX = this.startTouch.clientX - e.changedTouches[0].clientX;
-		let movementY = this.startTouch.clientY - e.changedTouches[0].clientY;
+		let deltaX = e.changedTouches[0].clientX - this.startTouch.clientX;
+		let deltaY = e.changedTouches[0].clientY - this.startTouch.clientY;
 
-		if (Math.abs(movementX) > this.threshold) {
-			if (Math.abs(movementX) > Math.abs(movementY)) {
-				movementX > 0 ? this.onSwipeRight() : this.onSwipeLeft();
-			}
+		if (Math.abs(deltaY) > Math.abs(deltaX)) {
+			if (Math.abs(deltaY) < this.threshold) { return; }
+			this.onSwipe(deltaY > 0 ? "bottom" : "top");
+		} else {
+			if (Math.abs(deltaX) < this.threshold) { return; }
+			this.onSwipe(deltaX > 0 ? "right" : "left");
 		}
 	}
 }

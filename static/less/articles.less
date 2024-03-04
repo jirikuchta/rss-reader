@@ -1,5 +1,6 @@
  #articles {
- 	.flex-column;
+ 	display: flex;
+ 	flex-direction: column;
 
 	flex: 0 0 auto;
 	overflow: auto;
@@ -26,7 +27,8 @@
 
 	flex: 0 0 var(--height);
 
-	.flex-row();
+	display: flex;
+	align-items: center;
 	padding: 0 24px;
 	background: var(--color-bg-primary);
 
@@ -38,7 +40,8 @@
 	&.shadow { box-shadow: var(--shadow-header); }
 
 	h4 {
-		.flex-row();
+		display: flex;
+		align-items: center;
 		gap: 8px;
 	}
 
@@ -68,7 +71,8 @@
 	border-radius: 8px;
 
 	header {
-		.flex-row;
+		display: flex;
+		align-items: center;
 		margin-bottom: 4px;
 	}
 
@@ -114,7 +118,9 @@
 	}
 
 	h6, p {
-		.overflow-ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	h3 {
