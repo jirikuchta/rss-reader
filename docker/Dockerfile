@@ -12,6 +12,7 @@ COPY static/favicon /rss_reader/static/favicon
 COPY static/manifest.json /rss_reader/static/manifest.json
 COPY --from=static /rss_reader/app.js /rss_reader/static/app.js
 COPY --from=static /rss_reader/app.css /rss_reader/static/app.css
+COPY --from=static /rss_reader/article.css /rss_reader/static/article.css
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 RUN pip install --no-cache-dir -r /rss_reader/requirements.txt
