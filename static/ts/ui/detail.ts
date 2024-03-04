@@ -12,8 +12,8 @@ import subscriptionIcon from "ui/widget/subscription-icon";
 
 export const node = document.getElementById("detail") as HTMLElement;
 const body = html.node("div", {className: "body"});
-const CSS_OPEN_CLASS = "is-open";
 
+const CSS_OPEN_CLASS = "is-open";
 
 export function init() {
 	body.attachShadow({mode:"open"});
@@ -89,9 +89,9 @@ function buildBody(article: Article, full_content?: string) {
 	shadow.querySelectorAll("a").forEach(link => link.target = "_blank");
 
 	const css = document.createElement("link");
-    css.setAttribute("rel", "stylesheet");
-    css.setAttribute("href", "/static/article.css");
-    shadow.prepend(css);
+	css.setAttribute("rel", "stylesheet");
+	css.setAttribute("href", "/static/article.css");
+	shadow.prepend(css);
 
 	return body;
 }
