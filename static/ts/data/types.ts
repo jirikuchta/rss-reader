@@ -24,7 +24,7 @@ export interface Article {
 	url: string;
 	read: boolean;
 	starred: boolean;
-	time_published: Date;
+	time_published: string;
 	author?: string;
 	image_url?: string;
 	content?: string;

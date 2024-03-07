@@ -7,6 +7,7 @@ const counters: Map<SubscriptionId, number> = new Map();
 export function init() {
 	sync();
 	setInterval(sync, 60*1000);
+	pubsub.subscribe("articles-updated", sync);
 }
 
 export async function sync() {

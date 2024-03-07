@@ -1,4 +1,5 @@
-export function date(d: Date) {
+export function date(d: Date | string) {
+	if (typeof d === "string") { d = new Date(d); }
 	let today = new Date;
 
 	let date_str = d.toLocaleDateString();

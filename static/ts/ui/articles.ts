@@ -13,9 +13,8 @@ import * as navigation from "ui/nav";
 import subscriptionIcon from "ui/widget/subscription-icon";
 
 
-const SELECTED_CSS_CLASS = "selected";
-const READ_CSS_CLASS = "read";
-const STARRED_CSS_CLASS = "starred";
+const SELECTED_CSS_CLASS = "is-selected";
+const READ_CSS_CLASS = "is-read";
 
 export const node = document.getElementById("articles") as HTMLElement;
 
@@ -34,7 +33,7 @@ const showMoreObserver = new IntersectionObserver(
 export function init() {
 	build();
 
-	pubsub.subscribe("articles-read", () => items.forEach(i => i.syncRead()));
+	pubsub.subscribe("articles-updated", () => items.forEach(i => i.sync()));
 	pubsub.subscribe("articles-cleared", () => { clear(); build(); });
 	pubsub.subscribe("counters-updated", syncCounter);
 
@@ -74,33 +73,27 @@ function build() {
 	buildItems();
 }
 
-function syncCounter() {
-	html.clear(unreadCounter);
-	let count = navigation.selected.unreadCount;
-	count && unreadCounter.append(html.text(`${count}`));
-}
-
 function buildHeader() {
-	html.clear(header);
+	let navItem = navigation.selected;
 
-	html.button({icon:"menu", className:"menu"}, "", header)
-		.addEventListener("click", e => {
-			e.stopPropagation();
-			navigation.toggleOpen(true);
-		});
+	let menu = html.button({icon:"menu", className:"menu"}, "", header)
+	menu.addEventListener("click", e => {
+		e.stopPropagation();
+		navigation.toggleOpen(true);
+	});
 
 	let title = html.node("h4");
+	title.append(navItem.icon, html.text(navItem.data.title), unreadCounter);
+
 	syncCounter();
 
-	title.append(
-		navigation.selected.icon,
-		html.text(navigation.selected.data.title),
-		unreadCounter
-	);
-
-
-	header.append(title);
+	header.replaceChildren(menu, title);
 	node.append(header);
+}
+
+function syncCounter() {
+	let count = String(navigation.selected.unreadCount || "");
+	unreadCounter.replaceChildren(html.text(count));
 }
 
 async function buildItems() {
@@ -148,9 +141,24 @@ function getFilters() {
 }
 
 function onScroll(e: Event) {
-	header.classList.toggle("hidden", lastScrollTop < node.scrollTop);
-	header.classList.toggle("shadow", !!node.scrollTop);
-	lastScrollTop = node.scrollTop;
+	// FIXME
+	window.requestAnimationFrame(() => {
+		let scrollTop = node.scrollTop;
+		let delta = scrollTop - lastScrollTop;
+		let headerTop = parseInt(header.style.top || "0");
+		let headerHeight = header.offsetHeight;
+
+		let top;
+		if (delta > 0) {
+			top = Math.max(headerTop - delta, -headerHeight);
+			header.classList.toggle("has-shadow", scrollTop > headerHeight && top != -headerHeight);
+		} else {
+			top = Math.min(headerTop - delta, 0);
+			header.classList.toggle("has-shadow", scrollTop != 0);
+		}
+		header.style.top = `${top}px`;
+		lastScrollTop = scrollTop;
+	});
 
 	clearTimeout(markReadTimeout);
 	markReadTimeout = setTimeout(() => markRead(), 300);
@@ -175,10 +183,11 @@ function markRead() {
 class Item {
 	node = html.node("article");
 	data: Article;
+	protected bookmarkCheckbox = html.node("input", {type: "checkbox"});
 
 	constructor(data: Article) {
 		this.data = data;
-		this.buildItems();
+		this.build();
 	}
 
 	get id() {
@@ -211,50 +220,59 @@ class Item {
 		}
 	}
 
-	async syncRead() {
-		this.read = (await articles.get(this.data.id)).read;
+	async sync() {
+		this.data = await articles.get(this.data.id);
+		this.read = this.data.read;
+		this.bookmarkCheckbox.checked = this.data.starred;
 	}
 
-	protected buildItems() {
-		let subscription = subscriptions.get(this.data.subscription_id)!;
+	protected build() {
+		const { node, data, id } = this;
 
-		this.node.dataset.id = this.id.toString();
-		this.node.classList.toggle(READ_CSS_CLASS, this.data.read);
-		this.node.classList.toggle(STARRED_CSS_CLASS, this.data.starred);
+		let subscription = subscriptions.get(data.subscription_id)!;
 
-		let header = html.node("header", {}, "", this.node);
-		let body = html.node("div", {className:"body"}, "", this.node);
+		node.dataset.id = id.toString();
+		node.classList.toggle(READ_CSS_CLASS, data.read);
 
+		let header = html.node("header");
 		header.appendChild(subscriptionIcon(subscription));
 		header.append(
 			html.node("h6", {}, subscription.title || subscription.feed_url),
-			html.node("time", {}, format.date(this.data.time_published)),
-			this.buildReadLaterButton()
+			html.node("time", {}, format.date(data.time_published)),
+			this.buildBookmark()
 		);
 
-		let text = html.node("div", {className:"text"}, "", body);
-		text.appendChild(html.node("h3", {}, this.data.title));
-		text.appendChild(html.node("p", {}, this.data.summary));
+		let text = html.node("div", {className:"text"});
+		text.appendChild(html.node("h3", {}, data.title));
+		text.appendChild(html.node("p", {}, data.summary));
 
-		if (this.data.image_url && settings.getItem("showImages")) {
-			let picture = html.node("div", {className:"picture"}, "", body);
-			picture.appendChild(html.node("img", {src:this.data.image_url, loading:"lazy"}));
+		let picture;
+		if (data.image_url && settings.getItem("showImages")) {
+			picture = html.node("div", {className:"picture"});
+			picture.appendChild(html.node("img", {src:data.image_url, loading:"lazy"}));
 		}
+
+		node.append(header, text);
+		picture && node.append(picture);
 	}
 
-	protected buildReadLaterButton() {
-		let btn = html.button({title:"Read later", className:"read-later"});
-		btn.append(html.icon("bookmark"), html.icon("bookmark-fill"));
-		btn.addEventListener("click", async (e) => {
-			e.stopPropagation();
-			let data = await articles.edit(this.data.id, {
-				"starred": !this.data.starred,
-				"read": false
+	protected buildBookmark() {
+		let node = html.node("label", {title: "Read later", className: "bookmark"});
+		node.addEventListener("click", e => e.stopPropagation());
+
+		this.bookmarkCheckbox.addEventListener("change", async (e) => {
+			await articles.edit(this.id, {
+				"starred": this.bookmarkCheckbox.checked,
+				"read": this.bookmarkCheckbox.checked ? false: this.data.read
 			});
-			if (!data) { return; }
-			this.node.classList.toggle(STARRED_CSS_CLASS, data.starred);
-			this.data = data;
 		});
-		return btn;
+
+		node.append(
+			this.bookmarkCheckbox,
+			html.icon("bookmark"),
+			html.icon("bookmark-fill")
+		);
+
+		return node;
 	}
 }

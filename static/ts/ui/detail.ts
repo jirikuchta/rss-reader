@@ -43,13 +43,15 @@ function show(article: Article) {
 function buildToolbar(article: Article) {
 	let node = html.node("div", {className:"toolbar"});
 
-	let input = html.node("input", {type:"checkbox"});
-	input.addEventListener("change", async (e) => {
-		let full_content = input.checked ? (await articles.getFullContent(article.id)) : "";
-		buildBody(article, full_content);
-	});
+	let input, label;
 
-	let label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
+	input = html.node("input", {type:"checkbox"});
+	input.addEventListener("change", async (e) => {
+		let checked = (e.target as HTMLInputElement).checked;
+		let content = checked ? await articles.getFullContent(article.id) : ""
+		buildBody(article, content);
+	});
+	label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
 	label.append(input, html.icon("cup-hot"), html.icon("cup-hot-fill"));
 
 	return node;
