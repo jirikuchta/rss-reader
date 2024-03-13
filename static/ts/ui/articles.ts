@@ -23,7 +23,6 @@ const unreadCounter = html.node("span", {className:"count"});
 let items: Item[] = [];
 
 let markReadTimeout: number;
-let lastScrollTop = 0;
 
 const showMoreObserver = new IntersectionObserver(
 	entries => entries[0].isIntersecting && buildItems(),
@@ -141,25 +140,7 @@ function getFilters() {
 }
 
 function onScroll(e: Event) {
-	// FIXME
-	window.requestAnimationFrame(() => {
-		let scrollTop = node.scrollTop;
-		let delta = scrollTop - lastScrollTop;
-		let headerTop = parseInt(header.style.top || "0");
-		let headerHeight = header.offsetHeight;
-
-		let top;
-		if (delta > 0) {
-			top = Math.max(headerTop - delta, -headerHeight);
-			header.classList.toggle("has-shadow", scrollTop > headerHeight && top != -headerHeight);
-		} else {
-			top = Math.min(headerTop - delta, 0);
-			header.classList.toggle("has-shadow", scrollTop != 0);
-		}
-		header.style.top = `${top}px`;
-		lastScrollTop = scrollTop;
-	});
-
+	header.classList.toggle("has-shadow", !!node.scrollTop);
 	clearTimeout(markReadTimeout);
 	markReadTimeout = setTimeout(() => markRead(), 300);
 }
