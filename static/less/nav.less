@@ -1,5 +1,5 @@
 body > nav {
-	flex-shrink: 0;
+	flex: none;
 	display: flex;
 	align-items: stretch;
 	min-width: 240px;
@@ -11,7 +11,8 @@ body > nav {
  		flex-direction: column;
 		align-items: center;
 
-		flex: 0 0 64px;
+		flex: none;
+		width: 64px;
 		padding: 16px 0 24px 0;
 		background: var(--color-bg-primary);
 
@@ -32,7 +33,7 @@ body > nav {
 	}
 
 	.scroll {
-		flex-grow: 1;
+		flex: auto;
 		overflow: auto;
 		padding: 48px 0 24px 0;
 
@@ -78,7 +79,7 @@ body > nav {
 			}
 
 			.title {
-				flex-grow: 1;
+				flex: auto;
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
@@ -91,7 +92,7 @@ body > nav {
 			}
 
 			button {
-				flex-shrink: 0;
+				flex: none;
 				width: 24px;
 				height: 24px;
 
@@ -106,7 +107,7 @@ body > nav {
 			}
 
 			> .icon:first-child {
-				flex-shrink: 0;
+				flex: none;
 				margin: 0 10px 0 5px;
 				color: var(--color-text-primary);
 			}
@@ -142,7 +143,7 @@ body > nav {
 		+ .resizer { display: none; }
 
 		header {
-			flex-basis: 48px;
+			width: 100%;
 			flex-direction: row;
 			padding: 4px 8px;
 			z-index: 1;
