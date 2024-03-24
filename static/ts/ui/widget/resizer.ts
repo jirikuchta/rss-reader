@@ -27,7 +27,7 @@ export default class Resizer {
 			break;
 			case "pointerup":
 				document.body.style.userSelect = "";
-				settings.setItem(this.storageKey, this.node.style.flexBasis);
+				settings.setItem(this.storageKey, this.node.style.width);
 				document.removeEventListener("pointermove", this);
 				document.removeEventListener("pointerup", this);
 			break;
@@ -41,12 +41,12 @@ export default class Resizer {
 		let node = html.node("span", {className: "resizer"});
 		node.addEventListener("pointerdown", this);
 		this.node.insertAdjacentElement("afterend", node);
-		this.node.style.flexBasis = settings.getItem(this.storageKey);
+		this.node.style.width = settings.getItem(this.storageKey);
 	}
 
 	protected resize(pos: number) {
 		let widthPx = Math.max(0, pos - this.offsetLeft);
 		let widthPerc = Math.min(100, (widthPx / this.parentWidth) * 100);
-		this.node.style.flexBasis = `${widthPerc}%`;
+		this.node.style.width = `${widthPerc}%`;
 	}
 }
