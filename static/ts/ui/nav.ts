@@ -8,7 +8,7 @@ import * as counters from "data/counters";
 import * as html from "util/html";
 import * as pubsub from "util/pubsub";
 
-import subscriptionIcon from "ui/widget/subscription-icon";
+import FeedIcon from "ui/widget/feed-icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import CategoryForm from "ui/widget/category-form";
 import { open as openSettings } from "ui/widget/settings";
@@ -272,7 +272,7 @@ export class SubscriptionItem extends Item {
 	}
 
 	get icon() {
-		return subscriptionIcon(this.data);
+		return new FeedIcon(this.data);
 	}
 
 	get unreadCount() {

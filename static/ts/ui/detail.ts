@@ -5,12 +5,12 @@ import * as subscriptions from "data/subscriptions";
 import * as html from "util/html";
 import * as format from "util/format";
 import * as command from "util/command";
-import Swipe from "util/swipe";
 
-import * as uiarticles from "ui/articles";
-import subscriptionIcon from "ui/widget/subscription-icon";
+import FeedIcon from "ui/widget/feed-icon";
 
-export const node = document.getElementById("detail") as HTMLElement;
+export const node = document.createElement("section");
+node.id = "detail";
+
 const body = html.node("div", {className: "body"});
 
 const CSS_OPEN_CLASS = "is-open";
@@ -18,12 +18,6 @@ const CSS_OPEN_CLASS = "is-open";
 export function init() {
 	body.attachShadow({mode:"open"});
 	command.register("detail:show", show);
-
-	let swipe = new Swipe(node);
-	swipe.onSwipe = (dir: "left" | "right") => {
-		if (dir == "left") { uiarticles.next(); }
-		if (dir == "right") { uiarticles.prev(); }
-	};
 }
 
 function show(article: Article) {
@@ -63,7 +57,7 @@ function buildHeader(article: Article) {
 	let feed = subscriptions.get(article.subscription_id);
 	if (feed && feed.web_url) {
 		html.node("a", {className:"feed", href:feed.web_url, target:"_blank"}, "", node)
-			.append(subscriptionIcon(feed), html.text(feed.title));
+			.append(new FeedIcon(feed), html.text(feed.title));
 	}
 
 	let title = html.node("h1", {}, "", node);
