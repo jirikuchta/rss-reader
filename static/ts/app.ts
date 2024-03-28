@@ -4,31 +4,42 @@ import * as subscriptions from "data/subscriptions";
 import * as articles from "data/subscriptions";
 import * as counters from "data/counters";
 
-import * as nav from "ui/nav";
 import FeedItems from "ui/feed-items";
 import * as detail from "ui/detail";
+import Nav from "ui/nav";
 
 import Resizer from "ui/widget/resizer";
 
-const main = document.querySelector("main")!;
+export default class App extends HTMLElement {
+	readonly nav = new Nav();
+	readonly feedItems = new FeedItems();
 
-async function init() {
-	settings.init();
+	async connectedCallback() {
+		let { nav, feedItems } = this;
 
-	await categories.init();
-	await subscriptions.init();
-	await articles.init();
+		settings.init();
 
-	let feedItems = new FeedItems();
-	main.append(feedItems, detail.node);
+		await categories.init();
+		await subscriptions.init();
+		await articles.init();
 
-	nav.node.insertAdjacentElement("afterend", new Resizer(nav.node, "navWidth"));
-	feedItems.insertAdjacentElement("afterend", new Resizer(feedItems, "articlesWidth"));
+		let main = document.createElement("main");
 
-	nav.init();
-	detail.init();
+		detail.init();
+		counters.init();
 
-	counters.init();
+		main.append(feedItems, detail.node);
+		this.append(nav, main);
+
+		nav.insertAdjacentElement("afterend", new Resizer(nav, "navWidth"));
+		feedItems.insertAdjacentElement("afterend", new Resizer(feedItems, "articlesWidth"));
+
+		this.addEventListener("click", e => this.toggleNav(false));
+	}
+
+	toggleNav(toggle?: boolean) {
+		this.classList.toggle("nav-open", toggle);
+	}
 }
 
-init();
+customElements.define("rr-app", App);

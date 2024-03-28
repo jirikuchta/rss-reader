@@ -2,11 +2,9 @@ import { ArticleFilters } from "data/types";
 import * as settings from "data/settings";
 import * as articles from "data/articles";
 
-import * as pubsub from "util/pubsub";
-
+import App from "app";
 import FeedItem from "ui/feed-item";
 import FeedItemsHeader from "ui/feed-items-header";
-import * as navigation from "ui/nav";
 
 export default class FeedItems extends HTMLElement {
 	protected markReadTimeout?: number;
@@ -20,24 +18,20 @@ export default class FeedItems extends HTMLElement {
 
 		this.addEventListener("click", this);
 		this.addEventListener("scroll", this);
-
-		pubsub.subscribe("articles-cleared", this);
-	}
-
-	disconnectCallback() {
-		pubsub.unsubscribe("articles-cleared", this);
-	}
-
-	handleMessage(message:string, publisher?: any, data?: any) {
-		if (message == "articles-cleared") {
-			this.clear();
-			this.build();
-		}
 	}
 
 	handleEvent(e: Event) {
 		e.type == "click" && this.onClick(e);
 		e.type == "scroll" && this.onScroll(e);
+	}
+
+	update() {
+		this.scrollTo(0, 0);
+		this.build();
+	}
+
+	get app() {
+		return this.closest("rr-app") as App;
 	}
 
 	get items() {
@@ -46,27 +40,28 @@ export default class FeedItems extends HTMLElement {
 
 	get filters() {
 		let { items } = this;
+		let navItem = this.app.nav.activeItem;
 
 		let filters: ArticleFilters = {
 			offset: items.filter(i => settings.getItem("unreadOnly") ? !i.read : true).length
 		};
 
-		if (settings.getItem("unreadOnly") && !(navigation.selected instanceof navigation.ReadLaterItem)) {
+		if (settings.getItem("unreadOnly") && !(navItem.type == "starred")) {
 			filters.unread_only = true;
 		}
 
-		if (navigation.selected instanceof navigation.ReadLaterItem) {
+		if (navItem.type == "starred") {
 			filters.starred_only = true;
 			filters.offset = items.length;
 			delete filters.unread_only;
 		}
 
-		if (navigation.selected instanceof navigation.SubscriptionItem) {
-			filters["subscription_id"] = navigation.selected.data.id;
+		if (navItem.type == "subscription") {
+			filters["subscription_id"] = navItem.itemId;
 		}
 
-		if (navigation.selected instanceof navigation.CategoryItem) {
-			filters["category_id"] = navigation.selected.data.id;
+		if (navItem.type == "category") {
+			filters["category_id"] = navItem.itemId;
 		}
 
 		return filters;
@@ -75,11 +70,6 @@ export default class FeedItems extends HTMLElement {
 	protected async build() {
 		this.replaceChildren(new FeedItemsHeader());
 		this.buildItems();
-	}
-
-	protected clear() {
-		this.replaceChildren();
-		this.scrollTo(0, 0);
 	}
 
 	protected async buildItems() {

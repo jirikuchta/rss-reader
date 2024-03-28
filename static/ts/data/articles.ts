@@ -6,6 +6,7 @@ import api from "util/api";
 const articles: Map<ArticleId, Article> = new Map();
 
 export async function list(filters?: ArticleFilters) {
+	articles.clear();
 	let res = await api("GET", "/api/articles/", filters) as {data: Article[]};
 	res.data.forEach(article => articles.set(article.id, article));
 	return res.data;
@@ -48,9 +49,4 @@ export function syncRead(ids: SubscriptionId[]) {
 		.filter(a => ids.includes(a.subscription_id))
 		.forEach(a => a.read = true);
 	pubsub.publish("articles-updated");
-}
-
-export function clear() {
-	articles.clear();
-	pubsub.publish("articles-cleared");
 }

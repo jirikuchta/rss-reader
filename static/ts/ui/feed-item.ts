@@ -11,7 +11,7 @@ import * as html from "util/html";
 
 import FeedIcon from "ui/widget/feed-icon";
 
-const ACTIVE_CSS_CLASS = "is-selected";
+const ACTIVE_CSS_CLASS = "is-active";
 const READ_CSS_CLASS = "is-read";
 
 export default class FeedItem extends HTMLElement {

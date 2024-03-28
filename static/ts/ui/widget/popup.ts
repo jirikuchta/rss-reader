@@ -104,7 +104,7 @@ export default class Popup {
 	node: HTMLElement;
 
 	constructor(node?: HTMLElement) {
-		this.node = node || html.node("div");
+		this.node = node || document.createElement("div");
 		this.node.classList.add("popup");
 		this.node.addEventListener("mousedown", e => e.stopPropagation());
 	}
@@ -132,11 +132,11 @@ export default class Popup {
 export class PopupMenu extends Popup {
 
 	constructor() {
-		super(html.node("menu"));
+		super(document.createElement("menu"));
 	}
 
 	addItem(title: string, icon: string, onClick: Function) {
-		let node = html.node("li");
+		let node = document.createElement("li");
 		node.append(html.icon(icon), html.text(title));
 		node.addEventListener("click", e => {
 			this.close();
