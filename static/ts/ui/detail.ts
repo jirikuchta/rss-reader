@@ -6,6 +6,7 @@ import * as html from "util/html";
 import * as format from "util/format";
 import * as command from "util/command";
 
+import icon from "ui/icon";
 import FeedIcon from "ui/widget/feed-icon";
 
 export const node = document.createElement("section");
@@ -46,7 +47,7 @@ function buildToolbar(article: Article) {
 		buildBody(article, content);
 	});
 	label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
-	label.append(input, html.icon("cup-hot"), html.icon("cup-hot-fill"));
+	label.append(input, icon("cup-hot"), icon("cup-hot-fill"));
 
 	return node;
 }
@@ -57,7 +58,7 @@ function buildHeader(article: Article) {
 	let feed = subscriptions.get(article.subscription_id);
 	if (feed && feed.web_url) {
 		html.node("a", {className:"feed", href:feed.web_url, target:"_blank"}, "", node)
-			.append(new FeedIcon(feed), html.text(feed.title));
+			.append(new FeedIcon(feed), feed.title);
 	}
 
 	let title = html.node("h1", {}, "", node);
@@ -93,7 +94,10 @@ function buildBody(article: Article, full_content?: string) {
 }
 
 function buildCloseButton() {
-	let btn = html.button({type:"button", icon: "cross", classList:"close plain"});
-	btn.addEventListener("click", _ => node.classList.remove(CSS_OPEN_CLASS));
-	return btn;
+	let node = document.createElement("button");
+	node.type = "button";
+	node.classList.add("close", "plain");
+	node.append(icon("cross"));
+	node.addEventListener("click", _ => node.classList.remove(CSS_OPEN_CLASS));
+	return node;
 }

@@ -1,6 +1,6 @@
 import App from "app";
 import Counter from "ui/counter";
-import * as html from "util/html";
+import icon from "ui/icon";
 
 export default class FeedItemsHeader extends HTMLElement {
 	connectedCallback() {
@@ -23,7 +23,7 @@ export default class FeedItemsHeader extends HTMLElement {
 
 function buildMenu(app: App) {
 	let node = document.createElement("button");
-	node.append(html.icon("menu"));
+	node.append(icon("menu"));
 	node.addEventListener("click", e => {
 		e.stopPropagation();
 		app.toggleNav(true);

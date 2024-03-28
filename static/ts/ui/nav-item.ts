@@ -3,8 +3,7 @@ import * as settings from "data/settings";
 import * as subscriptions from "data/subscriptions";
 import * as counters from "data/counters";
 
-import * as html from "util/html";
-
+import icon from "ui/icon";
 import Counter from "ui/counter";
 import FeedIcon from "ui/widget/feed-icon";
 
@@ -51,10 +50,10 @@ export default class NavItem extends HTMLElement {
 
 	get icon() {
 		switch(this.type) {
-			case "all": return html.icon("stack"); break;
-			case "starred": return html.icon("bookmark-fill"); break;
+			case "all": return icon("stack"); break;
+			case "starred": return icon("bookmark-fill"); break;
 			case "subscription": return new FeedIcon(this.data as Subscription); break;
-			case "category": return html.icon("folder-fill"); break;
+			case "category": return icon("folder-fill"); break;
 		}
 	}
 
@@ -76,7 +75,7 @@ customElements.define("rr-nav-item", NavItem);
 function buildCategoryOpener(item: NavItem) {
 	let node = document.createElement("button");
 	node.className = "plain btn-chevron";
-	node.append(html.icon("chevron-down"));
+	node.append(icon("chevron-down"));
 	node.addEventListener("click", e => {
 		e.stopPropagation();
 		toggleCategory(item);

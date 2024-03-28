@@ -1,15 +1,15 @@
-import * as html from "util/html";
 import * as random from "util/random";
 
 export function labelInput(text: string, input: HTMLInputElement) {
-    let label = html.node("label", {}, text);
+    let label = document.createElement("label");
+    label.textContent = text;
     input.required && label.classList.add("required");
 
     let id = random.id();
     label.setAttribute("for", id);
     input.setAttribute("id", id);
 
-    let frag = html.fragment();
+    let frag = document.createDocumentFragment();
     frag.appendChild(label);
     frag.appendChild(input);
 

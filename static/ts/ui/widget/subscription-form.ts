@@ -71,7 +71,9 @@ export default class SubscriptionForm {
 		this.node = html.node("form", {id: random.id()});
 		this.node.noValidate = true;
 
-		this.submitBtn = html.button({type: "submit"}, "Submit");
+		this.submitBtn = document.createElement("button");
+		this.submitBtn.type = "submit";
+		this.submitBtn.textContent = "Submit";
 		this.submitBtn.setAttribute("form", this.node.id);
 
 		this.title = html.node("input", {type: "text", required: "true"});

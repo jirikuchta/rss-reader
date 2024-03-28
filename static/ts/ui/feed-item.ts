@@ -7,8 +7,8 @@ import * as subscriptions from "data/subscriptions";
 import * as format from "util/format";
 import * as pubsub from "util/pubsub";
 import * as command from "util/command";
-import * as html from "util/html";
 
+import icon from "ui/icon";
 import FeedIcon from "ui/widget/feed-icon";
 
 const ACTIVE_CSS_CLASS = "is-active";
@@ -127,7 +127,7 @@ function buildBookmark(article: Article) {
 		});
 	});
 
-	node.append(input, html.icon("bookmark"), html.icon("bookmark-fill"));
+	node.append(input, icon("bookmark"), icon("bookmark-fill"));
 
 	return node;
 }

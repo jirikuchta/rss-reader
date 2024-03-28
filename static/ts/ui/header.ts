@@ -1,5 +1,5 @@
 import * as settings from "data/settings";
-import * as html from "util/html";
+import icon from "ui/icon";
 import SubscriptionForm from "ui/widget/subscription-form";
 import { open as openSettings } from "ui/widget/settings";
 import { PopupMenu } from "ui/widget/popup";
@@ -8,17 +8,17 @@ export default class Header extends HTMLElement {
 	connectedCallback() {
 		let logo = document.createElement("a");
 		logo.href = "/";
-		logo.append(html.icon("rss"));
+		logo.append(icon("rss"));
 
 		let add = document.createElement("button");
 		add.title = "Add feed";
-		add.append(html.icon("plus"));
+		add.append(icon("plus"));
 		add.addEventListener("click", e => SubscriptionForm.open());
 
 		let theme = document.createElement("button");
 		theme.className = "theme";
 		theme.title = "Set theme";
-		theme.append(html.icon("circle-half"), html.icon("sun-fill"), html.icon("moon-fill"));
+		theme.append(icon("circle-half"), icon("sun-fill"), icon("moon-fill"));
 		theme.addEventListener("click", e => {
 			e.stopPropagation();
 			showThemeMenu(theme);
@@ -26,7 +26,7 @@ export default class Header extends HTMLElement {
 
 		let settings = document.createElement("button");
 		settings.title = "Settings";
-		settings.append(html.icon("gear-fill"));
+		settings.append(icon("gear-fill"));
 		settings.addEventListener("click", e => openSettings());
 
 		this.append(logo, add, theme, settings);

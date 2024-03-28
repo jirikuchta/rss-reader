@@ -1,4 +1,5 @@
-import * as html from "util/html";
+import icon from "ui/icon";
+import { IconName } from "ui/icon";
 
 type PositionType = "side" | "below";
 interface Position {
@@ -135,9 +136,9 @@ export class PopupMenu extends Popup {
 		super(document.createElement("menu"));
 	}
 
-	addItem(title: string, icon: string, onClick: Function) {
+	addItem(title: string, ico: IconName, onClick: Function) {
 		let node = document.createElement("li");
-		node.append(html.icon(icon), html.text(title));
+		node.append(icon(ico), title);
 		node.addEventListener("click", e => {
 			this.close();
 			onClick();

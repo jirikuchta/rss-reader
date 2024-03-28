@@ -1,5 +1,5 @@
 import * as html from "util/html";
-
+import icon from "ui/icon";
 
 export default class Dialog {
 	node: HTMLDialogElement;
@@ -23,9 +23,11 @@ export default class Dialog {
 	onClose() {}
 
 	closeButton() {
-		let button = html.button({icon: "cross", className: "close"});
-		button.addEventListener("click", e => this.close());
-		return button;
+		let btn = document.createElement("button");
+		btn.className = "close";
+		btn.append(icon("cross"));
+		btn.addEventListener("click", e => this.close());
+		return btn;
 	}
 }
 
@@ -38,9 +40,14 @@ export async function alert(text: string, description?: string): Promise<null> {
 	html.node("h3", {}, text, header);
 	description && html.node("p", {}, description, header);
 
-	let footer = html.node("footer", {}, "", dialog.node);
-	let button = html.button({type:"submit"}, "OK", footer);
+
+	let button = document.createElement("button");
+	button.type = "submit";
+	button.textContent = "OK";;
 	button.addEventListener("click", _ => dialog.close());
+
+	let footer = html.node("footer", {}, "", dialog.node);
+	footer.append(button);
 
 	dialog.open();
 
@@ -54,9 +61,16 @@ export async function confirm(text: string, ok?: string, cancel?: string): Promi
 	header.appendChild(dialog.closeButton());
 	html.node("h3", {}, text, header);
 
+	let btnOk = document.createElement("button");
+	btnOk.type = "submit";
+	btnOk.textContent = ok || "OK";
+
+	let btnCancel = document.createElement("button");
+	btnCancel.type = "button";
+	btnCancel.textContent = cancel || "Cancel";
+
 	let footer = html.node("footer", {}, "", dialog.node);
-	let btnOk = html.button({type:"submit"}, ok || "OK", footer);
-	let btnCancel = html.button({type:"button"}, cancel || "Cancel", footer);
+	footer.append(btnOk, btnCancel);
 
 	dialog.open();
 
