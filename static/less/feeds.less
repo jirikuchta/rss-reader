@@ -1,4 +1,57 @@
-rr-nav-item {
+rr-feeds {
+	flex: auto;
+	overflow: auto;
+	padding: 48px 0 24px 0;
+
+	display: flex;
+		flex-direction: column;
+	line-height: 32px;
+	background-color: var(--color-bg-secondary);
+
+	h3 {
+		margin-top: 16px;
+		padding: 0 24px;
+		font-size: 12px;
+		font-weight: normal;
+		color: var(--color-grey);
+		text-transform: uppercase;
+	}
+
+	@media(max-width: @breakpoint-mobile) {
+		display: flex;
+ 		flex-direction: column;
+
+		width: 280px;
+		max-width: none;
+		padding: 24px 0;
+
+		position: absolute;
+		left: 0; top: 0; bottom: 0;
+		z-index: 2;
+
+		transform: translate(-100%);
+		transition: transform 300ms;
+		+ rr-resizer { display: none; }
+	}
+}
+
+rr-app.nav-open {
+	&:after {
+		content: "";
+		position: fixed;
+		top: 0; bottom: 0;
+		right: 0; left: 0;
+		z-index: 1;
+		background-color: rgba(0,0,0,0.65);
+	}
+
+	rr-feeds {
+		transform: none;
+		box-shadow: var(--shadow);
+	}
+}
+
+rr-item-feeds {
 	display: flex;
 	align-items: center;
 	padding: 0 14px 0 16px;

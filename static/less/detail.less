@@ -1,4 +1,4 @@
-#detail {
+rr-detail {
 	flex: auto;
 	overflow: auto;
 	background-color: var(--color-bg-secondary);
@@ -75,7 +75,7 @@
 @media(max-width: @breakpoint-tablet) {
 	main { position: relative; }
 
-	#detail {
+	rr-detail {
 		position: absolute;
 		z-index: 1;
 
@@ -84,26 +84,26 @@
 
 		transform: translate(100%);
 		transition: transform 300ms;
+	}
 
-		&.is-open {
-			transform: none;
+	rr-app.detail-open rr-detail {
+		transform: none;
 
-			> button.close {
-				display: flex;
-				position: fixed;
-				right: 16px; bottom: 16px;
-				width: 36px; height: 36px;
-				padding: 0;
-				border-radius: 50%;
+		> button.close {
+			display: flex;
+			position: fixed;
+			right: 16px; bottom: 16px;
+			width: 36px; height: 36px;
+			padding: 0;
+			border-radius: 50%;
 
-				color: #fff;
-				box-shadow: var(--shadow);
-				background-color: var(--color-active);
+			color: #fff;
+			box-shadow: var(--shadow);
+			background-color: var(--color-active);
 
-				.icon {
-					width: 20px;
-					height: 20px;
-				}
+			.icon {
+				width: 20px;
+				height: 20px;
 			}
 		}
 	}

@@ -4,41 +4,43 @@ import * as subscriptions from "data/subscriptions";
 import * as articles from "data/subscriptions";
 import * as counters from "data/counters";
 
-import FeedItems from "ui/feed-items";
-import * as detail from "ui/detail";
-import Nav from "ui/nav";
+import Header from "ui/header";
+import Feeds from "ui/feeds";
+import Articles from "ui/articles";
+import Detail from "ui/detail";
 
 import Resizer from "ui/widget/resizer";
 
 export default class App extends HTMLElement {
-	readonly nav = new Nav();
-	readonly feedItems = new FeedItems();
+	readonly header = new Header();
+	readonly feeds = new Feeds();
+	readonly articles = new Articles();
+	readonly detail = new Detail();
 
 	async connectedCallback() {
-		let { nav, feedItems } = this;
-
 		settings.init();
 
 		await categories.init();
 		await subscriptions.init();
 		await articles.init();
 
-		let main = document.createElement("main");
-
-		detail.init();
 		counters.init();
 
-		main.append(feedItems, detail.node);
-		this.append(nav, main);
-
-		nav.insertAdjacentElement("afterend", new Resizer(nav, "navWidth"));
-		feedItems.insertAdjacentElement("afterend", new Resizer(feedItems, "articlesWidth"));
+		let nav = document.createElement("nav");
+		let main = document.createElement("main");
+		nav.append(this.header, this.feeds);
+		main.append(this.articles, new Resizer(this.articles, "articlesWidth"), this.detail);
+		this.append(nav, new Resizer(nav, "navWidth"), main);
 
 		this.addEventListener("click", e => this.toggleNav(false));
 	}
 
 	toggleNav(toggle?: boolean) {
 		this.classList.toggle("nav-open", toggle);
+	}
+
+	toggleDetail(toggle?: boolean) {
+		this.classList.toggle("detail-open", toggle);
 	}
 }
 

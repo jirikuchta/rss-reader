@@ -4,36 +4,30 @@ import * as subscriptions from "data/subscriptions";
 
 import * as html from "util/html";
 import * as format from "util/format";
-import * as command from "util/command";
 
 import icon from "ui/icon";
 import FeedIcon from "ui/widget/feed-icon";
 
-export const node = document.createElement("section");
-node.id = "detail";
-
 const body = html.node("div", {className: "body"});
+body.attachShadow({mode:"open"});
 
-const CSS_OPEN_CLASS = "is-open";
+export default class Detail extends HTMLElement {
+	toggle(toggle?: boolean) {
+		this.classList.toggle("is-open", toggle);
+	}
 
-export function init() {
-	body.attachShadow({mode:"open"});
-	command.register("detail:show", show);
-}
-
-function show(article: Article) {
-	node.scrollTo(0, 0);
-	node.replaceChildren(
-		buildToolbar(article),
-		buildHeader(article),
-		buildBody(article),
-		buildCloseButton()
-	);
-	node.classList.add(CSS_OPEN_CLASS);
-	if (!article.read) {
-		articles.markRead([article.id]);
+	set article(article: Article) {
+		this.scrollTo(0, 0);
+		this.replaceChildren(
+			buildToolbar(article),
+			buildHeader(article),
+			buildBody(article),
+			buildCloseBtn(this)
+		);
 	}
 }
+
+customElements.define("rr-detail", Detail);
 
 function buildToolbar(article: Article) {
 	let node = html.node("div", {className:"toolbar"});
@@ -53,20 +47,38 @@ function buildToolbar(article: Article) {
 }
 
 function buildHeader(article: Article) {
-	let node = html.node("header");
+	let node = document.createElement("header");
+
+	let feed_link = document.createElement("a");
+	let title = document.createElement("h1");
+	let info = document.createElement("div");
 
 	let feed = subscriptions.get(article.subscription_id);
 	if (feed && feed.web_url) {
-		html.node("a", {className:"feed", href:feed.web_url, target:"_blank"}, "", node)
-			.append(new FeedIcon(feed), feed.title);
+		feed_link.href = feed.web_url;
+		feed_link.target = "_blank";
+		feed_link.append(new FeedIcon(feed), feed.title);
+		node.append(feed_link);
 	}
 
-	let title = html.node("h1", {}, "", node);
-	title.append(html.node("a", {href: article.url, target:"_blank"}, article.title));
+	let title_link = document.createElement("a");
+	title_link.href = article.url;
+	title_link.target = "_blank";
+	title_link.textContent = article.title;
+	title.append(title_link);
 
-	let info = html.node("div", {className:"publish-info"}, "", node);
-	html.node("time", {}, format.date(article.time_published), info);
-	article.author && html.node("span", {}, article.author, info);
+	let time = document.createElement("time");
+	time.textContent = format.date(article.time_published);
+	info.append(time);
+
+	let author;
+	if (article.author) {
+		author = document.createElement("span");
+		author.textContent = article.author;
+		info.append(author);
+	}
+
+	node.append(title, info);
 
 	return node;
 }
@@ -93,11 +105,11 @@ function buildBody(article: Article, full_content?: string) {
 	return body;
 }
 
-function buildCloseButton() {
+function buildCloseBtn(detail: Detail) {
 	let node = document.createElement("button");
 	node.type = "button";
 	node.classList.add("close", "plain");
 	node.append(icon("cross"));
-	node.addEventListener("click", _ => node.classList.remove(CSS_OPEN_CLASS));
+	node.addEventListener("click", _ => detail.toggle(false));
 	return node;
 }
