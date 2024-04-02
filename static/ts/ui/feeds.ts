@@ -220,8 +220,7 @@ customElements.define("rr-item-feeds", Item);
 
 function buildCategoryOpener(item: Item) {
 	let node = document.createElement("button");
-	node.className = "plain btn-chevron";
-	node.append(new Icon("chevron-down"));
+	node.append(new Icon("chevron"));
 	node.addEventListener("click", e => {
 		e.stopPropagation();
 		toggleCategory(item);

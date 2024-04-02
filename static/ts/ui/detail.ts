@@ -1,25 +1,20 @@
-import { Article } from "data/types";
-import * as articles from "data/articles";
+import * as types from "data/types";
 import * as subscriptions from "data/subscriptions";
 
-import * as html from "util/html";
 import * as format from "util/format";
 
+import App from "app";
 import Icon from "ui/icon";
 import FeedIcon from "ui/widget/feed-icon";
 
-const body = html.node("div", {className: "body"});
-body.attachShadow({mode:"open"});
-
 export default class Detail extends HTMLElement {
-	toggle(toggle?: boolean) {
-		this.classList.toggle("is-open", toggle);
+	get app() {
+		return this.closest("rr-app") as App;
 	}
 
-	set article(article: Article) {
+	set article(article: types.Article) {
 		this.scrollTo(0, 0);
 		this.replaceChildren(
-			buildToolbar(article),
 			buildHeader(article),
 			buildBody(article),
 			buildCloseBtn(this)
@@ -29,24 +24,7 @@ export default class Detail extends HTMLElement {
 
 customElements.define("rr-detail", Detail);
 
-function buildToolbar(article: Article) {
-	let node = html.node("div", {className:"toolbar"});
-
-	let input, label;
-
-	input = html.node("input", {type:"checkbox"});
-	input.addEventListener("change", async (e) => {
-		let checked = (e.target as HTMLInputElement).checked;
-		let content = checked ? await articles.getFullContent(article.id) : ""
-		buildBody(article, content);
-	});
-	label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
-	label.append(input, new Icon("cup-hot"), new Icon("cup-hot-fill"));
-
-	return node;
-}
-
-function buildHeader(article: Article) {
+function buildHeader(article: types.Article) {
 	let node = document.createElement("header");
 
 	let feed_link = document.createElement("a");
@@ -78,13 +56,18 @@ function buildHeader(article: Article) {
 		info.append(author);
 	}
 
+	feed_link.className = "web";
+	info.className = "publish-info";
+
 	node.append(title, info);
 
 	return node;
 }
 
-function buildBody(article: Article, full_content?: string) {
-	let shadow = body.shadowRoot!;
+function buildBody(article: types.Article, full_content?: string) {
+	let node = document.createElement("div");
+	let shadow = node.attachShadow({mode:"open"});
+	node.className = "body";
 
 	shadow.innerHTML = full_content || article.content || article.summary || "";
 
@@ -97,19 +80,32 @@ function buildBody(article: Article, full_content?: string) {
 	shadow.querySelectorAll("img").forEach(img => img.loading = "lazy");
 	shadow.querySelectorAll("a").forEach(link => link.target = "_blank");
 
-	const css = document.createElement("link");
-	css.setAttribute("rel", "stylesheet");
-	css.setAttribute("href", "/static/article.css");
-	shadow.prepend(css);
 
-	return body;
+	const css = new CSSStyleSheet();
+	css.replaceSync(`
+		* {
+			margin: 24px auto;
+			max-width: 100% !important;
+			&:first-child { margin-top: 0; }
+		}
+
+		iframe, video, figure, img {
+			display: block;
+			height: auto !important;
+		}
+
+		br { display: none; }
+	`);
+	shadow.adoptedStyleSheets = [css];
+
+	return node;
 }
 
 function buildCloseBtn(detail: Detail) {
 	let node = document.createElement("button");
 	node.type = "button";
-	node.classList.add("close", "plain");
+	node.classList.add("close");
 	node.append(new Icon("cross"));
-	node.addEventListener("click", _ => detail.toggle(false));
+	node.addEventListener("click", _ => detail.app.toggleDetail(false));
 	return node;
 }

@@ -12,7 +12,7 @@
     "scripts": {
         "build": "npm run build-js && npm run build-css",
         "build-js": "tsc && rollup --config",
-        "build-css": "lessc -x less/app.less app.css && lessc -x less/article.less article.css",
+        "build-css": "lessc -x less/app.less app.css",
         "watch": "concurrently --kill-others \"npm run watch-js\" \"npm run watch-css\"",
         "watch-js": "chokidar \"ts/**/*.ts\" -c \"npm run build-js\"",
         "watch-css": "chokidar \"less/**/*.less\" -c \"npm run build-css\""

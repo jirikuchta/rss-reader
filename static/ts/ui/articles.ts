@@ -97,11 +97,12 @@ export default class Articles extends HTMLElement {
 	protected onClick(e: Event) {
 		let { items } = this;
 
-		let item = (e.target as HTMLElement).closest("rr-article") as Item;
+		let item = (e.target as HTMLElement).closest("rr-item-articles") as Item;
 		if (!item) { return; }
 
 		items.forEach(item => item.active = false);
 		item.active = true;
+		this.app.toggleDetail(true);
 		this.app.detail.article = item.data;
 	}
 

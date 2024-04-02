@@ -27,7 +27,7 @@ rr-item-feeds {
 
 	&[type=category] {
 		&.collapsed {
-			rr-icon[type=chevron-down] { transform: rotate(-90deg); }
+			rr-icon[type=chevron] { transform: rotate(-90deg); }
 			& ~ rr-item-feeds { display: none; }
 		}
 
@@ -62,11 +62,6 @@ rr-item-feeds {
 		flex: none;
 		width: 24px;
 		height: 24px;
-
-		&:not(.btn-chevron) {
-			font-size: 16px;
-			color: var(--color-grey);
-		}
 	}
 
 	.btn-chevron {
