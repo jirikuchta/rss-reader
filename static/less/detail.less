@@ -30,8 +30,8 @@ rr-detail {
 		width: 0;
 		height: 0;
 
-		&:checked ~ .icon-cup-hot { display: none; }
-		&:not(:checked) ~ .icon-cup-hot-fill {display: none; }
+		&:checked ~ rr-icon[type=cup-hot] { display: none; }
+		&:not(:checked) ~ rr-icon[type=cup-hot-fill] {display: none; }
 	}
 
 	> header {
@@ -101,7 +101,7 @@ rr-detail {
 			box-shadow: var(--shadow);
 			background-color: var(--color-active);
 
-			.icon {
+			rr-icon {
 				width: 20px;
 				height: 20px;
 			}

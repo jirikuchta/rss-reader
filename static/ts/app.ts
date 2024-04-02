@@ -27,11 +27,12 @@ export default class App extends HTMLElement {
 		counters.init();
 
 		let nav = document.createElement("nav");
-		let main = document.createElement("main");
 		nav.append(this.header, this.feeds);
-		main.append(this.articles, new Resizer(this.articles, "articlesWidth"), this.detail);
-		this.append(nav, new Resizer(nav, "navWidth"), main);
 
+		let main = document.createElement("main");
+		main.append(this.articles, new Resizer(this.articles, "articlesWidth"), this.detail);
+
+		this.append(nav, new Resizer(nav, "navWidth"), main);
 		this.addEventListener("click", e => this.toggleNav(false));
 	}
 

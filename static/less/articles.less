@@ -119,8 +119,8 @@ rr-item-articles {
 		display: flex;
 		align-items: center;
 		input { display: none; }
-		input:checked ~ .icon-bookmark { display: none; }
-		input:not(:checked) ~ .icon-bookmark-fill { display: none; }
+		input:checked ~ rr-icon[type=bookmark] { display: none; }
+		input:not(:checked) ~ rr-icon[type=bookmark-fill] { display: none; }
 	}
 
 	h6, p {

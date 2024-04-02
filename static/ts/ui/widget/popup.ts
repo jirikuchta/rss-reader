@@ -1,4 +1,4 @@
-import icon from "ui/icon";
+import Icon from "ui/icon";
 import { IconName } from "ui/icon";
 
 type PositionType = "side" | "below";
@@ -138,7 +138,7 @@ export class PopupMenu extends Popup {
 
 	addItem(title: string, ico: IconName, onClick: Function) {
 		let node = document.createElement("li");
-		node.append(icon(ico), title);
+		node.append(new Icon(ico), title);
 		node.addEventListener("click", e => {
 			this.close();
 			onClick();

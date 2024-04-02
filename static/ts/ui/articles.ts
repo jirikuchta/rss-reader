@@ -10,7 +10,7 @@ import FeedIcon from "ui/widget/feed-icon";
 
 import App from "app";
 import Counter from "ui/counter";
-import icon from "ui/icon";
+import Icon from "ui/icon";
 
 export default class Articles extends HTMLElement {
 	protected markReadTimeout?: number;
@@ -139,7 +139,7 @@ class Header extends HTMLElement {
 
 function buildMenu(app: App) {
 	let node = document.createElement("button");
-	node.append(icon("menu"));
+	node.append(new Icon("menu"));
 	node.addEventListener("click", e => {
 		e.stopPropagation();
 		app.toggleNav(true);
@@ -266,7 +266,7 @@ function buildBookmark(article: types.Article) {
 		});
 	});
 
-	node.append(input, icon("bookmark"), icon("bookmark-fill"));
+	node.append(input, new Icon("bookmark"), new Icon("bookmark-fill"));
 
 	return node;
 }

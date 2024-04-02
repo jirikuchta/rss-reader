@@ -1,5 +1,5 @@
 import * as html from "util/html";
-import icon from "ui/icon";
+import Icon from "ui/icon";
 
 export default class Dialog {
 	node: HTMLDialogElement;
@@ -25,7 +25,7 @@ export default class Dialog {
 	closeButton() {
 		let btn = document.createElement("button");
 		btn.className = "close";
-		btn.append(icon("cross"));
+		btn.append(new Icon("cross"));
 		btn.addEventListener("click", e => this.close());
 		return btn;
 	}

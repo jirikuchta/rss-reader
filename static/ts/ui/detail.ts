@@ -5,7 +5,7 @@ import * as subscriptions from "data/subscriptions";
 import * as html from "util/html";
 import * as format from "util/format";
 
-import icon from "ui/icon";
+import Icon from "ui/icon";
 import FeedIcon from "ui/widget/feed-icon";
 
 const body = html.node("div", {className: "body"});
@@ -41,7 +41,7 @@ function buildToolbar(article: Article) {
 		buildBody(article, content);
 	});
 	label = html.node("label", {className:"full-content", title:"Load full content"}, "", node);
-	label.append(input, icon("cup-hot"), icon("cup-hot-fill"));
+	label.append(input, new Icon("cup-hot"), new Icon("cup-hot-fill"));
 
 	return node;
 }
@@ -109,7 +109,7 @@ function buildCloseBtn(detail: Detail) {
 	let node = document.createElement("button");
 	node.type = "button";
 	node.classList.add("close", "plain");
-	node.append(icon("cross"));
+	node.append(new Icon("cross"));
 	node.addEventListener("click", _ => detail.toggle(false));
 	return node;
 }

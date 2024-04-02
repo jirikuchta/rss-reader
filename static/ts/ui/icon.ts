@@ -25,14 +25,13 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-export default function icon(name: IconName) {
-	let str = ICONS[name];
+export default class Icon extends HTMLElement {
+	constructor(readonly type: keyof typeof ICONS) { super(); }
 
-	let tmp = document.createElement("div");
-	tmp.innerHTML = str;
-
-	let svg = tmp.querySelector("svg") as SVGElement;
-	svg.classList.add("icon", `icon-${name}`);
-
-	return svg;
+	connectedCallback() {
+		this.setAttribute("type", this.type);
+		this.innerHTML = ICONS[this.type];
+	}
 }
+
+customElements.define("rr-icon", Icon);
