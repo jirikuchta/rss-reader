@@ -1,4 +1,5 @@
 import * as types from "data/types";
+import * as articles from "data/articles";
 import * as subscriptions from "data/subscriptions";
 
 import * as format from "util/format";
@@ -19,6 +20,7 @@ export default class Detail extends HTMLElement {
 			buildBody(article),
 			buildCloseBtn(this)
 		);
+		articles.markRead([article.id]);
 	}
 }
 
