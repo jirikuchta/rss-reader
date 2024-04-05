@@ -79,7 +79,7 @@ function buildBody(article: types.Article, full_content?: string) {
 
 	shadow.querySelectorAll("img").forEach(img => img.loading = "lazy");
 	shadow.querySelectorAll("a").forEach(link => link.target = "_blank");
-
+	shadow.querySelectorAll("[style]").forEach(elm => elm.removeAttribute("style"));
 
 	const css = new CSSStyleSheet();
 	css.replaceSync(`

@@ -65,6 +65,7 @@ export default class Feeds extends HTMLElement {
 				let { app } = this;
 				app.articles.update();
 				app.toggleNav(false);
+				app.toggleDetail(false);
 			break;
 			case "contextmenu":
 				e.preventDefault();

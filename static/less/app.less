@@ -39,6 +39,7 @@ rr-app {
 	height: 100dvh;
 	overflow: hidden;
 	margin: 0;
+	box-sizing: border-box;
 }
 
 nav {
@@ -68,12 +69,15 @@ nav {
 			transform: none;
 			box-shadow: var(--shadow);
 
+			rr-header, rr-feeds {
+				position: relative;
+			}
+
 			&:before {
 				content: "";
 				position: fixed;
 				top: 0; bottom: 0;
 				right: 0; left: 0;
-				z-index: 1;
 				background-color: rgba(0,0,0,0.65);
 			}
 		}

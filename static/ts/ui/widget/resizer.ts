@@ -5,6 +5,7 @@ type StorageKey = keyof Pick<Settings, "navWidth" | "articlesWidth">;
 
 export default class Resizer extends HTMLElement {
 	protected parentWidth!: number;
+	protected parentOffset!: number;
 
 	constructor(protected node: HTMLElement, protected storageKey: StorageKey) {
 		super();
@@ -18,7 +19,9 @@ export default class Resizer extends HTMLElement {
 	handleEvent(ev: MouseEvent) {
 		switch(ev.type) {
 			case "pointerdown":
-				this.parentWidth = (this.node.parentNode as HTMLElement).offsetWidth;
+				let parent = this.node.parentNode as HTMLElement;
+				this.parentWidth = parent.offsetWidth;
+				this.parentOffset = parent.offsetLeft;
 				document.body.style.userSelect = "none";
 				document.addEventListener("pointermove", this);
 				document.addEventListener("pointerup", this);
@@ -36,7 +39,7 @@ export default class Resizer extends HTMLElement {
 	}
 
 	protected resize(pos: number) {
-		let widthPx = Math.max(0, pos - this.node.offsetLeft);
+		let widthPx = Math.max(0, pos - this.parentOffset);
 		let widthPerc = Math.min(100, (widthPx / this.parentWidth) * 100);
 		this.node.style.width = `${widthPerc}%`;
 	}
