@@ -21,7 +21,6 @@ export default class Articles extends HTMLElement {
 
 	connectedCallback() {
 		this.build();
-
 		this.addEventListener("click", this);
 		this.addEventListener("scroll", this);
 	}
@@ -178,9 +177,15 @@ class Item extends HTMLElement {
 		this.classList.toggle(ACTIVE_CSS_CLASS, toggle);
 	}
 
+	set starred(toggle: boolean) {
+		let input = this.querySelector(".bookmark input") as HTMLInputElement;
+		input.checked = toggle;
+	}
+
 	async sync() {
 		this._data = await articles.get(this.itemId);
 		this.read = this.data.read;
+		this.starred = this.data.starred;
 	}
 
 	connectedCallback() {

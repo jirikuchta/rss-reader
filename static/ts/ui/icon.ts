@@ -26,7 +26,7 @@ const ICONS = {
 export type IconName = keyof typeof ICONS;
 
 export default class Icon extends HTMLElement {
-	constructor(readonly type: IconName) { super(); }
+	constructor(readonly type: IconName, title?: string) { super(); }
 
 	connectedCallback() {
 		this.setAttribute("type", this.type);

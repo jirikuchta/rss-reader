@@ -1,27 +1,52 @@
 rr-detail {
-	--padding: 24px;
-
 	display: flex;
-	flex-direction: column;
-	padding: var(--padding);
+	justify-content: center;
+	padding: 24px;
 
 	flex: auto;
 	overflow: auto;
 	background-color: var(--color-bg-secondary);
 
-	header, .body {
-		width: 100%;
-		max-width: 800px;
-		margin-inline: auto;
-		padding: var(--padding);
-		background: var(--color-bg-primary);
+	.close { display: none; }
+}
+
+rr-tools {
+	align-self: flex-start;
+
+	display: flex;
+	flex-direction: column;
+
+	position: sticky;
+	top: 0;
+
+	border-radius: 0 8px 8px 0;
+	background: var(--color-bg-primary);
+
+	label {
+		padding: 16px;
+		cursor: pointer;
 	}
+
+	[type=checkbox] {
+		display: none;
+		&:checked ~ rr-icon:nth-child(2) { display: none; }
+		&:not(:checked) ~ rr-icon:nth-child(3) { display: none; }
+	}
+}
+
+rr-article {
+	align-self: flex-start;
+	width: 100%;
+	max-width: 800px;
+	padding: 32px 48px 48px;
+	border-radius: 8px 0 8px 8px;
+	background: var(--color-bg-primary);
 
 	header {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		border-radius: 8px 8px 0 0;
+		margin-bottom: 24px;
 	}
 
 	.body {
@@ -52,55 +77,69 @@ rr-detail {
 		display: flex;
 		align-items: center;
 		gap: 8px;
+		color: var(--color-grey);
 
-		> *:not(:last-child)::after {
+		> *:not(:first-child)::before {
 			content: "//";
+			margin-right: 8px;
 		}
 	}
+}
 
-	.close { display: none; }
-
-	@media(max-width: @breakpoint-tablet) {
+@media(max-width: @breakpoint-tablet) {
+	rr-detail {
 		position: absolute;
 		z-index: 1;
 
+		flex-direction: column;
+		justify-content: normal;
 		height: 100vh;
 		padding: 0;
 
 		transform: translate(100%);
 		transition: transform 300ms;
 
-		header, .body {
-			border-radius: 0;
-			max-width: none;
+		.close {
+			display: flex;
+			position: fixed;
+			right: 16px; bottom: 16px;
+			width: 40px; height: 40px;
+			padding: 0;
+			border: none;
+			border-radius: 50%;
+
+			color: #fff;
+			box-shadow: var(--shadow);
+			background-color: var(--color-active);
+
+			rr-icon {
+				width: 20px;
+				height: 20px;
+			}
 		}
 
 		rr-app.detail-open & {
 			transform: none;
-
-			.close {
-				display: flex;
-				position: fixed;
-				right: 16px; bottom: 16px;
-				width: 36px; height: 36px;
-				padding: 0;
-				border: none;
-				border-radius: 50%;
-
-				color: #fff;
-				box-shadow: var(--shadow);
-				background-color: var(--color-active);
-
-				rr-icon {
-					width: 20px;
-					height: 20px;
-				}
-			}
 		}
 	}
+
+	rr-tools {
+		padding: 0 12px;
+		flex-direction: row;
+		align-self: auto;
+		justify-content: end;
+		position: static;
+		border-radius: 0;
+		border-bottom: 1px solid var(--color-border);
+	}
+
+	rr-article {
+		flex: auto;
+		order: 2;
+		align-self: auto;
+		border-radius: 0;
+		max-width: none;
+		padding: 24px;
+	}
 }
-
-
-
-
 
