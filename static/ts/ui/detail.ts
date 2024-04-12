@@ -31,6 +31,7 @@ export default class Detail extends HTMLElement {
 	set article(data: types.Article) {
 		let article = new Article(data);
 		this.replaceChildren(article, new Tools(article), buildCloseButton(this.app));
+		await articles.markRead([data.id]);
 	}
 }
 
