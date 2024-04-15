@@ -192,9 +192,9 @@ class Item extends HTMLElement {
 		this.read = this.data.read;
 
 		this.append(buildHeader(this.data), buildText(this.data));
-
-		let img = buildImage(this.data);
-		img && this.append(img);
+		if (this.data.image_url && settings.getItem("showImages")) {
+			this.append(buildPicture(this.data.image_url));
+		}
 
 		pubsub.subscribe("articles-updated", this);
 	}
@@ -227,7 +227,6 @@ function buildHeader(article: types.Article) {
 
 function buildText(article: types.Article) {
 	let node = document.createElement("div");
-	node.className = "text";
 
 	let title = document.createElement("h3");
 	title.textContent = article.title;
@@ -240,19 +239,12 @@ function buildText(article: types.Article) {
 	return node;
 }
 
-function buildImage(article: types.Article) {
-	if (!article.image_url) { return; }
-	if (!settings.getItem("showImages")) { return; }
-
-	let node = document.createElement("div");
-	node.className = "picture";
-
+function buildPicture(image_url: string) {
+	let node = document.createElement("picture");
 	let img = new Image();
-	img.src = article.image_url;
+	img.src = image_url;
 	img.loading = "lazy";
-
 	node.append(img);
-
 	return node;
 }
 

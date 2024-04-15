@@ -20,6 +20,11 @@ const BODY_CSS = `
 		height: auto !important;
 	}
 
+	iframe, video {
+		width: 100%;
+		aspect-ratio: 16/9;
+	}
+
 	br { display: none; }
 `;
 
@@ -31,7 +36,7 @@ export default class Detail extends HTMLElement {
 	set article(data: types.Article) {
 		let article = new Article(data);
 		this.replaceChildren(article, new Tools(article), buildCloseButton(this.app));
-		await articles.markRead([data.id]);
+		articles.markRead([data.id]);
 	}
 }
 
@@ -151,6 +156,7 @@ function buildBody(article: types.Article, content?: string) {
 	shadow.querySelectorAll("img").forEach(elm => elm.loading = "lazy");
 	shadow.querySelectorAll("a").forEach(elm => elm.target = "_blank");
 	shadow.querySelectorAll("[style]").forEach(elm => elm.removeAttribute("style"));
+	shadow.querySelectorAll("[class]").forEach(elm => elm.removeAttribute("class"));
 
 	return node;
 }
