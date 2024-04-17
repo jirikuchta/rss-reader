@@ -1,4 +1,5 @@
 import { Settings } from "data/types";
+import * as pubsub from "util/pubsub";
 
 const DEFAULTS: Settings = {
 	navWidth: "20%",
@@ -7,7 +8,8 @@ const DEFAULTS: Settings = {
 	unreadOnly: true,
 	markAsReadOnScroll: true,
 	showImages: true,
-	theme: "system"
+	theme: "system",
+	detailFontSize: 14
 }
 
 export function init() {
@@ -26,6 +28,7 @@ export function getItem<K extends keyof Settings>(key: K) {
 export function setItem<K extends keyof Settings>(key: K, value: NonNullable<Settings[K]>) {
 	localStorage.setItem(key, JSON.stringify(value));
 	key == "theme" && onThemeChange();
+	pubsub.publish("settings-changed");
 }
 
 export function removeItem<K extends keyof Settings>(key: K) {

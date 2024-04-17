@@ -60,4 +60,5 @@ export interface Settings {
 	markAsReadOnScroll: boolean;
 	showImages: boolean;
 	theme: "system" | "light" | "dark";
+	detailFontSize: number;
 }
