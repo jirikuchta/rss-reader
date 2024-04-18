@@ -226,16 +226,17 @@ class ArticleContent extends HTMLElement {
 			:host {
 				font-size: ${settings.getItem("detailFontSize")}px;
 				line-height: 1.5em;
+				box-sizing: border-box;
 			}
 
 			:host > * {
 				margin: 24px auto;
-				max-width: 100% !important;
 				&:first-child { margin-top: 0; }
 			}
 
 			iframe, video, figure, img {
 				display: block;
+				max-width: 100%;
 				height: auto !important;
 				margin-inline: auto;
 			}
