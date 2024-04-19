@@ -18,6 +18,7 @@ export default class Detail extends HTMLElement {
 	}
 
 	set article(data: types.Article) {
+		this.scrollTo(0, 0);
 		let article = new Article(data);
 		this.replaceChildren(article, new Tools(article), buildCloseButton(this.app));
 		articles.markRead([data.id]);
@@ -247,6 +248,12 @@ class ArticleContent extends HTMLElement {
 			}
 
 			br, svg { display: none; }
+
+			pre {
+				padding: 16px;
+				overflow: auto;
+				background: var(--color-bg-secondary);
+			}
 		`);
 		this.shadow.adoptedStyleSheets = [css];
 	}
