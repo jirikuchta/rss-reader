@@ -8,7 +8,8 @@ from xml.etree import ElementTree as ET
 
 from flask import current_app as app
 
-from lib.utils import http_request, ensure_abs_url, HTTPResponseError
+from lib.utils import http_request, ensure_abs_url, HTTPResponseError, \
+    is_youtube_url, parse_youtube_video_id, get_youtube_embed
 from lib.htmlparser import FeedLinkParser, FeedLink, TextParser, ImageSrcParser
 
 
@@ -222,7 +223,10 @@ class FeedItemParser(RootNode):
     @cached_property
     def content(self) -> Optional[str]:
         tag = "description" if self.feed_type is FeedType.RSS else "content"
-        return html(self.find("content:encoded")) or html(self.find(tag))
+        content = html(self.find("content:encoded")) or html(self.find(tag))
+        if not content and is_youtube_url(self.url):
+            content = get_youtube_embed(self.url)
+        return content
 
     @cached_property
     def time_published(self) -> Optional[datetime]:
@@ -288,6 +292,11 @@ class FeedItemParser(RootNode):
 
         if not url:
             url = ImageSrcParser.parse(self.content) if self.content else None
+
+        if not url and is_youtube_url(self.url):
+            video_id = parse_youtube_video_id(self.url)
+            if video_id:
+                url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
 
         return ensure_abs_url(self._base_url, url) if url else None
 

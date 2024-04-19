@@ -182,7 +182,7 @@ class ArticleContent extends HTMLElement {
 
 		shadow.innerHTML = this.content || this.article.content || this.article.summary || "";
 
-		if (!shadow.querySelector("img") && this.article.image_url) {
+		if (!this.shadow.querySelector("img, iframe") && this.article.image_url) {
 			let img = document.createElement("img");
 			img.src = this.article.image_url;
 			shadow.prepend(img);

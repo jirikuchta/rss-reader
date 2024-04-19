@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from http.client import HTTPConnection, HTTPSConnection, HTTPResponse
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin, urlparse, parse_qs
 from typing import Union, Iterator, Optional
 from flask import current_app as app
 
@@ -32,9 +32,12 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
     if url_parsed.query:
         req_url += f"?{url_parsed.query}"
 
+    ua = "Mozilla/5.0 (+https://github.com/jirikuchta/rss-reader)"
+    if is_youtube_url(url):
+        ua = ""
+
     try:
-        conn.request(method, req_url, headers={
-            "User-agent": "Mozilla/5.0 (+https://github.com/jirikuchta/rss-reader)"})
+        conn.request(method, req_url, headers={"User-agent": ua})
     except Exception as e:
         app.logger.warn(f"|< {e}")
         raise e
@@ -57,3 +60,17 @@ def http_request(url: str, method: str = "GET") -> Iterator[HTTPResponse]:
         conn.close()
 
     conn.close()
+
+
+def is_youtube_url(url: str):
+    host = urlparse(url).hostname
+    return host and "youtube.com" in host
+
+
+def parse_youtube_video_id(url: str):
+    return parse_qs(urlparse(url).query).get("v", [])[0]
+
+
+def get_youtube_embed(url: str):
+    video_id = parse_youtube_video_id(url)
+    return f'<iframe src="https://www.youtube.com/embed/{video_id}"></iframe>'
