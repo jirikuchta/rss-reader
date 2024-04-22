@@ -1,3 +1,5 @@
+type DIR = "top" | "right" | "bottom" | "left";
+
 export default class Swipe {
 
 	threshold = 50; // px
@@ -12,7 +14,7 @@ export default class Swipe {
 		node.addEventListener("touchstart", this, {passive: true});
 	}
 
-	onSwipe(dir: "top" | "right" | "bottom" | "left") {}
+	async onSwipe(dir: DIR) {}
 
 	handleEvent(e: TouchEvent) {
 		switch (e.type) {
@@ -40,18 +42,23 @@ export default class Swipe {
 		this.stop();
 	}
 
-	protected swipe(e: TouchEvent) {
+	protected async swipe(e: TouchEvent) {
 		if (!this.startTouch) { return; }
 
 		let deltaX = e.changedTouches[0].clientX - this.startTouch.clientX;
 		let deltaY = e.changedTouches[0].clientY - this.startTouch.clientY;
 
+		let dir: DIR;
 		if (Math.abs(deltaY) > Math.abs(deltaX)) {
 			if (Math.abs(deltaY) < this.threshold) { return; }
-			this.onSwipe(deltaY > 0 ? "bottom" : "top");
+			dir = deltaY > 0 ? "bottom" : "top";
 		} else {
 			if (Math.abs(deltaX) < this.threshold) { return; }
-			this.onSwipe(deltaX > 0 ? "right" : "left");
+			dir = deltaX > 0 ? "right" : "left";
 		}
+
+		this.node.classList.add(`swipe-${dir}`);
+		await this.onSwipe(dir);
+		this.node.classList.remove(`swipe-${dir}`);
 	}
 }

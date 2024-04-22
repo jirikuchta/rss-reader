@@ -138,3 +138,22 @@ rr-article {
 		padding: 24px;
 	}
 }
+
+@media(max-width: @breakpoint-mobile) {
+	rr-detail.swipe-left rr-article { view-transition-name: to-next-article; }
+	rr-detail.swipe-right rr-article { view-transition-name: to-prev-article; }
+
+	@keyframes from-right { from { transform: translateX(100%); }}
+	@keyframes to-right { to { transform: translateX(100%); }}
+	@keyframes from-left { from { transform: translateX(-100%); }}
+	@keyframes to-left { to { transform: translateX(-100%); }}
+
+	::view-transition-old(to-next-article),
+	::view-transition-old(to-prev-article) {
+		animation: 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+	}
+	::view-transition-old(to-next-article) { animation-name: to-left; }
+	::view-transition-new(to-next-article) { animation-name: from-right; }
+	::view-transition-old(to-prev-article) { animation-name: to-right; }
+	::view-transition-new(to-prev-article) { animation-name: from-left; }
+}

@@ -35,6 +35,16 @@ export default class Articles extends HTMLElement {
 		this.build();
 	}
 
+	next() {
+		let item = this.items.find(i => i.active)?.nextElementSibling;
+		if (item && item instanceof Item) { this.activeItem = item; }
+	}
+
+	prev() {
+		let item = this.items.find(i => i.active)?.previousElementSibling;
+		if (item && item instanceof Item) { this.activeItem = item; }
+	}
+
 	get app() {
 		return this.closest("rr-app") as App;
 	}
@@ -72,6 +82,20 @@ export default class Articles extends HTMLElement {
 		return filters;
 	}
 
+	get activeItem() {
+		return this.items.find(i => i.active) || null;
+	}
+
+	set activeItem(item: Item | null) {
+		this.items.forEach(item => item.active = false);
+		item = item || this.items[0];
+		if (!item) { return; }
+
+		item.active = true;
+		this.app.toggleDetail(true);
+		this.app.detail.article = item.data;
+	}
+
 	protected async build() {
 		this.replaceChildren(new Header());
 		this.buildItems();
@@ -94,15 +118,8 @@ export default class Articles extends HTMLElement {
 	}
 
 	protected onClick(e: Event) {
-		let { items } = this;
-
 		let item = (e.target as HTMLElement).closest("rr-item-articles") as Item;
-		if (!item) { return; }
-
-		items.forEach(item => item.active = false);
-		item.active = true;
-		this.app.toggleDetail(true);
-		this.app.detail.article = item.data;
+		if (item) { this.activeItem = item; }
 	}
 
 	protected onScroll(e: Event) {

@@ -3,6 +3,7 @@ import * as articles from "data/articles";
 import * as subscriptions from "data/subscriptions";
 import * as settings from "data/settings";
 
+import Swipe from "util/swipe";
 import * as format from "util/format";
 import * as pubsub from "util/pubsub";
 
@@ -13,6 +14,11 @@ import FeedIcon from "ui/widget/feed-icon";
 
 
 export default class Detail extends HTMLElement {
+	constructor() {
+		super();
+		this.initSwipe();
+	}
+
 	get app() {
 		return this.closest("rr-app") as App;
 	}
@@ -22,6 +28,25 @@ export default class Detail extends HTMLElement {
 		let article = new Article(data);
 		this.replaceChildren(article, new Tools(article), buildCloseButton(this.app));
 		articles.markRead([data.id]);
+	}
+
+	protected initSwipe() {
+		let swipe = new Swipe(this);
+		swipe.onSwipe = async (dir) => {
+			if (!("startViewTransition" in document)) {
+				this.swipe(dir);
+				return;
+			}
+
+			// @ts-ignore
+			let transition = document.startViewTransition(() => this.swipe(dir));
+			await transition.updateCallbackDone;
+		};
+	}
+
+	protected swipe(dir: string) {
+		dir == "left" && this.app.articles.next();
+		dir == "right" && this.app.articles.prev();
 	}
 }
 
@@ -60,6 +85,7 @@ class Tools extends HTMLElement {
 		label.title = "Read later";
 		input = document.createElement("input");
 		input.type = "checkbox";
+		input.checked = article.data.starred;
 		input.addEventListener("change", e => {
 			let target = e.target as HTMLInputElement;
 			articles.edit(article.data.id, {starred: target.checked});
