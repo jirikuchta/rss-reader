@@ -17,6 +17,11 @@ export default class App extends HTMLElement {
 	readonly articles = new Articles();
 	readonly detail = new Detail();
 
+	constructor() {
+		super();
+		this.addEventListener("click", e => this.toggleNav(false));
+	}
+
 	async connectedCallback() {
 		settings.init();
 
@@ -33,7 +38,6 @@ export default class App extends HTMLElement {
 		main.append(this.articles, new Resizer(this.articles, "articlesWidth"), this.detail);
 
 		this.append(nav, new Resizer(nav, "navWidth"), main);
-		this.addEventListener("click", e => this.toggleNav(false));
 	}
 
 	toggleNav(toggle?: boolean) {

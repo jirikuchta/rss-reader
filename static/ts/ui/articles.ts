@@ -19,10 +19,14 @@ export default class Articles extends HTMLElement {
 		{root: this, rootMargin: "0% 0% 20% 0%"}
 	);
 
-	connectedCallback() {
-		this.build();
+	constructor() {
+		super();
 		this.addEventListener("click", this);
 		this.addEventListener("scroll", this);
+	}
+
+	connectedCallback() {
+		this.build();
 	}
 
 	handleEvent(e: Event) {

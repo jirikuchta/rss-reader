@@ -1,65 +1,55 @@
-import * as html from "util/html";
 import Icon from "ui/icon";
 
-export default class Dialog {
-	node: HTMLDialogElement;
-
-	constructor() {
-		this.node = html.node("dialog");
-		this.node.addEventListener("close", e => this.close());
+export default class Dialog extends HTMLDialogElement {
+	constructor(protected _title: string) {
+		super();
+		this.addEventListener("close", e => this.remove());
 	}
 
-	open() {
-		document.body.append(this.node);
-		this.node.showModal();
+	connectedCallback() {
+		let header = document.createElement("header");
+
+		let title = document.createElement("h3");
+		title.textContent = this._title;
+		header.append(title);
+
+		let close = document.createElement("button");
+		close.className = "close";
+		close.append(new Icon("cross"));
+		close.addEventListener("click", e => this.close());
+		header.append(close);
+
+		this.prepend(header);
 	}
 
-	close() {
-		this.node.close();
-		this.node.remove();
-		this.onClose();
-	}
-
-	onClose() {}
-
-	closeButton() {
-		let btn = document.createElement("button");
-		btn.className = "close";
-		btn.append(new Icon("cross"));
-		btn.addEventListener("click", e => this.close());
-		return btn;
+	show() {
+		document.body.append(this);
+		this.showModal();
 	}
 }
 
-export async function alert(text: string, description?: string): Promise<null> {
-	let dialog = new Dialog();
-	dialog.node.classList.add("alert");
+customElements.define("rr-dialog", Dialog, { extends: "dialog"});
 
-	let header = html.node("header", {}, "", dialog.node);
-	header.appendChild(dialog.closeButton());
-	html.node("h3", {}, text, header);
-	description && html.node("p", {}, description, header);
-
+export async function alert(text: string): Promise<null> {
+	let dialog = new Dialog(text);
+	dialog.classList.add("alert");
 
 	let button = document.createElement("button");
 	button.type = "submit";
 	button.textContent = "OK";;
 	button.addEventListener("click", _ => dialog.close());
 
-	let footer = html.node("footer", {}, "", dialog.node);
+	let footer = document.createElement("footer");
 	footer.append(button);
 
-	dialog.open();
+	dialog.append(footer);
+	dialog.show();
 
-	return new Promise(resolve => dialog.onClose = resolve as () => void);
+	return new Promise(resolve => dialog.addEventListener("close", () => resolve(null)));
 }
 
 export async function confirm(text: string, ok?: string, cancel?: string): Promise<boolean> {
-	let dialog = new Dialog();
-
-	let header = html.node("header", {}, "", dialog.node);
-	header.appendChild(dialog.closeButton());
-	html.node("h3", {}, text, header);
+	let dialog = new Dialog(text);
 
 	let btnOk = document.createElement("button");
 	btnOk.type = "submit";
@@ -69,13 +59,14 @@ export async function confirm(text: string, ok?: string, cancel?: string): Promi
 	btnCancel.type = "button";
 	btnCancel.textContent = cancel || "Cancel";
 
-	let footer = html.node("footer", {}, "", dialog.node);
+	let footer = document.createElement("footer");
 	footer.append(btnOk, btnCancel);
 
-	dialog.open();
+	dialog.append(footer);
+	dialog.show();
 
 	return new Promise(resolve => {
-		dialog.onClose = () => resolve(false);
+		dialog.addEventListener("close", () => resolve(false));
 		btnOk.addEventListener("click", e => {
 			resolve(true);
 			dialog.close();

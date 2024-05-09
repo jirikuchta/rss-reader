@@ -1,68 +1,77 @@
-import { OPMLItem, Subscription } from "data/types";
+import { OPMLItem, Subscription, Settings } from "data/types";
 import * as settings from "data/settings";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
-import * as html from "util/html";
 import * as opml from "util/opml";
 
 import Dialog from "ui/widget/dialog";
 
 
 export function open() {
-	let dialog = new Dialog();
-	dialog.node.classList.add("settings");
+	let dialog = new Dialog("Settings");
+	dialog.classList.add("settings");
 
-	let header = html.node("header", {}, "Settings", dialog.node);
-	header.appendChild(dialog.closeButton());
-
-	dialog.node.appendChild(buildDisplaySection());
-	dialog.node.appendChild(buildOPMLSection());
-
-	dialog.open();
+	dialog.append(buildDisplaySection(), buildOPMLSection())
+	dialog.show();
 }
 
 function buildDisplaySection() {
-	let node = html.node("section");
+	let node = document.createElement("section");
 
-	html.node("h3", {}, "General", node);
+	let title = document.createElement("h3");
+	title.textContent = "General";
+	node.append(title);
 
-	let label;
+	let options: Partial<Record<keyof Settings, string>> = {
+		unreadOnly: "Hide Read Articles",
+		markAsReadOnScroll: "Auto-Mark As Read On Scroll",
+		showImages: "Show images in article list"
+	};
+	for (const [key, title] of Object.entries(options)) {
+		let label = document.createElement("label");
+		label.textContent = title;
 
-	label = html.node("label", {}, "Hide Read Articles", node);
-	let input1 = html.node("input", {type:"checkbox"}, "", label);
-	input1.checked = settings.getItem("unreadOnly");
-	input1.addEventListener("change", e => settings.setItem("unreadOnly", input1.checked));
+		let input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = !!settings.getItem(key as keyof Settings);
+		input.addEventListener("change", e => settings.setItem(key as keyof Settings, (e.target as HTMLInputElement).checked));
 
-	label = html.node("label", {}, "Auto-Mark As Read On Scroll", node);
-	let input2 = html.node("input", {type:"checkbox"}, "", label);
-	input2.checked = settings.getItem("markAsReadOnScroll");
-	input2.addEventListener("change", e => settings.setItem("markAsReadOnScroll", input2.checked));
-
-	label = html.node("label", {}, "Show images in article list", node);
-	let input3 = html.node("input", {type:"checkbox"}, "", label);
-	input3.checked = settings.getItem("showImages");
-	input3.addEventListener("change", e => settings.setItem("showImages", input3.checked));
+		label.append(input);
+		node.append(label);
+	}
 
 	return node
 }
 
 function buildOPMLSection() {
-	let node = html.node("section");
+	let node = document.createElement("section");
 
-	html.node("h3", {}, "OPML import/export", node);
+	let title = document.createElement("h3");
+	title.textContent = "OPML import/export";
+	node.append(title);
 
-	let droparea = html.node("label", {className: "droparea"}, "Click to choose OPML file or drop one here", node);
-	droparea.addEventListener("dragover", e => e.preventDefault());
-	droparea.addEventListener("drop", e => e.preventDefault());
+	let importNode = document.createElement("label");
+	importNode.className = "droparea";
+	importNode.textContent = "Click to choose OPML file or drop one here";
+	importNode.addEventListener("dragover", e => e.preventDefault());
+	importNode.addEventListener("drop", e => e.preventDefault());
 
-	let input = html.node("input", {type: "file"}, "", droparea);
-	input.addEventListener("input", onFileInput);
+	let importInput = document.createElement("input");
+	importInput.type = "file";
+	importInput.addEventListener("input", onFileInput);
+	importNode.append(importInput);
 
+	let exportNode = document.createElement("h3");
+	exportNode.textContent = "Export to OPML file";
 
-	html.node("h3", {}, "Export to OPML file", node);
-	let href = window.URL.createObjectURL(new Blob([opml.serialize()], {type: "application/xml"}));
-	html.node("a", {href, download: "subscriptions.opml"}, "Download OPML file", node);
+	let exportLink = document.createElement("a");
+	exportLink.textContent = "Download OPML file";
+	exportLink.href = window.URL.createObjectURL(new Blob([opml.serialize()], {type: "application/xml"}));
+	exportLink.download = "subscriptions.opml";
+	exportNode.append(exportLink);
+
+	node.append(title, importNode, exportNode);
 
 	return node;
 }

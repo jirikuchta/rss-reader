@@ -19,9 +19,15 @@ import { confirm } from "ui/widget/dialog";
 import App from "app";
 
 export default class Feeds extends HTMLElement {
+	constructor() {
+		super();
+		this.addEventListener("click", this);
+		this.addEventListener("contextmenu", this);
+	}
+
 	get items() {
 		return [...this.querySelectorAll("rr-item-feeds")] as Item[];
-	}
+	};
 
 	get activeItem() {
 		return this.items.find(i => i.active)!;
@@ -34,9 +40,6 @@ export default class Feeds extends HTMLElement {
 	connectedCallback() {
 		this.replaceChildren(...buildItems());
 		this.items[0].active = true;
-
-		this.addEventListener("click", this);
-		this.addEventListener("contextmenu", this);
 
 		pubsub.subscribe("subscriptions-changed", this);
 		pubsub.subscribe("categories-changed", this);

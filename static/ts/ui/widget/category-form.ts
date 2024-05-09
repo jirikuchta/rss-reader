@@ -2,7 +2,6 @@ import { Category } from "data/types";
 import * as categories from "data/categories";
 
 import { ApiResponse } from "util/api"
-import * as html from "util/html";
 import * as random from "util/random";
 import { labelInput } from "util/uitools";
 
@@ -16,20 +15,16 @@ export default class CategoryForm {
 	protected category: Category;
 
 	static open(category: Category) {
-		let dialog = new Dialog();
+		let dialog = new Dialog("Edit category");
 
-		let categoryForm = new CategoryForm(category);
-		categoryForm.afterSubmit = () => dialog.close();
+		let form = new CategoryForm(category);
+		form.afterSubmit = () => dialog.close();
 
-		let header = html.node("header", {}, "Edit category", dialog.node);
-		header.appendChild(dialog.closeButton());
+		let footer = document.createElement("footer");
+		footer.append(form.submitBtn);
 
-		dialog.node.appendChild(categoryForm.node);
-
-		let footer = html.node("footer", {}, "", dialog.node);
-		footer.appendChild(categoryForm.submitBtn);
-
-		dialog.open();
+		dialog.append(form.node, footer);
+		dialog.show();
 	}
 
 	constructor(category: Category) {
@@ -54,7 +49,8 @@ export default class CategoryForm {
 	afterSubmit() {}
 
 	_build() {
-		this.node = html.node("form", {id: random.id()});
+		this.node = document.createElement("form");
+		this.node.id = random.id();
 		this.node.noValidate = true;
 
 		this.submitBtn = document.createElement("button");
@@ -62,9 +58,12 @@ export default class CategoryForm {
 		this.submitBtn.textContent = "Submit";;
 		this.submitBtn.setAttribute("form", this.node.id);
 
-		this.title = html.node("input", {type: "text", required: "true", value: this.category.title});
+		this.title = document.createElement("input");
+		this.title.type = "text";
+		this.title.required = true;
+		this.title.value = this.category.title;
 
-		this.node.appendChild(labelInput("Title", this.title));
+		this.node.append(labelInput("Title", this.title));
 	}
 
 	_validate(res: ApiResponse) {
