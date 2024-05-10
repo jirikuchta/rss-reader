@@ -1,6 +1,11 @@
 dialog {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+
 	border: none;
-	padding: 0;
+	margin: auto;
+	padding: 24px;
 	background: var(--color-bg-primary);
 	box-shadow: var(--shadow);
 	border-radius: var(--radius);
@@ -9,15 +14,12 @@ dialog {
 	button.close {
 		position: absolute;
 		top: 8px; right: 8px;
-		font-size: 16px;
+		font-size: 24px;
 	}
-
-	> * { padding: 16px 24px; }
 
 	> header {
 		font-size: 16px;
 		font-weight: bold;
-		border-bottom: 1px solid var(--color-border);
 	}
 
 	> footer {

@@ -13,7 +13,7 @@ export function open() {
 	dialog.classList.add("settings");
 
 	dialog.append(buildDisplaySection(), buildOPMLSection())
-	dialog.show();
+	dialog.showModal();
 }
 
 function buildDisplaySection() {

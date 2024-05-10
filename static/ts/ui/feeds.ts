@@ -11,8 +11,8 @@ import Icon from "ui/icon";
 import Counter from "ui/counter";
 import FeedIcon from "ui/widget/feed-icon";
 
-import SubscriptionForm from "ui/widget/subscription-form";
-import CategoryForm from "ui/widget/category-form";
+import { openDialog as openSubscriptionForm } from "ui/widget/subscription-form";
+import { openDialog as openCategoryForm } from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
@@ -127,7 +127,7 @@ function showContextMenu(item: Item, e: PointerEvent) {
 	if (item.type == "category") {
 		let data = item.data as types.Category;
 		menu.addItem("Mark as read", "check-all", () => categories.markRead(data.id));
-		menu.addItem("Edit category", "pencil", () => CategoryForm.open(data));
+		menu.addItem("Edit category", "pencil", () => openCategoryForm(data));
 		menu.addItem("Delete category", "trash", () => deleteCategory(data));
 	}
 
@@ -135,7 +135,7 @@ function showContextMenu(item: Item, e: PointerEvent) {
 		let data = item.data as types.Subscription;
 		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead(data.id));
 		menu.addItem(`${data.favorite ? "Remove from" : "Add to"} favorites`, data.favorite ? "heart-fill" : "heart", () => subscriptions.edit(data.id, {favorite: !data.favorite}))
-		menu.addItem("Edit subscription", "pencil", () => SubscriptionForm.open(data));
+		menu.addItem("Edit subscription", "pencil", () => openSubscriptionForm(data));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(data));
 	}
 

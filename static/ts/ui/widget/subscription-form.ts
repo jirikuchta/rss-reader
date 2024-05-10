@@ -3,39 +3,28 @@ import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 
 import { ApiResponse } from "util/api";
-import * as random from "util/random";
-import { labelInput } from "util/uitools";
 
 import Dialog from "ui/widget/dialog";
 
+export function openDialog(subscription?: Subscription) {
+	let dialog = new Dialog(`${subscription ? "Edit" : "Add"} subscription`);
 
-export default class SubscriptionForm {
-	node!: HTMLFormElement;
-	submitBtn!: HTMLButtonElement;
+	let form = new SubscriptionForm(subscription);
+	form.afterSubmit = () => dialog.close();
 
-	protected title!: HTMLInputElement;
-	protected url!: HTMLInputElement;
-	protected category!: HTMLInputElement;
-	protected subscription?: Subscription;
-	protected feedSelect?: HTMLSelectElement;
+	let footer = document.createElement("footer");
+	footer.append(form.submitBtn());
 
-	constructor(subscription?: Subscription) {
-		this.subscription = subscription;
-		this._build();
-		this.node.addEventListener("submit", this);
-	}
+	dialog.append(form, footer);
+	dialog.showModal();
+}
 
-	static open(subscription?: Subscription) {
-		let dialog = new Dialog(`${subscription ? "Edit" : "Add"} subscription`);
+export default class SubscriptionForm extends HTMLFormElement {
+	id = "subscription-form";
 
-		let form = new SubscriptionForm(subscription);
-		form.afterSubmit = () => dialog.close();
-
-		let footer = document.createElement("footer");
-		footer.append(form.submitBtn);
-
-		dialog.append(form.node, footer);
-		dialog.show();
+	constructor(protected subscription?: Subscription) {
+		super();
+		this.addEventListener("submit", this);
 	}
 
 	async handleEvent(e: Event) {
@@ -43,9 +32,9 @@ export default class SubscriptionForm {
 			e.preventDefault();
 
 			let data: Partial<Subscription> = {
-				title: this.title.value,
+				title: this.feedName?.value,
 				feed_url: this.url.value,
-				category_id: (await categories.getByName(this.category.value, true))?.id
+				category_id: this.category.value ? (await categories.getByName(this.category.value, true))?.id : null
 			};
 
 			let res: ApiResponse;
@@ -55,49 +44,37 @@ export default class SubscriptionForm {
 				res = await subscriptions.add(data);
 			}
 
-			this._validate(res);
-			this.node.checkValidity() && this.afterSubmit();
+			this.validate(res);
+			this.checkValidity() && this.afterSubmit();
 		}
 	}
 
 	afterSubmit() {}
 
-	_build() {
-		this.node = document.createElement("form");
-		this.node.id = random.id();
-		this.node.noValidate = true;
+	connectedCallback() {
+		this.noValidate = true;
 
-		this.submitBtn = document.createElement("button");
-		this.submitBtn.type = "submit";
-		this.submitBtn.textContent = "Submit";
-		this.submitBtn.setAttribute("form", this.node.id);
+		let label, input;
 
-		this.title = document.createElement("input");
-		this.title.type = "text";
-		this.title.required = true;
+		label = document.createElement("label");
+		label.textContent = "Feed URL";
+		input = document.createElement("input");;
+		input.name = "url";
+		input.type = "url";
+		input.required = true;
+		label.append(input);
+		this.append(label);
 
-		this.url = document.createElement("input");;
-		this.url.type = "url";
-		this.url.required = true;
-
-		this.category = document.createElement("input");
-		this.category.type = "text";
-
-		if (this.subscription) {
-			this.title.value = this.subscription.title;
-			this.url.value = this.subscription.feed_url;
-			if (this.subscription.category_id) {
-				let cat = categories.get(this.subscription.category_id);
-				cat && (this.category.value = cat.title);
-			}
-		}
-
-		this.subscription && this.node.append(labelInput("Title", this.title));
-		this.node.append(labelInput("Feed URL", this.url));
-		this.node.append(labelInput("Category", this.category));
+		label = document.createElement("label");
+		label.textContent = "Category";
+		input = document.createElement("input");
+		input.name = "category";
+		input.type = "text";
+		label.append(input);
+		this.append(label);
 
 		let categoryList = document.createElement("datalist");
-		categoryList.id = random.id();;
+		categoryList.id = "category-list";
 		categoryList.append(...categories.list().map(c => {
 			let option = document.createElement("option");
 			option.textContent = c.title;
@@ -105,16 +82,42 @@ export default class SubscriptionForm {
 			return option;
 		}));
 		this.category.setAttribute("list", categoryList.id);
-		this.node.append(categoryList);
+		this.append(categoryList);
+
+		if (this.subscription) {
+			label = document.createElement("label");
+			label.textContent = "Title";
+			input = document.createElement("input");
+			input.name = "feedName";
+			input.type = "text";
+			input.required = true;
+			label.append(input);
+			this.prepend(label);
+
+			this.feedName.value = this.subscription.title;
+			this.url.value = this.subscription.feed_url;
+			if (this.subscription.category_id) {
+				let cat = categories.get(this.subscription.category_id);
+				cat && (this.category.value = cat.title);
+			}
+		}
 	}
 
-	_validate(res: ApiResponse) {
-		this._clearValidation();
+	submitBtn() {
+		let btn = document.createElement("button");
+		btn.type = "submit";
+		btn.textContent = "Submit";;
+		btn.setAttribute("form", this.id);
+		return btn;
+	}
+
+	protected validate(res: ApiResponse) {
+		this.clearValidation();
 
 		switch (res.error?.code) {
 			case "missing_field":
 				let msg = "Please fill out this field.";
-				res.error.field == "title" && this.title.setCustomValidity(msg);
+				res.error.field == "title" && this.feedName?.setCustomValidity(msg);
 				res.error.field == "uri" && this.url.setCustomValidity(msg);
 			break;
 			case "invalid_field":
@@ -127,32 +130,34 @@ export default class SubscriptionForm {
 				this.url.setCustomValidity("You are already subscribed to this feed.");
 			break;
 			case "ambiguous_feed_url":
-				this.feedSelect = document.createElement("select");
-				this.feedSelect.append(
+				let feedSelect = document.createElement("select");
+				feedSelect.name = "feedSelect";
+				feedSelect.append(
 					feedSelectOption(this.url.value, "Select feed…"),
 					...(res.error.links as FeedLink[]).map(l => feedSelectOption(l.href, l.title || l.href))
 				);
-				this.feedSelect.addEventListener("change", e => this.url.value = this.feedSelect!.value);
-				this.url.parentNode!.insertBefore(this.feedSelect, this.url.nextSibling);
-				this.feedSelect.setCustomValidity("Provided URL is a HTML page referencing multiple feeds.");
+				feedSelect.addEventListener("change", e => this.url.value = this.feedSelect.value);
+				this.url.parentNode!.insertBefore(feedSelect, this.url.nextSibling);
+				feedSelect.setCustomValidity("Provided URL is a HTML page referencing multiple feeds.");
 			break;
 		}
 
-		this.node.classList.toggle("invalid", !this.node.checkValidity());
-		this.node.reportValidity();
+		this.reportValidity();
 	}
 
-	_clearValidation() {
+	protected clearValidation() {
 		this.feedSelect?.remove();
-		this.title.setCustomValidity("");
+		this.feedName?.setCustomValidity("");
 		this.url.setCustomValidity("");
 		this.category.setCustomValidity("");
 	}
 }
 
+customElements.define("rr-subscription-form", SubscriptionForm, { extends: "form" });
+
 function feedSelectOption(value: string, title: string) {
 	let node = document.createElement("option");
+	node.textContent = title;
 	node.value = value;
-	node.title = title;
 	return node;
 }

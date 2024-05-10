@@ -22,9 +22,9 @@ export default class Dialog extends HTMLDialogElement {
 		this.prepend(header);
 	}
 
-	show() {
+	showModal() {
 		document.body.append(this);
-		this.showModal();
+		super.showModal();
 	}
 }
 
@@ -43,7 +43,7 @@ export async function alert(text: string): Promise<null> {
 	footer.append(button);
 
 	dialog.append(footer);
-	dialog.show();
+	dialog.showModal();
 
 	return new Promise(resolve => dialog.addEventListener("close", () => resolve(null)));
 }
@@ -63,7 +63,7 @@ export async function confirm(text: string, ok?: string, cancel?: string): Promi
 	footer.append(btnOk, btnCancel);
 
 	dialog.append(footer);
-	dialog.show();
+	dialog.showModal();
 
 	return new Promise(resolve => {
 		dialog.addEventListener("close", () => resolve(false));

@@ -2,87 +2,87 @@ import { Category } from "data/types";
 import * as categories from "data/categories";
 
 import { ApiResponse } from "util/api"
-import * as random from "util/random";
-import { labelInput } from "util/uitools";
 
 import Dialog from "ui/widget/dialog";
 
+export function openDialog(category: Category) {
+	let dialog = new Dialog("Edit category");
 
-export default class CategoryForm {
-	node!: HTMLFormElement;
-	submitBtn!: HTMLButtonElement;
-	protected title!: HTMLInputElement;
-	protected category: Category;
+	let form = new CategoryForm(category);
+	form.afterSubmit = () => dialog.close();
 
-	static open(category: Category) {
-		let dialog = new Dialog("Edit category");
+	let footer = document.createElement("footer");
+	footer.append(form.submitBtn());
 
-		let form = new CategoryForm(category);
-		form.afterSubmit = () => dialog.close();
+	dialog.append(form, footer);
+	dialog.showModal();
+}
 
-		let footer = document.createElement("footer");
-		footer.append(form.submitBtn);
 
-		dialog.append(form.node, footer);
-		dialog.show();
-	}
+export default class CategoryForm extends HTMLFormElement {
+	id = "category-form";
 
-	constructor(category: Category) {
-		this.category = category;
-		this._build();
-		this.node.addEventListener("submit", this);
+	constructor(protected category: Category) {
+		super();
+		this.addEventListener("submit", this);
 	}
 
 	async handleEvent(e: Event) {
-		if (e.type == "submit") {
-			e.preventDefault();
+		if (e.type != "submit") { return; }
+		e.preventDefault();
 
-			let res = await categories.edit(this.category.id, {
-				title: this.title.value
-			});
+		let res = await categories.edit(this.category.id, {
+			title: this.categoryName.value
+		});
 
-			this._validate(res);
-			this.node.checkValidity() && this.afterSubmit();
-		}
+		this.validate(res);
+		this.checkValidity() && this.afterSubmit();
 	}
 
 	afterSubmit() {}
 
-	_build() {
-		this.node = document.createElement("form");
-		this.node.id = random.id();
-		this.node.noValidate = true;
+	connectedCallback() {
+		this.noValidate = true;
 
-		this.submitBtn = document.createElement("button");
-		this.submitBtn.type = "submit";
-		this.submitBtn.textContent = "Submit";;
-		this.submitBtn.setAttribute("form", this.node.id);
+		let title = document.createElement("input");
+		title.type = "text";
+		title.name = "categoryName";
+		title.required = true;
+		title.value = this.category.title;
 
-		this.title = document.createElement("input");
-		this.title.type = "text";
-		this.title.required = true;
-		this.title.value = this.category.title;
+		let label = document.createElement("label");
+		label.textContent = "Title";
+		label.append(title);
 
-		this.node.append(labelInput("Title", this.title));
+		this.append(label);
 	}
 
-	_validate(res: ApiResponse) {
-		this._clearValidation();
+	submitBtn() {
+		let btn = document.createElement("button");
+		btn.type = "submit";
+		btn.textContent = "Submit";;
+		btn.setAttribute("form", this.id);
+		return btn;
+	}
+
+	protected validate(res: ApiResponse) {
+		this.clearValidation();
 
 		switch (res.error?.code) {
 			case "missing_field":
-				this.title.setCustomValidity("Please fill out this field.");
+				this.categoryName.setCustomValidity("Please fill out this field.");
 			break;
 			case "already_exists":
-				this.title.setCustomValidity(`Title already exists.`);
+				this.categoryName.setCustomValidity(`Title already exists.`);
 			break;
 		}
 
-		this.node.classList.toggle("invalid", !this.node.checkValidity());
-		this.node.reportValidity();
+		this.reportValidity();
 	}
 
-	_clearValidation() {
-		this.title.setCustomValidity("");
+	protected clearValidation() {
+		this.categoryName.setCustomValidity("");
 	}
 }
+
+customElements.define("rr-category-form", CategoryForm, { extends: "form" });

@@ -1,10 +1,21 @@
 label {
-	display: block;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 8px;
 
-	&.required::after {
+	input:not([type=checkbox]):not([type=radio]),
+	select {
+		flex-basis: 100%;
+	}
+}
+
+label:has([required]) {
+	input, select { order: 1; }
+
+	&::after {
 		content: "*";
-		font-size: 10px;
-		vertical-align: super;
+		font-size: 12px;
 		color: red;
 	}
 }
@@ -14,17 +25,14 @@ input[type=text],
 input[type=password],
 input[type=url],
 select {
-	width: 100%;
 	padding: 8px;
-	margin-bottom: 8px;
 	border: 1px solid var(--color-border);
 	border-radius: var(--radius);
 	background-color: var(--color-bg-primary);
 	color: var(--color-text-primary);
 }
 
-form.invalid input:invalid {
-	background-color: var(--color-lightred);
+input:user-invalid {
 	border-color: var(--color-darkred);
 }
 
@@ -57,6 +65,5 @@ button {
 
 	&[type=button]:not(.plain) {
 		border: 1px solid var(--color-border);
-		background-color: #fff;
 	}
 }
