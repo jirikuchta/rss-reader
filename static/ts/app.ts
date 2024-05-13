@@ -8,6 +8,7 @@ import Header from "ui/header";
 import Feeds from "ui/feeds";
 import Articles from "ui/articles";
 import Detail from "ui/detail";
+import MainButton from "ui/main-button";
 
 import Resizer from "ui/widget/resizer";
 
@@ -16,6 +17,7 @@ export default class App extends HTMLElement {
 	readonly feeds = new Feeds();
 	readonly articles = new Articles();
 	readonly detail = new Detail();
+	readonly mainButton = new MainButton();
 
 	constructor() {
 		super();
@@ -37,7 +39,7 @@ export default class App extends HTMLElement {
 		let main = document.createElement("main");
 		main.append(this.articles, new Resizer(this.articles, "articlesWidth"), this.detail);
 
-		this.append(nav, new Resizer(nav, "navWidth"), main);
+		this.append(nav, new Resizer(nav, "navWidth"), main, this.mainButton);
 	}
 
 	toggleNav(toggle?: boolean) {
@@ -47,6 +49,9 @@ export default class App extends HTMLElement {
 	toggleDetail(toggle?: boolean) {
 		this.classList.toggle("detail-open", toggle);
 	}
+
+	get navOpen() { return this.classList.contains("nav-open"); }
+	get detailOpen() { return this.classList.contains("detail-open"); }
 }
 
 customElements.define("rr-app", App);

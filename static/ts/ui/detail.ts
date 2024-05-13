@@ -26,7 +26,7 @@ export default class Detail extends HTMLElement {
 	set article(data: types.Article) {
 		this.scrollTo(0, 0);
 		let article = new Article(data);
-		this.replaceChildren(article, new Tools(article), buildCloseButton(this.app));
+		this.replaceChildren(article, new Tools(article));
 		articles.markRead([data.id]);
 	}
 
@@ -51,15 +51,6 @@ export default class Detail extends HTMLElement {
 }
 
 customElements.define("rr-detail", Detail);
-
-function buildCloseButton(app: App) {
-	let node = document.createElement("button");
-	node.className = "close";
-	node.append(new Icon("cross"));
-	node.addEventListener("click", e => app.toggleDetail(false));
-	return node;
-}
-
 
 class Tools extends HTMLElement {
 	constructor(protected article: Article) { super(); }

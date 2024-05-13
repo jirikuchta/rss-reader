@@ -150,22 +150,12 @@ class Header extends HTMLElement {
 		let counter = new Counter();
 		counter.getCount = () => navItem.unreadCount;
 
-		this.append(buildMenu(app), title, counter);
+		this.append(title, counter);
 	}
 
 	get app() {
 		return this.closest("rr-app") as App;
 	}
-}
-
-function buildMenu(app: App) {
-	let node = document.createElement("button");
-	node.append(new Icon("menu"));
-	node.addEventListener("click", e => {
-		e.stopPropagation();
-		app.toggleNav(true);
-	});
-	return node;
 }
 
 customElements.define("rr-header-articles", Header);

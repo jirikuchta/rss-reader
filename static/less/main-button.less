@@ -1,0 +1,37 @@
+rr-main-button {
+	display: none;
+
+	position: fixed;
+	right: 16px; bottom: 16px;
+	z-index: 2;
+
+	color: #fff;
+	cursor: pointer;
+	border-radius: 50%;
+	box-shadow: var(--shadow);
+	background-color: var(--color-active);
+
+	rr-icon {
+		width: 20px;
+		height: 20px;
+		margin: 12px;
+	}
+
+	rr-icon[type=cross] { display: none; }
+	rr-app.detail-open & {
+		rr-icon[type=menu] { display: none; }
+		rr-icon[type=cross] { display: block; }
+	}
+	rr-app.nav-open & {
+		rr-icon[type=menu] { display: none; }
+		rr-icon[type=cross] { display: block; }
+	}
+
+	@media (max-width: @breakpoint-tablet) {
+		display: block;
+	}
+
+	@media (min-width: calc(@breakpoint-mobile + 1px)) and (max-width: @breakpoint-tablet) {
+		rr-app:not(.detail-open) & { display: none; }
+	}
+}
