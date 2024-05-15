@@ -5,6 +5,7 @@ import * as articles from "data/articles";
 
 import * as format from "util/format";
 import * as pubsub from "util/pubsub";
+import Swipe from "util/swipe";
 
 import FeedIcon from "ui/widget/feed-icon";
 
@@ -23,6 +24,11 @@ export default class Articles extends HTMLElement {
 		super();
 		this.addEventListener("click", this);
 		this.addEventListener("scroll", this);
+
+		let swipe = new Swipe(this);
+		swipe.onSwipe = async dir => {
+			dir == "right" && this.app.toggleNav(true);
+		};
 	}
 
 	connectedCallback() {
