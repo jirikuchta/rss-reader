@@ -5,7 +5,6 @@ const DEFAULTS: Settings = {
 	navWidth: "20%",
 	articlesWidth: "40%",
 	collapsedCategories: [],
-	unreadOnly: true,
 	markAsReadOnScroll: true,
 	showImages: true,
 	theme: "system",

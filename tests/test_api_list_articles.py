@@ -1,3 +1,4 @@
+import pytest
 
 def test_ok(client, create_subscription, feed_server):
     create_subscription()
@@ -37,7 +38,7 @@ def test_starred_only_filter(client, create_subscription):
     article_id = client.get("/api/articles/").json[0]["id"]
     client.patch(f"/api/articles/{article_id}/", json={"starred": True})
 
-    res = client.get("/api/articles/?starred_only")
+    res = client.get("/api/articles/?starred_only=true")
     assert res.status_code == 200
     assert len(res.json) == 1
     assert res.json[0]["id"] == article_id
@@ -48,7 +49,7 @@ def test_unread_only_filter(client, create_subscription, feed_server):
     article_id = client.get("/api/articles/").json[0]["id"]
     client.patch(f"/api/articles/{article_id}/", json={"read": True})
 
-    res = client.get("/api/articles/?unread_only")
+    res = client.get("/api/articles/?unread_only=true")
     assert res.status_code == 200
     assert len(res.json) == len(feed_server.feed.items) - 1
 
@@ -68,3 +69,14 @@ def test_offset(client, create_subscription, feed_server):
     assert res.status_code == 200
     assert len(res.json) == len(feed_server.feed.items) - 1
     assert res.json[0]["id"] == all_articles[1]["id"]
+
+
+@pytest.mark.parametrize("order,index", [("desc", 0), ("asc", -1)])
+def test_order(order, index, client, create_subscription, feed_server):
+    create_subscription()
+    all_articles = client.get("/api/articles/").json
+
+    res = client.get(f"/api/articles/?order={order}")
+    assert res.status_code == 200
+    assert len(res.json) == len(feed_server.feed.items)
+    assert res.json[0]["id"] == all_articles[index]["id"]

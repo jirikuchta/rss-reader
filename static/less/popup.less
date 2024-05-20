@@ -27,6 +27,14 @@ menu.popup {
 		line-height: 36px;
 		cursor: pointer;
 
+		&.separator {
+			border-bottom: 1px solid var(--color-border);
+		}
+
+		&.selected {
+			font-weight: bold;
+		}
+
 		@media (hover: hover) {
 			&:hover {
 				background: var(--color-hover);

@@ -24,7 +24,6 @@ function buildDisplaySection() {
 	node.append(title);
 
 	let options: Partial<Record<keyof Settings, string>> = {
-		unreadOnly: "Hide Read Articles",
 		markAsReadOnScroll: "Auto-Mark As Read On Scroll",
 		showImages: "Show images in article list"
 	};

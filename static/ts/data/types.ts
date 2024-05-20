@@ -38,6 +38,8 @@ export interface ArticleFilters {
 	offset?: number
 	starred_only?: boolean
 	unread_only?: boolean
+	sort_by?: "time_published"
+	order?: "desc" | "asc"
 }
 
 export interface FeedLink {
@@ -56,7 +58,6 @@ export interface Settings {
 	navWidth: string;
 	articlesWidth: string;
 	collapsedCategories: CategoryId[];
-	unreadOnly: boolean;
 	markAsReadOnScroll: boolean;
 	showImages: boolean;
 	theme: "system" | "light" | "dark";

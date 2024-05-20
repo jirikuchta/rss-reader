@@ -136,9 +136,10 @@ export class PopupMenu extends Popup {
 		super(document.createElement("menu"));
 	}
 
-	addItem(title: string, ico: IconName, onClick: Function) {
+	addItem(title: string, ico: IconName | "", onClick: Function) {
 		let node = document.createElement("li");
-		node.append(new Icon(ico), title);
+		ico && node.append(new Icon(ico));
+		node.append(title);
 		node.addEventListener("click", e => {
 			this.close();
 			onClick();

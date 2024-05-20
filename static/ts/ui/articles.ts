@@ -8,12 +8,15 @@ import * as pubsub from "util/pubsub";
 import Swipe from "util/swipe";
 
 import FeedIcon from "ui/widget/feed-icon";
+import { PopupMenu } from "ui/widget/popup";
 
 import App from "app";
 import Counter from "ui/counter";
 import Icon from "ui/icon";
 
 export default class Articles extends HTMLElement {
+	protected _sorting: "newest" | "oldest" = "newest";
+	protected _unreadOnly = true;
 	protected markReadTimeout?: number;
 	protected showMoreObserver = new IntersectionObserver(
 		entries => entries[0].isIntersecting && this.buildItems(),
@@ -68,12 +71,10 @@ export default class Articles extends HTMLElement {
 		let selectedFeed = this.app.feeds.activeItem;
 
 		let filters: types.ArticleFilters = {
-			offset: items.filter(i => settings.getItem("unreadOnly") ? !i.read : true).length
+			offset: items.filter(i => this._unreadOnly ? !i.read : true).length,
+			unread_only: this._unreadOnly,
+			order: this.sorting == "newest" ? "desc" : "asc"
 		};
-
-		if (settings.getItem("unreadOnly") && !(selectedFeed.type == "starred")) {
-			filters.unread_only = true;
-		}
 
 		if (selectedFeed.type == "starred") {
 			filters.starred_only = true;
@@ -92,10 +93,7 @@ export default class Articles extends HTMLElement {
 		return filters;
 	}
 
-	get activeItem() {
-		return this.items.find(i => i.active) || null;
-	}
-
+	get activeItem() { return this.items.find(i => i.active) || null; }
 	set activeItem(item: Item | null) {
 		this.items.forEach(item => item.active = false);
 		item = item || this.items[0];
@@ -106,8 +104,35 @@ export default class Articles extends HTMLElement {
 		this.app.detail.article = item.data;
 	}
 
+	get sorting() { return this._sorting; }
+	set sorting(value: "newest" | "oldest") {
+		this._sorting = value;
+		this.build();
+	}
+
+	get unreadOnly() { return this._unreadOnly; }
+	set unreadOnly(value: boolean) {
+		this._unreadOnly = value;
+		this.build();
+	}
+
 	protected async build() {
-		this.replaceChildren(new Header());
+		let navItem = this.app.feeds.activeItem;
+
+		let title = document.createElement("h4");
+		title.append(navItem.icon, navItem.data.title);
+
+		let counter = new Counter();
+		counter.getCount = () => navItem.unreadCount;
+
+		let filters = document.createElement("button");
+		filters.append(new Icon("filter"));
+		filters.addEventListener("click", e => showFilters(filters, this));
+
+		let header = document.createElement("header");
+		header.append(title, counter, filters);
+
+		this.replaceChildren(header);
 		this.buildItems();
 	}
 
@@ -145,26 +170,25 @@ export default class Articles extends HTMLElement {
 
 customElements.define("rr-articles", Articles);
 
-class Header extends HTMLElement {
-	connectedCallback() {
-		let { app } = this;
-		let navItem = app.feeds.activeItem;
+function showFilters(node: HTMLElement, articles: Articles) {
+	let menu = new PopupMenu();
+	let item;
 
-		let title = document.createElement("h4");
-		title.append(navItem.icon, navItem.data.title)
+	item = menu.addItem("Newest first", "sort-down", () => articles.sorting = "newest");
+	item.classList.toggle("selected", articles.sorting == "newest");
 
-		let counter = new Counter();
-		counter.getCount = () => navItem.unreadCount;
+	item = menu.addItem("Oldest first", "sort-up", () => articles.sorting = "oldest");
+	item.classList.toggle("selected", articles.sorting == "oldest");
+	item.classList.add("separator");
 
-		this.append(title, counter);
-	}
+	item = menu.addItem("Unread only", "eye", () => articles.unreadOnly = true);
+	item.classList.toggle("selected", articles.unreadOnly);
 
-	get app() {
-		return this.closest("rr-app") as App;
-	}
+	item = menu.addItem("All articles", "eye-fill", () => articles.unreadOnly = false);
+	item.classList.toggle("selected", !articles.unreadOnly);
+
+	menu.open(node, "side", [-8, 8]);
 }
-
-customElements.define("rr-header-articles", Header);
 
 const ACTIVE_CSS_CLASS = "is-active";
 const READ_CSS_CLASS = "is-read";

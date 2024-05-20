@@ -24,8 +24,10 @@ def get_article_or_raise(article_id: int) -> Article:
 def list_articles() -> TReturnValue:
     subscription_id = request.args.get("subscription_id")
     category_id = request.args.get("category_id")
-    starred_only = "starred_only" in request.args
-    unread_only = "unread_only" in request.args
+    starred_only = request.args.get("starred_only") == "true"
+    unread_only = request.args.get("unread_only") == "true"
+    sort_by = request.args.get("sort_by", "time_published")
+    order = request.args.get("order", "desc")
     limit = int(request.args.get("limit", 20))
     offset = int(request.args.get("offset", 0))
 
@@ -47,7 +49,7 @@ def list_articles() -> TReturnValue:
 
     articles = Article.query\
         .filter(*filters)\
-        .order_by(Article.time_published.desc())\
+        .order_by(getattr(getattr(Article, sort_by), order)())\
         .limit(limit)\
         .offset(offset)\
         .all()
