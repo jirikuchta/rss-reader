@@ -7,7 +7,7 @@ import Swipe from "util/swipe";
 import * as format from "util/format";
 import * as pubsub from "util/pubsub";
 
-import App from "app";
+import app from "app";
 import Icon from "ui/icon";
 import Popup from "ui/widget/popup";
 import FeedIcon from "ui/widget/feed-icon";
@@ -17,10 +17,6 @@ export default class Detail extends HTMLElement {
 	constructor() {
 		super();
 		this.initSwipe();
-	}
-
-	get app() {
-		return this.closest("rr-app") as App;
 	}
 
 	set article(data: types.Article) {
@@ -45,8 +41,8 @@ export default class Detail extends HTMLElement {
 	}
 
 	protected swipe(dir: string) {
-		dir == "left" && this.app.articles.next();
-		dir == "right" && this.app.articles.prev();
+		dir == "left" && app.articles.next();
+		dir == "right" && app.articles.prev();
 	}
 }
 

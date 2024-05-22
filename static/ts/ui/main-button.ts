@@ -1,4 +1,4 @@
-import App from "app";
+import app from "app";
 import Icon from "ui/icon";
 
 export default class MainButton extends HTMLElement {
@@ -8,14 +8,8 @@ export default class MainButton extends HTMLElement {
 		this.addEventListener("click", this);
 	}
 
-	get app() {
-		return this.closest("rr-app") as App;
-	}
-
 	handleEvent(e: Event) {
 		e.stopPropagation();
-
-		let { app } = this;
 
 		if (app.detailOpen) {
 			app.toggleDetail(false);

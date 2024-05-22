@@ -4,6 +4,8 @@ import * as subscriptions from "data/subscriptions";
 import * as articles from "data/subscriptions";
 import * as counters from "data/counters";
 
+import "util/keyboard";
+
 import Header from "ui/header";
 import Feeds from "ui/feeds";
 import Articles from "ui/articles";
@@ -12,7 +14,7 @@ import MainButton from "ui/main-button";
 
 import Resizer from "ui/widget/resizer";
 
-export default class App extends HTMLElement {
+class App extends HTMLElement {
 	readonly header = new Header();
 	readonly feeds = new Feeds();
 	readonly articles = new Articles();
@@ -55,3 +57,5 @@ export default class App extends HTMLElement {
 }
 
 customElements.define("rr-app", App);
+
+export default (document.querySelector("rr-app") || new App()) as App;

@@ -10,7 +10,7 @@ import Swipe from "util/swipe";
 import FeedIcon from "ui/widget/feed-icon";
 import { PopupMenu } from "ui/widget/popup";
 
-import App from "app";
+import app from "app";
 import Counter from "ui/counter";
 import Icon from "ui/icon";
 
@@ -30,7 +30,7 @@ export default class Articles extends HTMLElement {
 
 		let swipe = new Swipe(this);
 		swipe.onSwipe = async dir => {
-			dir == "right" && this.app.toggleNav(true);
+			dir == "right" && app.toggleNav(true);
 		};
 	}
 
@@ -58,17 +58,13 @@ export default class Articles extends HTMLElement {
 		if (item && item instanceof Item) { this.activeItem = item; }
 	}
 
-	get app() {
-		return this.closest("rr-app") as App;
-	}
-
 	get items() {
 		return [...this.querySelectorAll("rr-item-articles")] as Item[];
 	}
 
 	get filters() {
 		let { items } = this;
-		let selectedFeed = this.app.feeds.activeItem;
+		let selectedFeed = app.feeds.activeItem;
 
 		let filters: types.ArticleFilters = {
 			offset: items.filter(i => this._unreadOnly ? !i.read : true).length,
@@ -100,24 +96,24 @@ export default class Articles extends HTMLElement {
 		if (!item) { return; }
 
 		item.active = true;
-		this.app.toggleDetail(true);
-		this.app.detail.article = item.data;
+		app.toggleDetail(true);
+		app.detail.article = item.data;
 	}
 
 	get sorting() { return this._sorting; }
 	set sorting(value: "newest" | "oldest") {
 		this._sorting = value;
-		this.build();
+		this.update();
 	}
 
 	get unreadOnly() { return this._unreadOnly; }
 	set unreadOnly(value: boolean) {
 		this._unreadOnly = value;
-		this.build();
+		this.update();
 	}
 
 	protected async build() {
-		let navItem = this.app.feeds.activeItem;
+		let navItem = app.feeds.activeItem;
 
 		let title = document.createElement("h4");
 		title.append(navItem.icon, navItem.data.title);
@@ -127,7 +123,7 @@ export default class Articles extends HTMLElement {
 
 		let filters = document.createElement("button");
 		filters.append(new Icon("filter"));
-		filters.addEventListener("click", e => showFilters(filters, this));
+		filters.addEventListener("click", e => this.popupFilters(filters));
 
 		let header = document.createElement("header");
 		header.append(title, counter, filters);
@@ -166,29 +162,28 @@ export default class Articles extends HTMLElement {
 			markReadItems.length && articles.markRead(markReadItems.map(i => i.itemId));
 		}, 300);
 	}
+
+	protected popupFilters(node: HTMLElement) {
+		let menu = new PopupMenu();
+
+		menu.addItem("Newest first", "sort-down", () => this.sorting = "newest")
+			.classList.toggle("selected", this.sorting == "newest");
+
+		let item = menu.addItem("Oldest first", "sort-up", () => this.sorting = "oldest")
+		item.classList.toggle("selected", this.sorting == "oldest");
+		item.classList.add("separator");
+
+		menu.addItem("Unread only", "eye", () => this.unreadOnly = true)
+			.classList.toggle("selected", this.unreadOnly);
+
+		menu.addItem("All articles", "eye-fill", () => this.unreadOnly = false)
+			.classList.toggle("selected", !this.unreadOnly);
+
+		menu.open(node, "side", [-8, 8]);
+	}
 }
 
 customElements.define("rr-articles", Articles);
-
-function showFilters(node: HTMLElement, articles: Articles) {
-	let menu = new PopupMenu();
-	let item;
-
-	item = menu.addItem("Newest first", "sort-down", () => articles.sorting = "newest");
-	item.classList.toggle("selected", articles.sorting == "newest");
-
-	item = menu.addItem("Oldest first", "sort-up", () => articles.sorting = "oldest");
-	item.classList.toggle("selected", articles.sorting == "oldest");
-	item.classList.add("separator");
-
-	item = menu.addItem("Unread only", "eye", () => articles.unreadOnly = true);
-	item.classList.toggle("selected", articles.unreadOnly);
-
-	item = menu.addItem("All articles", "eye-fill", () => articles.unreadOnly = false);
-	item.classList.toggle("selected", !articles.unreadOnly);
-
-	menu.open(node, "side", [-8, 8]);
-}
 
 const ACTIVE_CSS_CLASS = "is-active";
 const READ_CSS_CLASS = "is-read";
@@ -216,11 +211,19 @@ class Item extends HTMLElement {
 
 	set active(toggle: boolean) {
 		this.classList.toggle(ACTIVE_CSS_CLASS, toggle);
+		this.active && this.focus();
 	}
 
 	set starred(toggle: boolean) {
 		let input = this.querySelector(".bookmark input") as HTMLInputElement;
 		input.checked = toggle;
+	}
+
+	focus() {
+		let rect = this.getBoundingClientRect();
+		if (rect.y <= 0 || rect.bottom > document.body.clientHeight) {
+			(this.previousElementSibling || this).scrollIntoView(true);
+		}
 	}
 
 	async sync() {

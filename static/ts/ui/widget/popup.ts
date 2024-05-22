@@ -10,7 +10,7 @@ interface Position {
 }
 
 const PAD = 8;
-let current: Popup | null = null;
+export let current: Popup | null = null;
 
 function preventOverflow(position: Position, type: string, avail: [number, number]) {
 	let overflow = 0;
@@ -121,6 +121,7 @@ export default class Popup {
 		current = null;
 		this.node.parentNode?.removeChild(this.node);
 		this.onClose();
+		return true;
 	}
 
 	anchorTo(node: HTMLElement, type: PositionType, offset?: [number, number]) {
@@ -149,5 +150,4 @@ export class PopupMenu extends Popup {
 	}
 }
 
-window.addEventListener("keydown", e => e.keyCode == 27 && current?.close());
 document.addEventListener("mousedown", e => current?.close());

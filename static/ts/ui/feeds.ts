@@ -16,7 +16,7 @@ import { openDialog as openCategoryForm } from "ui/widget/category-form";
 import { PopupMenu } from "ui/widget/popup";
 import { confirm } from "ui/widget/dialog";
 
-import App from "app";
+import app from "app";
 
 export default class Feeds extends HTMLElement {
 	constructor() {
@@ -31,10 +31,6 @@ export default class Feeds extends HTMLElement {
 
 	get activeItem() {
 		return this.items.find(i => i.active)!;
-	}
-
-	get app() {
-		return this.closest("rr-app") as App;
 	}
 
 	connectedCallback() {
@@ -65,7 +61,6 @@ export default class Feeds extends HTMLElement {
 				this.items.forEach(i => i.active = false);
 				item.active = true;
 
-				let { app } = this;
 				app.articles.update();
 				app.toggleNav(false);
 				app.toggleDetail(false);
