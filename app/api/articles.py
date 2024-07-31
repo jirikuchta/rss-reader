@@ -24,7 +24,7 @@ def get_article_or_raise(article_id: int) -> Article:
 def list_articles() -> TReturnValue:
     subscription_id = request.args.get("subscription_id")
     category_id = request.args.get("category_id")
-    starred_only = request.args.get("starred_only") == "true"
+    bookmarked_only = request.args.get("bookmarked_only") == "true"
     unread_only = request.args.get("unread_only") == "true"
     sort_by = request.args.get("sort_by", "time_published")
     order = request.args.get("order", "desc")
@@ -41,8 +41,8 @@ def list_articles() -> TReturnValue:
             Subscription.category_id == category_id)
         filters.append(Article.subscription_id.in_(subscriptions_query))
 
-    if starred_only:
-        filters.append(Article.starred.is_(True))
+    if bookmarked_only:
+        filters.append(Article.bookmarked.is_(True))
 
     if unread_only:
         filters.append(Article.read.is_(False))
@@ -68,8 +68,8 @@ def get_article(article_id: int) -> TReturnValue:
 def update_article(article_id: int) -> TReturnValue:
     article = get_article_or_raise(article_id)
 
-    if "starred" in request.json:
-        article.starred = bool(request.json["starred"])
+    if "bookmarked" in request.json:
+        article.bookmarked = bool(request.json["bookmarked"])
 
     if "read" in request.json:
         article.read = bool(request.json["read"])

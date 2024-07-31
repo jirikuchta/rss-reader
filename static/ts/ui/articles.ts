@@ -72,8 +72,8 @@ export default class Articles extends HTMLElement {
 			order: this.sorting == "newest" ? "desc" : "asc"
 		};
 
-		if (selectedFeed.type == "starred") {
-			filters.starred_only = true;
+		if (selectedFeed.type == "bookmarked") {
+			filters.bookmarked_only = true;
 			filters.offset = items.length;
 			delete filters.unread_only;
 		}
@@ -214,7 +214,7 @@ class Item extends HTMLElement {
 		this.active && this.focus();
 	}
 
-	set starred(toggle: boolean) {
+	set bookmarked(toggle: boolean) {
 		let input = this.querySelector(".bookmark input") as HTMLInputElement;
 		input.checked = toggle;
 	}
@@ -229,7 +229,7 @@ class Item extends HTMLElement {
 	async sync() {
 		this._data = await articles.get(this.itemId);
 		this.read = this.data.read;
-		this.starred = this.data.starred;
+		this.bookmarked = this.data.bookmarked;
 	}
 
 	connectedCallback() {
@@ -300,10 +300,10 @@ function buildBookmark(article: types.Article) {
 
 	let input = document.createElement("input");
 	input.type = "checkbox";
-	input.checked = article.starred;
+	input.checked = article.bookmarked;
 	input.addEventListener("change", async (e) => {
 		await articles.edit(article.id, {
-			"starred": input.checked,
+			"bookmarked": input.checked,
 			"read": input.checked ? false: article.read
 		});
 	});

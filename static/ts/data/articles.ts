@@ -40,7 +40,7 @@ export async function markRead(ids?: ArticleId[]) {
 export async function edit(id: ArticleId, data: Partial<Article>) {
 	let res = await api("PATCH", `/api/articles/${id}/`, data);
 	res.ok && articles.set(id, res.data as Article);
-	pubsub.publish("articles-updated", res);
+	pubsub.publish("articles-updated");
 	return articles.get(id);
 }
 

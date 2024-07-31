@@ -78,7 +78,7 @@ customElements.define("rr-feeds", Feeds);
 function buildItems() {
 	let items: HTMLElement[] = [
 		new Item({title: "All articles"}, "all"),
-		new Item({title: "Starred"}, "starred"),
+		new Item({title: "Bookmarks"}, "bookmarked"),
 	];
 
 	if (subscriptions.list().some(s => s.favorite)) {
@@ -152,7 +152,7 @@ async function deleteSubscription(subscription: types.Subscription) {
 	}
 }
 
-type ItemType = "all" | "starred" | "category" | "subscription";
+type ItemType = "all" | "bookmarked" | "category" | "subscription";
 
 interface HasTitle {
 	title: string;
@@ -187,7 +187,7 @@ class Item extends HTMLElement {
 	get itemId() {
 		switch(this.type) {
 			case "all": return -1; break;
-			case "starred": return -1; break;
+			case "bookmarked": return -1; break;
 			case "subscription": return (this.data as types.Subscription).id; break;
 			case "category": return (this.data as types.Category).id; break;
 		}
@@ -196,7 +196,7 @@ class Item extends HTMLElement {
 	get icon() {
 		switch(this.type) {
 			case "all": return new Icon("stack"); break;
-			case "starred": return new Icon("bookmark-fill"); break;
+			case "bookmarked": return new Icon("bookmark-fill"); break;
 			case "subscription": return new FeedIcon(this.data as types.Subscription); break;
 			case "category": return new Icon("folder-fill"); break;
 		}
@@ -205,7 +205,7 @@ class Item extends HTMLElement {
 	get unreadCount() {
 		switch(this.type) {
 			case "all": return counters.sum(); break;
-			case "starred": return 0; break;
+			case "bookmarked": return 0; break;
 			case "subscription": return counters.get(this.itemId) || 0; break;
 			case "category": return subscriptions.list()
 				.filter(s => s.category_id == this.itemId)

@@ -77,7 +77,7 @@ def update_subscription(
             Article.time_published.desc()
         ).filter(
             Article.subscription_id.is_(subscription.id),
-            Article.starred.is_(False),
+            Article.bookmarked.is_(False),
             Article.read.is_(True)
         ).limit(1000000).offset(len(parser.items)*3).all()
 

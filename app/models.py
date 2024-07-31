@@ -98,7 +98,7 @@ class Article(Model, db.Model):  # type: ignore
     image_url = db.Column(db.String(255))
     author = db.Column(db.String(255))
     read = db.Column(db.Boolean, nullable=False, default=False, index=True)
-    starred = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    bookmarked = db.Column(db.Boolean, nullable=False, default=False, index=True)
     time_published = db.Column(
         db.DateTime,
         nullable=False, server_default=func.now(), index=True)
@@ -129,5 +129,5 @@ class Article(Model, db.Model):  # type: ignore
     def to_json(self):
         keys = ("id", "title", "url", "summary", "content", "comments_url",
                 "author", "subscription_id", "time_published", "read",
-                "starred", "image_url",)
+                "bookmarked", "image_url",)
         return {key: getattr(self, key) for key in keys}

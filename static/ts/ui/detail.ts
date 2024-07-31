@@ -69,13 +69,13 @@ class Tools extends HTMLElement {
 		this.append(label);
 
 		label = document.createElement("label");
-		label.title = "Read later";
+		label.title = "Bookmark";
 		input = document.createElement("input");
 		input.type = "checkbox";
-		input.checked = article.data.starred;
+		input.checked = article.data.bookmarked;
 		input.addEventListener("change", e => {
 			let target = e.target as HTMLInputElement;
-			articles.edit(article.data.id, {starred: target.checked});
+			articles.edit(article.data.id, {bookmarked: target.checked});
 		});
 		label.append(input, new Icon("bookmark"), new Icon("bookmark-fill"));
 		this.append(label);

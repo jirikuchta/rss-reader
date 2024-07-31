@@ -1,7 +1,6 @@
 import * as settings from "data/settings";
 import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
-import * as articles from "data/subscriptions";
 import * as counters from "data/counters";
 
 import "util/keyboard";
@@ -23,7 +22,7 @@ class App extends HTMLElement {
 
 	constructor() {
 		super();
-		this.addEventListener("click", e => this.toggleNav(false));
+		this.addEventListener("click", _ => this.toggleNav(false));
 	}
 
 	async connectedCallback() {
@@ -31,7 +30,6 @@ class App extends HTMLElement {
 
 		await categories.init();
 		await subscriptions.init();
-		await articles.init();
 
 		counters.init();
 

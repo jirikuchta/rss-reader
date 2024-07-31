@@ -23,7 +23,7 @@ export interface Article {
 	title: string;
 	url: string;
 	read: boolean;
-	starred: boolean;
+	bookmarked: boolean;
 	time_published: string;
 	author?: string;
 	image_url?: string;
@@ -36,7 +36,7 @@ export interface ArticleFilters {
 	category_id?: CategoryId
 	limit?: number
 	offset?: number
-	starred_only?: boolean
+	bookmarked_only?: boolean
 	unread_only?: boolean
 	sort_by?: "time_published"
 	order?: "desc" | "asc"
