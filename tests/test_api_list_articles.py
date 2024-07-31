@@ -33,12 +33,12 @@ def test_category_filter(
     assert len(res.json) == len(feed_server.feed.items)
 
 
-def test_starred_only_filter(client, create_subscription):
+def test_bookmarked_only_filter(client, create_subscription):
     create_subscription()
     article_id = client.get("/api/articles/").json[0]["id"]
-    client.patch(f"/api/articles/{article_id}/", json={"starred": True})
+    client.patch(f"/api/articles/{article_id}/", json={"bookmarked": True})
 
-    res = client.get("/api/articles/?starred_only=true")
+    res = client.get("/api/articles/?bookmarked_only=true")
     assert res.status_code == 200
     assert len(res.json) == 1
     assert res.json[0]["id"] == article_id

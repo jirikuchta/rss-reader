@@ -7,16 +7,16 @@ def test_ok(client, create_subscription, feed_server):
     article_id = res.json[0]["id"]
 
     res = client.patch(f"api/articles/{article_id}/",
-                       json={"read": True, "starred": True})
+                       json={"read": True, "bookmarked": True})
     assert res.status_code == 200, res
     assert res.json["read"] is True
-    assert res.json["starred"] is True
+    assert res.json["bookmarked"] is True
 
     res = client.patch(f"api/articles/{article_id}/",
-                       json={"read": False, "starred": False})
+                       json={"read": False, "bookmarked": False})
     assert res.status_code == 200, res
     assert res.json["read"] is False
-    assert res.json["starred"] is False
+    assert res.json["bookmarked"] is False
 
 
 def test_not_found(client):
