@@ -4,7 +4,6 @@ import * as settings from "data/settings";
 import * as articles from "data/articles";
 
 import * as format from "util/format";
-import * as pubsub from "util/pubsub";
 import Swipe from "util/swipe";
 
 import FeedIcon from "ui/widget/feed-icon";
@@ -23,24 +22,29 @@ export default class Articles extends HTMLElement {
 		{root: this, rootMargin: "0% 0% 20% 0%"}
 	);
 
-	constructor() {
-		super();
-		this.addEventListener("click", this);
-		this.addEventListener("scroll", this);
+	connectedCallback() {
+		this.build();
 
 		let swipe = new Swipe(this);
 		swipe.onSwipe = async dir => {
 			dir == "right" && app.toggleNav(true);
 		};
+
+		this.addEventListener("click", this);
+		this.addEventListener("scroll", this);
+		app.addEventListener("articles-updated", this);
 	}
 
-	connectedCallback() {
-		this.build();
+	disconnectedCallback() {
+		this.removeEventListener("click", this);
+		this.removeEventListener("scroll", this);
+		app.removeEventListener("articles-updated", this);
 	}
 
 	handleEvent(e: Event) {
 		e.type == "click" && this.onClick(e);
 		e.type == "scroll" && this.onScroll(e);
+		e.type == "articles-updated" && this.items.forEach(i => i.sync());
 	}
 
 	update() {
@@ -239,16 +243,6 @@ class Item extends HTMLElement {
 		if (this.data.image_url && settings.getItem("showImages")) {
 			this.append(buildPicture(this.data.image_url));
 		}
-
-		pubsub.subscribe("articles-updated", this);
-	}
-
-	disconnectCallback() {
-		pubsub.unsubscribe("articles-updated", this);
-	}
-
-	handleMessage(message:string, publisher?: any, data?: any) {
-		message == "articles-updated" && this.sync();
 	}
 }
 

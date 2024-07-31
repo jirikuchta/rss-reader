@@ -5,7 +5,6 @@ import * as settings from "data/settings";
 
 import Swipe from "util/swipe";
 import * as format from "util/format";
-import * as pubsub from "util/pubsub";
 
 import app from "app";
 import Icon from "ui/icon";
@@ -205,15 +204,15 @@ class ArticleContent extends HTMLElement {
 		this.normalize();
 		this.setCSS();
 
-		pubsub.subscribe("settings-changed", this);
+		app.addEventListener("settings-changed", this);
 	}
 
 	disconnectCallback() {
-		pubsub.unsubscribe("settings-changed", this);
+		app.removeEventListener("settings-changed", this);
 	}
 
-	handleMessage(message:string, publisher?: any, data?: any) {
-		message == "settings-changed" && this.setCSS();
+	handleEvent(event: Event) {
+		event.type == "settings-changed" && this.setCSS();
 	}
 
 	normalize() {

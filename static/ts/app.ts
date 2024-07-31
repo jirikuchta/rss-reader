@@ -56,4 +56,10 @@ class App extends HTMLElement {
 
 customElements.define("rr-app", App);
 
-export default (document.querySelector("rr-app") || new App()) as App;
+export function dispatchEvent(name: string) {
+	return app.dispatchEvent(new Event(name));
+}
+
+const app = document.querySelector<App>("rr-app") || new App();
+
+export default app;

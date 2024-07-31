@@ -1,13 +1,13 @@
 import { SubscriptionId } from "data/types";
 import api from "util/api";
-import * as pubsub from "util/pubsub";
+import app, { dispatchEvent } from "app";
 
 const counters: Map<SubscriptionId, number> = new Map();
 
 export function init() {
 	sync();
 	setInterval(sync, 60*1000);
-	pubsub.subscribe("articles-updated", sync);
+	app.addEventListener("articles-updated", sync);
 }
 
 export async function sync() {
@@ -21,7 +21,9 @@ export async function sync() {
 		counters.set(Number(id), count as number)
 	}
 
-	prevSum != sum() && pubsub.publish("counters-updated");
+	if (prevSum != sum()) {
+		dispatchEvent("counters-updated");
+	}
 }
 
 export function list() { return counters; }

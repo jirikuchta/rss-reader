@@ -5,8 +5,6 @@ import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 import * as articles from "data/articles";
 
-import * as pubsub from "util/pubsub";
-
 import Icon from "ui/icon";
 import Counter from "ui/counter";
 import FeedIcon from "ui/widget/feed-icon";
@@ -19,12 +17,6 @@ import { confirm } from "ui/widget/dialog";
 import app from "app";
 
 export default class Feeds extends HTMLElement {
-	constructor() {
-		super();
-		this.addEventListener("click", this);
-		this.addEventListener("contextmenu", this);
-	}
-
 	get items() {
 		return [...this.querySelectorAll("rr-item-feeds")] as Item[];
 	};
@@ -37,27 +29,25 @@ export default class Feeds extends HTMLElement {
 		this.replaceChildren(...buildItems());
 		this.items[0].active = true;
 
-		pubsub.subscribe("subscriptions-changed", this);
-		pubsub.subscribe("categories-changed", this);
+		this.addEventListener("click", this);
+		this.addEventListener("contextmenu", this);
+		app.addEventListener("subscriptions-changed", this);
+		app.addEventListener("categories-changed", this);
 	}
 
-	disconnectCallback() {
-		pubsub.unsubscribe("subscriptions-changed", this);
-		pubsub.unsubscribe("categories-changed", this);
+	disconnectedCallback() {
+		this.removeEventListener("click", this);
+		this.removeEventListener("contextmenu", this);
+		app.removeEventListener("subscriptions-changed", this);
+		app.removeEventListener("categories-changed", this);
 	}
 
-	handleMessage(message:string, publisher?: any, data?: any) {
-		this.replaceChildren(...buildItems());
-	}
-
-	handleEvent(e: PointerEvent) {
-		e.stopPropagation();
-
+	handleEvent(e: Event) {
 		let item = (e.target as HTMLElement).closest("rr-item-feeds") as Item;
-		if (!item) { return; }
-
 		switch(e.type) {
 			case "click":
+				if (!item) { return; }
+				e.stopPropagation();
 				this.items.forEach(i => i.active = false);
 				item.active = true;
 
@@ -66,8 +56,14 @@ export default class Feeds extends HTMLElement {
 				app.toggleDetail(false);
 			break;
 			case "contextmenu":
+				if (!item) { return; }
+				e.stopPropagation();
 				e.preventDefault();
-				showContextMenu(item, e);
+				showContextMenu(item, e as PointerEvent);
+			break;
+			case "subscriptions-changed":
+			case "categories-changed":
+				this.replaceChildren(...buildItems());
 			break;
 		}
 	}

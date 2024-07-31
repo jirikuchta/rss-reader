@@ -1,17 +1,17 @@
-import * as pubsub from "util/pubsub";
+import app from "app";
 
 export default class Counter extends HTMLElement {
 	connectedCallback() {
 		this.sync();
-		pubsub.subscribe("counters-updated", this);
+		app.addEventListener("counters-updated", this);
 	}
 
-	disconnectCallback() {
-		pubsub.unsubscribe("counters-updated", this);
+	disconnectedCallback() {
+		app.removeEventListener("counters-updated", this);
 	}
 
-	handleMessage(message:string, publisher?: any, data?: any) {
-		message == "counters-updated" && this.sync();
+	handleEvent() {
+		this.sync();
 	}
 
 	getCount(): Number { return 0; }

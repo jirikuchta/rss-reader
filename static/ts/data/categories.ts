@@ -2,8 +2,8 @@ import { CategoryId, Category } from "data/types";
 import * as articles from "data/articles";
 import * as subscriptions from "data/subscriptions";
 import * as counters from "data/counters";
-import * as pubsub from "util/pubsub";
 import api from "util/api";
+import { dispatchEvent } from "app";
 
 const categories: Map<CategoryId, Category> = new Map();
 
@@ -32,7 +32,7 @@ export async function add(data: Partial<Category>) {
 	let res = await api("POST", "/api/categories/", data);
 	if (!res.ok) { return res; }
 	categories.set(res.data.id as CategoryId, res.data as Category);
-	pubsub.publish("categories-changed");
+	dispatchEvent("categories-changed");
 	return res;
 }
 
@@ -40,7 +40,7 @@ export async function edit(id: CategoryId, data: Partial<Category>) {
 	let res = await api("PATCH", `/api/categories/${id}/`, data);
 	if (!res.ok) { return res; }
 	categories.set(res.data.id as CategoryId, res.data as Category);
-	pubsub.publish("categories-changed");
+	dispatchEvent("categories-changed");
 	return res;
 }
 
@@ -49,7 +49,7 @@ export async function remove(id: CategoryId) {
 	if (!res.ok) { return res; }
 	categories.delete(id);
 	subscriptions.sync();
-	pubsub.publish("categories-changed");
+	dispatchEvent("categories-changed");
 	return res;
 }
 
