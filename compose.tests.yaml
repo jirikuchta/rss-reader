@@ -1,0 +1,26 @@
+services:
+  tests:
+    build:
+      dockerfile_inline: |
+        FROM python:3.11-slim-bookworm
+
+        RUN apt-get update && apt-get install -y build-essential python3-dev
+
+        COPY app /rss_reader
+        COPY tests /tests
+        COPY requirements.txt /requirements.txt
+
+        RUN pip install -r requirements.txt
+        RUN pip install pytest
+
+        WORKDIR rss_reader
+    volumes:
+      - ./app:/rss_reader
+      - ./tests:/tests
+    environment:
+      SHELL: sh
+      FLASK_ENV: "testing"
+      SQLALCHEMY_DATABASE_URI: "sqlite:////:memory:"
+      DEBUG: "true"
+    command: >
+      sh -c "python -m pytest -v --color=yes /tests"

@@ -2,7 +2,6 @@ services:
   app:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
     volumes:
       - ./app:/rss_reader/app
       - ./templates:/rss_reader/templates
@@ -18,8 +17,17 @@ services:
 
   static:
     build:
-      context: .
-      dockerfile: ./docker/static.Dockerfile
+      dockerfile_inline: |
+        FROM node:20-bookworm
+
+        USER node
+
+        WORKDIR /home/node
+        COPY static/package.json .
+        RUN npm install --loglevel error
+        ENV PATH=$PATH:/home/node/node_modules/.bin
+
+        WORKDIR ./rss_reader
     volumes:
       - ./static:/home/node/rss_reader
     environment:
