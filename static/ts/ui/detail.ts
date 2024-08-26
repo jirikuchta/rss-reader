@@ -51,7 +51,7 @@ class Tools extends HTMLElement {
 	constructor(protected article: Article) { super(); }
 
 	connectedCallback() {
-		let { article } = this;
+		const { article } = this;
 
 		let label: HTMLLabelElement;
 		let input: HTMLInputElement;
@@ -129,12 +129,12 @@ class Article extends HTMLElement {
 	get data() { return this._data; }
 
 	connectedCallback() {
-		let { data } = this;
+		const { data } = this;
 		this.append(buildHeader(data), new ArticleContent(data));
 	}
 
 	async toggleContent(full: boolean) {
-		let { data } = this;
+		const { data } = this;
 		let content = full ? await articles.getFullContent(data.id) : "";
 		let body = this.querySelector("rr-article-content") as ArticleContent;
 		body.replaceWith(new ArticleContent(data, content));
@@ -191,13 +191,13 @@ class ArticleContent extends HTMLElement {
 	get shadow() { return this.shadowRoot!; }
 
 	connectedCallback() {
-		let { shadow } = this;
+		const { shadow, content, article } = this;
 
-		shadow.innerHTML = this.content || this.article.content || this.article.summary || "";
+		shadow.innerHTML = content || article.content || article.summary || "";
 
-		if (!this.shadow.querySelector("img, iframe") && this.article.image_url) {
+		if (!shadow.querySelector("img, iframe") && article.image_url) {
 			let img = document.createElement("img");
-			img.src = this.article.image_url;
+			img.src = article.image_url;
 			shadow.prepend(img);
 		}
 
@@ -216,7 +216,7 @@ class ArticleContent extends HTMLElement {
 	}
 
 	normalize() {
-		let { shadow } = this;
+		const { shadow, article } = this;
 
 		shadow.querySelectorAll("img").forEach(elm => elm.loading = "lazy");
 		shadow.querySelectorAll("a").forEach(elm => elm.target = "_blank");
@@ -228,7 +228,7 @@ class ArticleContent extends HTMLElement {
 
 		["src", "href"].forEach(attr => {
 			shadow.querySelectorAll(`[${attr}]`).forEach(elm => {
-				elm.setAttribute(attr, new URL(elm.getAttribute(attr)!, this.article.url).toString());
+				elm.setAttribute(attr, new URL(elm.getAttribute(attr)!, article.url).toString());
 			});
 		});
 	}

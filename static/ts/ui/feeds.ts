@@ -31,6 +31,7 @@ export default class Feeds extends HTMLElement {
 
 		this.addEventListener("click", this);
 		this.addEventListener("contextmenu", this);
+
 		app.addEventListener("subscriptions-changed", this);
 		app.addEventListener("categories-changed", this);
 	}
@@ -38,6 +39,7 @@ export default class Feeds extends HTMLElement {
 	disconnectedCallback() {
 		this.removeEventListener("click", this);
 		this.removeEventListener("contextmenu", this);
+
 		app.removeEventListener("subscriptions-changed", this);
 		app.removeEventListener("categories-changed", this);
 	}
@@ -84,20 +86,24 @@ function buildItems() {
 		);
 	}
 
-	items.push(buildTitle("Folders"), ...categories.list().map(c => {
-		let node = document.createElement("div");
-		let cat = new Item(c, "category");
-		node.append(cat, ...subscriptions.list()
-			.filter(s => s.category_id == c.id)
-			.map(s => new Item(s, "subscription")
-		));
-		return node;
-	}));
+	if (categories.list().length) {
+		items.push(buildTitle("Folders"), ...categories.list().map(c => {
+			let node = document.createElement("div");
+			let cat = new Item(c, "category");
+			node.append(cat, ...subscriptions.list()
+				.filter(s => s.category_id == c.id)
+				.map(s => new Item(s, "subscription")
+			));
+			return node;
+		}));
+	}
 
-	items.push(buildTitle("Feeds"), ...subscriptions.list()
-		.filter(s => !s.category_id)
-		.map(s => new Item(s, "subscription"))
-	);
+	let uncategorized = subscriptions.list().filter(s => !s.category_id);
+	if (uncategorized.length) {
+		items.push(
+			buildTitle("Feeds"),
+			...uncategorized.map(s => new Item(s, "subscription")));
+	}
 
 	return items;
 }
@@ -159,17 +165,22 @@ class Item extends HTMLElement {
 	constructor(readonly data: HasTitle, readonly type: ItemType) { super(); }
 
 	connectedCallback() {
-		this.setAttribute("type", this.type);
+		const { type } = this;
+		this.setAttribute("type", type);
 
-		let title = document.createElement("span");
-		title.className = "title";
-		title.textContent = this.data.title;
+		const { icon } = this;
+		const { title } = this.data;
+
+		let name = document.createElement("span");
+		name.className = "title";
+		name.textContent = title;
 
 		let counter = new Counter();
 		counter.getCount = () => this.unreadCount;
 
-		let icon = this.type == "category" ? buildCategoryOpener(this) : this.icon;
-		this.append(icon, title, counter);
+		let img = type == "category" ? buildCategoryOpener(this) : icon;
+
+		this.append(img, name, counter);
 	}
 
 	get active() {
@@ -181,33 +192,29 @@ class Item extends HTMLElement {
 	}
 
 	get itemId() {
-		switch(this.type) {
-			case "all": return -1; break;
-			case "bookmarked": return -1; break;
-			case "subscription": return (this.data as types.Subscription).id; break;
-			case "category": return (this.data as types.Category).id; break;
-		}
+		const { type, data } = this;
+		if (type == "category") { return (data as types.Category).id; }
+		if (type == "subscription") { return (data as types.Subscription).id; }
+		return -1;
 	}
 
 	get icon() {
-		switch(this.type) {
-			case "all": return new Icon("stack"); break;
-			case "bookmarked": return new Icon("bookmark-fill"); break;
-			case "subscription": return new FeedIcon(this.data as types.Subscription); break;
-			case "category": return new Icon("folder-fill"); break;
-		}
+		const { type, data } = this;
+		if (type == "all") { return new Icon("stack"); }
+		if (type == "bookmarked") { return new Icon("bookmark-fill"); }
+		if (type == "category") { return new Icon("folder-fill"); }
+		return new FeedIcon(data as types.Subscription);
 	}
 
 	get unreadCount() {
-		switch(this.type) {
-			case "all": return counters.sum(); break;
-			case "bookmarked": return 0; break;
-			case "subscription": return counters.get(this.itemId) || 0; break;
-			case "category": return subscriptions.list()
-				.filter(s => s.category_id == this.itemId)
-				.reduce((total, s) => total + (counters.get(s.id) || 0), 0);
-			break;
-		}
+		const { type, itemId } = this;
+		if (type == "all") { return counters.sum(); };
+		if (type == "bookmarked") { return 0; };
+		if (type == "category") { return subscriptions.list()
+			.filter(s => s.category_id == itemId)
+			.reduce((total, s) => total + (counters.get(s.id) || 0), 0); }
+		return counters.get(itemId) || 0;;
+
 	}
 }
 

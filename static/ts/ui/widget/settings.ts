@@ -83,13 +83,23 @@ function onFileInput(e: Event) {
 
 async function processImport(items: OPMLItem[]) {
 	for (let item of items) {
-		let category = item.category ? (await categories.getByName(item.category, true)) : null;
 		let data: Partial<Subscription> = {
 			feed_url: item.xmlUrl || item.webUrl || ""
 		}
-		item.title && (data["title"] = item.title);
-		item.webUrl && (data["web_url"] = item.webUrl);
-		category && (data["category_id"] = category.id);
+
+		if (item.title) {
+			data["title"] = item.title;
+		}
+
+		if (item.webUrl) {
+			data["web_url"] = item.webUrl;
+		}
+
+		if (item.category) {
+			let category = await categories.getByName(item.category, true);
+			data["category_id"] = category?.id;
+		}
+
 		await subscriptions.add(data);
 	};
 }

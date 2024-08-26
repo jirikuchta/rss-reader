@@ -15,16 +15,16 @@ export async function init() {
 export function list() { return Array.from(categories.values()); }
 export function get(id: CategoryId) { return categories.get(id); }
 
-export async function getByName(title: string, create: boolean = false) {
+export async function getByName(title: string, create = false) {
 	for (let cat of categories.values()) {
 		if (cat.title.trim().toLowerCase() == title.trim().toLowerCase()) {
 			return cat;
 		}
 	}
 
-	if (create) {
+	 if (create) {
 		let res = await add({title});
-		if (res.ok) { return res.data; }
+		if (res.ok) { return res.data as Category; }
 	}
 }
 

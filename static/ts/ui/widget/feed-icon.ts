@@ -4,7 +4,7 @@ export default class FeedIcon extends HTMLElement {
 	constructor(protected subscription: Subscription) { super (); }
 
 	connectedCallback() {
-		let { title, web_url } = this.subscription;
+		const { title, web_url } = this.subscription;
 		this.dataset.content = title[0];
 
 		let img = new Image();

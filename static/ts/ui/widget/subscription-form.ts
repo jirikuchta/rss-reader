@@ -34,7 +34,7 @@ export default class SubscriptionForm extends HTMLFormElement {
 			let data: Partial<Subscription> = {
 				title: this.feedName?.value,
 				feed_url: this.url.value,
-				category_id: this.category.value ? (await categories.getByName(this.category.value, true))?.id : null
+				category_id: this.category.value ? (await categories.getByName(this.category.value, true))?.id : undefined
 			};
 
 			let res: ApiResponse;

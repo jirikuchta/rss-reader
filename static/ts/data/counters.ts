@@ -7,7 +7,7 @@ const counters: Map<SubscriptionId, number> = new Map();
 export function init() {
 	sync();
 	setInterval(sync, 60*1000);
-	app.addEventListener("articles-updated", sync);
+	app.addEventListener("articles-changed", sync);
 }
 
 export async function sync() {
@@ -22,7 +22,7 @@ export async function sync() {
 	}
 
 	if (prevSum != sum()) {
-		dispatchEvent("counters-updated");
+		dispatchEvent("counters-changed");
 	}
 }
 

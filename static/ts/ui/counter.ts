@@ -3,11 +3,11 @@ import app from "app";
 export default class Counter extends HTMLElement {
 	connectedCallback() {
 		this.sync();
-		app.addEventListener("counters-updated", this);
+		app.addEventListener("counters-changed", this);
 	}
 
 	disconnectedCallback() {
-		app.removeEventListener("counters-updated", this);
+		app.removeEventListener("counters-changed", this);
 	}
 
 	handleEvent() {

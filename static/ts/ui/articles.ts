@@ -32,19 +32,21 @@ export default class Articles extends HTMLElement {
 
 		this.addEventListener("click", this);
 		this.addEventListener("scroll", this);
-		app.addEventListener("articles-updated", this);
+
+		app.addEventListener("articles-changed", this);
 	}
 
 	disconnectedCallback() {
 		this.removeEventListener("click", this);
 		this.removeEventListener("scroll", this);
-		app.removeEventListener("articles-updated", this);
+
+		app.removeEventListener("articles-changed", this);
 	}
 
 	handleEvent(e: Event) {
 		e.type == "click" && this.onClick(e);
 		e.type == "scroll" && this.onScroll(e);
-		e.type == "articles-updated" && this.items.forEach(i => i.sync());
+		e.type == "articles-changed" && this.items.forEach(i => i.sync());
 	}
 
 	update() {
@@ -67,27 +69,27 @@ export default class Articles extends HTMLElement {
 	}
 
 	get filters() {
-		let { items } = this;
-		let selectedFeed = app.feeds.activeItem;
+		const { items, unreadOnly, sorting } = this;
+		const { activeItem } = app.feeds;
 
 		let filters: types.ArticleFilters = {
-			offset: items.filter(i => this._unreadOnly ? !i.read : true).length,
-			unread_only: this._unreadOnly,
-			order: this.sorting == "newest" ? "desc" : "asc"
+			offset: items.filter(i => unreadOnly ? !i.read : true).length,
+			unread_only: unreadOnly,
+			order: sorting == "newest" ? "desc" : "asc"
 		};
 
-		if (selectedFeed.type == "bookmarked") {
+		if (activeItem.type == "bookmarked") {
 			filters.bookmarked_only = true;
 			filters.offset = items.length;
 			delete filters.unread_only;
 		}
 
-		if (selectedFeed.type == "subscription") {
-			filters["subscription_id"] = selectedFeed.itemId;
+		if (activeItem.type == "subscription") {
+			filters["subscription_id"] = activeItem.itemId;
 		}
 
-		if (selectedFeed.type == "category") {
-			filters["category_id"] = selectedFeed.itemId;
+		if (activeItem.type == "category") {
+			filters["category_id"] = activeItem.itemId;
 		}
 
 		return filters;
@@ -137,7 +139,7 @@ export default class Articles extends HTMLElement {
 	}
 
 	protected async buildItems() {
-		let { items } = this;
+		const { items } = this;
 
 		let data = await articles.list(this.filters);
 		let newItems = data
@@ -147,7 +149,7 @@ export default class Articles extends HTMLElement {
 		if (newItems.length) {
 			this.append(...newItems);
 			this.showMoreObserver.disconnect();
-			let lastItem = this.items.pop();
+			let lastItem = items.pop();
 			lastItem && this.showMoreObserver.observe(lastItem);
 		}
 	}
@@ -160,7 +162,7 @@ export default class Articles extends HTMLElement {
 	protected onScroll(e: Event) {
 		clearTimeout(this.markReadTimeout);
 		this.markReadTimeout = setTimeout(() => {
-			let { items } = this;
+			const { items } = this;
 			if (!settings.getItem("markAsReadOnScroll")) { return; }
 			let markReadItems = items.filter(i => !i.read && i.getBoundingClientRect().bottom <= 0)
 			markReadItems.length && articles.markRead(markReadItems.map(i => i.itemId));
@@ -194,6 +196,18 @@ const READ_CSS_CLASS = "is-read";
 
 class Item extends HTMLElement {
 	constructor(protected _data: types.Article) { super(); }
+
+	connectedCallback() {
+		const { data } = this;
+		const { image_url} = data;
+
+		this.read = data.read;
+
+		this.append(buildHeader(data), buildText(data));
+		if (image_url && settings.getItem("showImages")) {
+			this.append(buildPicture(image_url));
+		}
+	}
 
 	get data() { return this._data; }
 
@@ -231,18 +245,12 @@ class Item extends HTMLElement {
 	}
 
 	async sync() {
-		this._data = await articles.get(this.itemId);
-		this.read = this.data.read;
-		this.bookmarked = this.data.bookmarked;
-	}
+		const { itemId } = this;
+		this._data = await articles.get(itemId);
 
-	connectedCallback() {
-		this.read = this.data.read;
-
-		this.append(buildHeader(this.data), buildText(this.data));
-		if (this.data.image_url && settings.getItem("showImages")) {
-			this.append(buildPicture(this.data.image_url));
-		}
+		const { read, bookmarked } = this.data;
+		this.read = read;
+		this.bookmarked = bookmarked;
 	}
 }
 
@@ -296,10 +304,7 @@ function buildBookmark(article: types.Article) {
 	input.type = "checkbox";
 	input.checked = article.bookmarked;
 	input.addEventListener("change", async (e) => {
-		await articles.edit(article.id, {
-			"bookmarked": input.checked,
-			"read": input.checked ? false: article.read
-		});
+		await articles.edit(article.id, {bookmarked: input.checked});
 	});
 
 	node.append(input, new Icon("bookmark"), new Icon("bookmark-fill"));

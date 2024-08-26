@@ -34,13 +34,13 @@ export async function markRead(ids?: ArticleId[]) {
 		.forEach(a => a.read = true);
 
 	counters.sync();
-	dispatchEvent("articles-updated");
+	dispatchEvent("articles-changed");
 }
 
 export async function edit(id: ArticleId, data: Partial<Article>) {
 	let res = await api("PATCH", `/api/articles/${id}/`, data);
 	res.ok && articles.set(id, res.data as Article);
-	dispatchEvent("articles-updated");
+	dispatchEvent("articles-changed");
 	return articles.get(id);
 }
 
@@ -48,5 +48,5 @@ export function syncRead(ids: SubscriptionId[]) {
 	Array.from(articles.values())
 		.filter(a => ids.includes(a.subscription_id))
 		.forEach(a => a.read = true);
-	dispatchEvent("articles-updated");
+	dispatchEvent("articles-changed");
 }
