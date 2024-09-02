@@ -8,7 +8,8 @@ const DEFAULTS: Settings = {
 	markAsReadOnScroll: true,
 	showImages: true,
 	theme: "system",
-	detailFontSize: 14
+	detailFontSize: 14,
+	homepage: "all"
 }
 
 export function init() {

@@ -62,4 +62,5 @@ export interface Settings {
 	showImages: boolean;
 	theme: "system" | "light" | "dark";
 	detailFontSize: number;
+	homepage: string;
 }

@@ -27,7 +27,9 @@ export default class Feeds extends HTMLElement {
 
 	connectedCallback() {
 		this.replaceChildren(...buildItems());
-		this.items[0].active = true;
+
+		let homepage = settings.getItem("homepage");
+		(this.items.find(i => i.homepageId == homepage) || this.items[0]).active = true;
 
 		this.addEventListener("click", this);
 		this.addEventListener("contextmenu", this);
@@ -117,14 +119,23 @@ function buildTitle(title: string) {
 function showContextMenu(item: Item, e: PointerEvent) {
 	let menu = new PopupMenu();
 
+	const { homepageId } = item;
+	let isHomepage = settings.getItem("homepage") == homepageId;
+
 	if (item.type == "all") {
 		menu.addItem("Mark as read", "check-all", () => articles.markRead());
+		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
+	}
+
+	if (item.type == "bookmarked") {
+		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
 	}
 
 	if (item.type == "category") {
 		let data = item.data as types.Category;
 		menu.addItem("Mark as read", "check-all", () => categories.markRead(data.id));
 		menu.addItem("Edit category", "pencil", () => openCategoryForm(data));
+		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
 		menu.addItem("Delete category", "trash", () => deleteCategory(data));
 	}
 
@@ -133,6 +144,7 @@ function showContextMenu(item: Item, e: PointerEvent) {
 		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead(data.id));
 		menu.addItem(`${data.favorite ? "Remove from" : "Add to"} favorites`, data.favorite ? "heart-fill" : "heart", () => subscriptions.edit(data.id, {favorite: !data.favorite}))
 		menu.addItem("Edit subscription", "pencil", () => openSubscriptionForm(data));
+		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(data));
 	}
 
@@ -215,6 +227,13 @@ class Item extends HTMLElement {
 			.reduce((total, s) => total + (counters.get(s.id) || 0), 0); }
 		return counters.get(itemId) || 0;;
 
+	}
+
+	get homepageId() {
+		const { type, itemId } = this;
+		if (type == "category") { return `c-${itemId}`; }
+		if (type == "subscription") { return `s-${itemId}`; }
+		return type;
 	}
 }
 
