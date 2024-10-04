@@ -149,8 +149,10 @@ export default class Articles extends HTMLElement {
 		if (newItems.length) {
 			this.append(...newItems);
 			this.showMoreObserver.disconnect();
-			let lastItem = items.pop();
-			lastItem && this.showMoreObserver.observe(lastItem);
+			let lastItem = newItems.slice(-1)[0];
+			this.showMoreObserver.observe(lastItem);
+		} else {
+			this.showEmpty();
 		}
 	}
 
@@ -186,6 +188,27 @@ export default class Articles extends HTMLElement {
 			.classList.toggle("selected", !this.unreadOnly);
 
 		menu.open(node, "side", [-8, 8]);
+	}
+
+	protected showEmpty() {
+		const { unreadOnly } = this;
+
+		let alreadyShown = !!this.querySelector(":scope > .empty");
+		if (alreadyShown) { return; }
+
+		let node = document.createElement("div");
+		node.classList.add("empty");
+		node.append(`No more ${unreadOnly ? "unread " : ""}articles here.`);
+
+		if (unreadOnly) {
+			let btn = document.createElement("button");
+			btn.type = "button";
+			btn.append("See all articles");
+			btn.addEventListener("click", _ => this.unreadOnly = false);
+			node.append(btn);
+		}
+
+		this.append(node);
 	}
 }
 

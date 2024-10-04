@@ -46,11 +46,24 @@ rr-articles {
 		margin: 0 8px 8px 8px;
  	}
 
-	&::after {
-		content: "";
-		flex: none;
-		height: 110%;
-	}
+ 	> .empty {
+ 		flex: none;
+ 		height: 100%;
+
+ 		display: flex;
+ 		flex-direction: column;
+ 		align-items: center;
+ 		justify-content: center;
+ 		gap: 16px;
+
+ 		font-size: 20px;
+ 		color: var(--color-text-secondary);
+
+ 		button {
+ 			font-size: 16px;
+ 			padding: 16px;
+ 		}
+ 	}
 
 	@media(max-width: @breakpoint-tablet) {
 		flex: auto;

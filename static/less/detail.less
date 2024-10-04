@@ -6,6 +6,13 @@ rr-detail {
 	flex: auto;
 	overflow: auto;
 	background-color: var(--color-bg-secondary);
+
+	&:empty::after {
+		content: "No article selected";
+		margin: auto;
+		font-size: 20px;
+		color: var(--color-text-secondary);
+	}
 }
 
 rr-tools {

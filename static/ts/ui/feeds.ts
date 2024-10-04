@@ -124,18 +124,18 @@ function showContextMenu(item: Item, e: PointerEvent) {
 
 	if (item.type == "all") {
 		menu.addItem("Mark as read", "check-all", () => articles.markRead());
-		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
+		!isHomepage && menu.addItem("Set as start page", "house-door", () => settings.setItem("homepage", homepageId));
 	}
 
 	if (item.type == "bookmarked") {
-		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
+		!isHomepage && menu.addItem("Set as start page", "house-door", () => settings.setItem("homepage", homepageId));
 	}
 
 	if (item.type == "category") {
 		let data = item.data as types.Category;
 		menu.addItem("Mark as read", "check-all", () => categories.markRead(data.id));
 		menu.addItem("Edit category", "pencil", () => openCategoryForm(data));
-		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
+		!isHomepage && menu.addItem("Set as start page", "house-door", () => settings.setItem("homepage", homepageId));
 		menu.addItem("Delete category", "trash", () => deleteCategory(data));
 	}
 
@@ -144,7 +144,7 @@ function showContextMenu(item: Item, e: PointerEvent) {
 		menu.addItem("Mark as read", "check-all", () => subscriptions.markRead(data.id));
 		menu.addItem(`${data.favorite ? "Remove from" : "Add to"} favorites`, data.favorite ? "heart-fill" : "heart", () => subscriptions.edit(data.id, {favorite: !data.favorite}))
 		menu.addItem("Edit subscription", "pencil", () => openSubscriptionForm(data));
-		!isHomepage && menu.addItem("Set as homepage", "house-door", () => settings.setItem("homepage", homepageId));
+		!isHomepage && menu.addItem("Set as start page", "house-door", () => settings.setItem("homepage", homepageId));
 		menu.addItem("Unsubscribe", "trash", () => deleteSubscription(data));
 	}
 
