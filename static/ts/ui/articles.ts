@@ -11,7 +11,7 @@ import { PopupMenu } from "ui/widget/popup";
 
 import app from "app";
 import Counter from "ui/counter";
-import Icon from "ui/icon";
+import icon from "ui/icon";
 
 export default class Articles extends HTMLElement {
 	protected _sorting: "newest" | "oldest" = "newest";
@@ -128,7 +128,7 @@ export default class Articles extends HTMLElement {
 		counter.getCount = () => navItem.unreadCount;
 
 		let filters = document.createElement("button");
-		filters.append(new Icon("filter"));
+		filters.append(icon("filter"));
 		filters.addEventListener("click", e => this.popupFilters(filters));
 
 		let header = document.createElement("header");
@@ -330,7 +330,7 @@ function buildBookmark(article: types.Article) {
 		await articles.edit(article.id, {bookmarked: input.checked});
 	});
 
-	node.append(input, new Icon("bookmark"), new Icon("bookmark-fill"));
+	node.append(input, icon("bookmark"), icon("bookmark-fill"));
 
 	return node;
 }

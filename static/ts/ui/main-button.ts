@@ -1,5 +1,5 @@
 import app from "app";
-import Icon from "ui/icon";
+import icon from "ui/icon";
 
 export default class MainButton extends HTMLElement {
 
@@ -21,8 +21,8 @@ export default class MainButton extends HTMLElement {
 
 	connectedCallback() {
 		this.append(
-			new Icon("cross"),
-			new Icon("menu")
+			icon("cross"),
+			icon("menu")
 		);
 	}
 }

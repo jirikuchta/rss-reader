@@ -1,4 +1,4 @@
-import Icon from "ui/icon";
+import icon from "ui/icon";
 
 export default class Dialog extends HTMLDialogElement {
 	constructor(protected _title: string) {
@@ -15,7 +15,7 @@ export default class Dialog extends HTMLDialogElement {
 
 		let close = document.createElement("button");
 		close.className = "close";
-		close.append(new Icon("cross"));
+		close.append(icon("cross"));
 		close.addEventListener("click", e => this.close());
 		header.append(close);
 

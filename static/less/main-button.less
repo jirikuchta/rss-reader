@@ -11,20 +11,20 @@ rr-main-button {
 	box-shadow: var(--shadow);
 	background-color: var(--color-active);
 
-	rr-icon {
+	.icon {
 		width: 20px;
 		height: 20px;
 		margin: 12px;
 	}
 
-	rr-icon[type=cross] { display: none; }
+	.icon[type=cross] { display: none; }
 	rr-app.detail-open & {
-		rr-icon[type=menu] { display: none; }
-		rr-icon[type=cross] { display: block; }
+		.icon[type=menu] { display: none; }
+		.icon[type=cross] { display: block; }
 	}
 	rr-app.nav-open & {
-		rr-icon[type=menu] { display: none; }
-		rr-icon[type=cross] { display: block; }
+		.icon[type=menu] { display: none; }
+		.icon[type=cross] { display: block; }
 	}
 
 	@media (max-width: @breakpoint-tablet) {

@@ -5,7 +5,7 @@ import * as categories from "data/categories";
 import * as subscriptions from "data/subscriptions";
 import * as articles from "data/articles";
 
-import Icon from "ui/icon";
+import icon from "ui/icon";
 import Counter from "ui/counter";
 import FeedIcon from "ui/widget/feed-icon";
 
@@ -212,9 +212,9 @@ class Item extends HTMLElement {
 
 	get icon() {
 		const { type, data } = this;
-		if (type == "all") { return new Icon("stack"); }
-		if (type == "bookmarked") { return new Icon("bookmark-fill"); }
-		if (type == "category") { return new Icon("folder-fill"); }
+		if (type == "all") { return icon("stack"); }
+		if (type == "bookmarked") { return icon("bookmark-fill"); }
+		if (type == "category") { return icon("folder-fill"); }
 		return new FeedIcon(data as types.Subscription);
 	}
 
@@ -241,7 +241,7 @@ customElements.define("rr-item-feeds", Item);
 
 function buildCategoryOpener(item: Item) {
 	let node = document.createElement("button");
-	node.append(new Icon("chevron"));
+	node.append(icon("chevron"));
 	node.addEventListener("click", e => {
 		e.stopPropagation();
 		toggleCategory(item);

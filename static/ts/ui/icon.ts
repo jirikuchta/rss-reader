@@ -32,13 +32,15 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-export default class Icon extends HTMLElement {
-	constructor(readonly type: IconName, title?: string) { super(); }
+export default function icon(name: IconName) {
+	let str = ICONS[name];
 
-	connectedCallback() {
-		this.setAttribute("type", this.type);
-		this.innerHTML = ICONS[this.type];
-	}
+	let tmp = document.createElement("div");
+	tmp.innerHTML = str;
+
+	let node = tmp.children[0];
+	node.setAttribute("type", name);
+	node.classList.add("icon");
+
+	return node;
 }
-
-customElements.define("rr-icon", Icon);

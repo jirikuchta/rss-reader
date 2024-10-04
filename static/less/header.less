@@ -23,15 +23,15 @@ rr-header {
 		justify-content: center;
 		color: var(--color-active);
 
-		rr-icon {
+		.icon {
 			font-size: 32px;
 		}
 	}
 
 	button.theme {
-		.light & rr-icon:not([type=sun-fill]) { display: none; }
-		.dark & rr-icon:not([type=moon-fill]) { display: none; }
-		html:not(.dark):not(.light) & rr-icon:not([type=circle-half]) { display: none; }
+		.light & .icon:not([type=sun-fill]) { display: none; }
+		.dark & .icon:not([type=moon-fill]) { display: none; }
+		html:not(.dark):not(.light) & .icon:not([type=circle-half]) { display: none; }
 	}
 
 	@media(max-width: @breakpoint-mobile) {

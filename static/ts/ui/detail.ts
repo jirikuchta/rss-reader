@@ -7,7 +7,7 @@ import Swipe from "util/swipe";
 import * as format from "util/format";
 
 import app from "app";
-import Icon from "ui/icon";
+import icon from "ui/icon";
 import Popup from "ui/widget/popup";
 import FeedIcon from "ui/widget/feed-icon";
 
@@ -64,7 +64,7 @@ class Tools extends HTMLElement {
 			let target = e.target as HTMLInputElement;
 			article.toggleContent(target.checked);
 		});
-		label.append(input, new Icon("cup-hot"), new Icon("cup-hot-fill"));
+		label.append(input, icon("cup-hot"), icon("cup-hot-fill"));
 		this.append(label);
 
 		label = document.createElement("label");
@@ -76,12 +76,12 @@ class Tools extends HTMLElement {
 			let target = e.target as HTMLInputElement;
 			articles.edit(article.data.id, {bookmarked: target.checked});
 		});
-		label.append(input, new Icon("bookmark"), new Icon("bookmark-fill"));
+		label.append(input, icon("bookmark"), icon("bookmark-fill"));
 		this.append(label);
 
 		label = document.createElement("label");
 		label.title = "Font size";
-		label.append(new Icon("font"));
+		label.append(icon("font"));
 		label.addEventListener("click", e => {
 			let popup = new Popup();
 			popup.node.classList.add("detail-font-size");
