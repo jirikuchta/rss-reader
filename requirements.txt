@@ -1,5 +1,5 @@
-uwsgi==2.0.24
-flask~=2.2.2
-flask-sqlalchemy~=3.0.2
+uwsgi==2.0.28
+flask~=3.0.3
+flask-sqlalchemy~=3.1.1
 readability-lxml~=0.8.1
 lxml_html_clean # https://github.com/buriy/python-readability/issues/179
