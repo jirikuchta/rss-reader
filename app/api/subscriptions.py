@@ -112,6 +112,11 @@ def update_subscription(subscription_id: int) -> TReturnValue:
             raise InvalidFieldError("favorite")
         subscription.favorite = favorite
 
+    auto_full_content = request.json.get("auto_full_content", False)
+    if type(auto_full_content) is not bool:
+        raise InvalidFieldError("auto_full_content")
+    subscription.auto_full_content = auto_full_content
+
     db.session.commit()
 
     return subscription.to_json(), 200

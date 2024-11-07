@@ -57,6 +57,7 @@ class Subscription(Model, db.Model):  # type: ignore
     title = db.Column(db.Text)
     web_url = db.Column(db.String(255))
     favorite = db.Column(db.Boolean, nullable=False, default=False)
+    auto_full_content = db.Column(db.Boolean, nullable=False, default=False)
 
     category_id = db.Column(
         db.Integer,
@@ -79,7 +80,7 @@ class Subscription(Model, db.Model):  # type: ignore
 
     def to_json(self):
         keys = ("id", "title", "feed_url", "web_url",
-                "category_id", "favorite")
+                "category_id", "favorite", "auto_full_content")
         return {key: getattr(self, key) for key in keys}
 
 

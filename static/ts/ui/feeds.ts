@@ -187,10 +187,8 @@ class Item extends HTMLElement {
 		name.className = "title";
 		name.textContent = title;
 
-		let counter = new Counter();
-		counter.getCount = () => this.unreadCount;
-
 		let img = type == "category" ? buildCategoryOpener(this) : icon;
+		let counter = new Counter(() => this.unreadCount);
 
 		this.append(img, name, counter);
 	}

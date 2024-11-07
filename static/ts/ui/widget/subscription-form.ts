@@ -34,7 +34,8 @@ export default class SubscriptionForm extends HTMLFormElement {
 			let data: Partial<Subscription> = {
 				title: this.feedName?.value,
 				feed_url: this.url.value,
-				category_id: this.category.value ? (await categories.getByName(this.category.value, true))?.id : undefined
+				category_id: this.category.value ? (await categories.getByName(this.category.value, true))?.id : undefined,
+				auto_full_content: this.auto_full_content.checked
 			};
 
 			let res: ApiResponse;
@@ -101,6 +102,14 @@ export default class SubscriptionForm extends HTMLFormElement {
 				cat && (this.category.value = cat.title);
 			}
 		}
+
+		label = document.createElement("label");
+		input = document.createElement("input");
+		input.name = "auto_full_content";
+		input.type = "checkbox";
+		input.checked = this.subscription?.auto_full_content || false;
+		label.append(input, "Auto-load full articles");
+		this.append(label);
 	}
 
 	submitBtn() {

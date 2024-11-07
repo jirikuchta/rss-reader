@@ -20,7 +20,11 @@ export default class Detail extends HTMLElement {
 
 	set article(data: types.Article) {
 		this.scrollTo(0, 0);
+
+		let subscription = subscriptions.get(data.subscription_id);
 		let article = new Article(data);
+		article.fullContent = subscription?.auto_full_content || false;
+
 		this.replaceChildren(article, new Tools(article));
 		articles.markRead([data.id]);
 	}
@@ -55,14 +59,16 @@ class Tools extends HTMLElement {
 
 		let label: HTMLLabelElement;
 		let input: HTMLInputElement;
+		let subscription = subscriptions.get(article.data.subscription_id);
 
 		label = document.createElement("label");
 		label.title = "Full content";
 		input = document.createElement("input");
 		input.type = "checkbox";
+		input.checked = subscription?.auto_full_content || false;
 		input.addEventListener("change", e => {
 			let target = e.target as HTMLInputElement;
-			article.toggleContent(target.checked);
+			article.fullContent = target.checked;
 		});
 		label.append(input, icon("cup-hot"), icon("cup-hot-fill"));
 		this.append(label);
@@ -124,20 +130,30 @@ function buildRangeInput(min: number, max: number, step: number) {
 
 
 class Article extends HTMLElement {
+	protected _fullContent = false;
+
 	constructor(protected _data: types.Article) { super(); }
 
 	get data() { return this._data; }
 
-	connectedCallback() {
-		const { data } = this;
-		this.append(buildHeader(data), new ArticleContent(data));
+	get fullContent() { return this._fullContent; }
+	set fullContent(toggle: boolean) {
+		const { isConnected } = this;
+		this._fullContent = toggle;
+		isConnected && this.buildContent();
 	}
 
-	async toggleContent(full: boolean) {
+	connectedCallback() {
 		const { data } = this;
-		let content = full ? await articles.getFullContent(data.id) : "";
-		let body = this.querySelector("rr-article-content") as ArticleContent;
-		body.replaceWith(new ArticleContent(data, content));
+		this.append(buildHeader(data));
+		this.buildContent();
+	}
+
+	protected async buildContent() {
+		const { data, fullContent } = this;
+		this.querySelector("rr-article-content")?.remove();
+		let content = fullContent ? await articles.getFullContent(data.id) : "";
+ 		this.append(new ArticleContent(data, content));
 	}
 }
 

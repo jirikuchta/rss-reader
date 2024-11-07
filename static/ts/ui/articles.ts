@@ -124,8 +124,7 @@ export default class Articles extends HTMLElement {
 		let title = document.createElement("h4");
 		title.append(navItem.icon, navItem.data.title);
 
-		let counter = new Counter();
-		counter.getCount = () => navItem.unreadCount;
+		let counter = new Counter(() => navItem.unreadCount);
 
 		let filters = document.createElement("button");
 		filters.append(icon("filter"));

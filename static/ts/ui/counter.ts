@@ -1,6 +1,10 @@
 import app from "app";
 
 export default class Counter extends HTMLElement {
+	constructor(protected getCount: () => number) {
+		super();
+	}
+
 	connectedCallback() {
 		this.sync();
 		app.addEventListener("counters-changed", this);
@@ -13,8 +17,6 @@ export default class Counter extends HTMLElement {
 	handleEvent() {
 		this.sync();
 	}
-
-	getCount(): Number { return 0; }
 
 	protected sync() {
 		let count = this.getCount();
