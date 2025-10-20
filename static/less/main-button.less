@@ -11,13 +11,16 @@ rr-main-button {
 	box-shadow: var(--shadow);
 	background-color: var(--color-active);
 
+	width: 44px;
+	height: 44px;
+
 	.icon {
-		width: 20px;
-		height: 20px;
-		margin: 12px;
+		width: 40%;
+		height: 40%;
 	}
 
 	.icon[type=cross] { display: none; }
+
 	rr-app.detail-open & {
 		.icon[type=menu] { display: none; }
 		.icon[type=cross] { display: block; }
@@ -28,7 +31,9 @@ rr-main-button {
 	}
 
 	@media (max-width: @breakpoint-tablet) {
-		display: block;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	@media (min-width: calc(@breakpoint-mobile + 1px)) and (max-width: @breakpoint-tablet) {

@@ -34,7 +34,6 @@ export default class Detail extends HTMLElement {
 		swipe.onSwipe = async (dir) => {
 			if (dir != "left" && dir != "right") { return; }
 			try {
-				// @ts-ignore
 				let transition = document.startViewTransition(() => this.swipe(dir));
 				await transition.updateCallbackDone;
 			} catch (e: any) {
