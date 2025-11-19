@@ -1,6 +1,6 @@
 import { SubscriptionId } from "data/types";
 import api from "util/api";
-import app, { dispatchEvent } from "app";
+import app from "app";
 
 const counters: Map<SubscriptionId, number> = new Map();
 
@@ -22,7 +22,7 @@ export async function sync() {
 	}
 
 	if (prevSum != sum()) {
-		dispatchEvent("counters-changed");
+		app.dispatchEvent(new Event("counters-changed"));
 	}
 }
 

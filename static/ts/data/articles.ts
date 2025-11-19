@@ -1,7 +1,7 @@
 import { Article, ArticleFilters, ArticleId, SubscriptionId } from "data/types";
 import * as counters from "data/counters";
 import api from "util/api";
-import { dispatchEvent } from "app";
+import app from "app";
 
 const articles: Map<ArticleId, Article> = new Map();
 
@@ -34,13 +34,13 @@ export async function markRead(ids?: ArticleId[]) {
 		.forEach(a => a.read = true);
 
 	counters.sync();
-	dispatchEvent("articles-changed");
+	app.dispatchEvent(new Event("articles-changed"));
 }
 
 export async function edit(id: ArticleId, data: Partial<Article>) {
 	let res = await api("PATCH", `/api/articles/${id}/`, data);
 	res.ok && articles.set(id, res.data as Article);
-	dispatchEvent("articles-changed");
+	app.dispatchEvent(new Event("articles-changed"));
 	return articles.get(id);
 }
 
@@ -48,5 +48,5 @@ export function syncRead(ids: SubscriptionId[]) {
 	Array.from(articles.values())
 		.filter(a => ids.includes(a.subscription_id))
 		.forEach(a => a.read = true);
-	dispatchEvent("articles-changed");
+	app.dispatchEvent(new Event("articles-changed"));
 }

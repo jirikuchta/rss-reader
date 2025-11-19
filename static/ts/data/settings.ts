@@ -1,5 +1,5 @@
 import { Settings } from "data/types";
-import { dispatchEvent } from "app";
+import app from "app";
 
 const DEFAULTS: Settings = {
 	navWidth: "20%",
@@ -28,7 +28,7 @@ export function getItem<K extends keyof Settings>(key: K) {
 export function setItem<K extends keyof Settings>(key: K, value: NonNullable<Settings[K]>) {
 	localStorage.setItem(key, JSON.stringify(value));
 	key == "theme" && onThemeChange();
-	dispatchEvent("settings-changed");
+	app.dispatchEvent(new Event("settings-changed"));
 }
 
 export function removeItem<K extends keyof Settings>(key: K) {
