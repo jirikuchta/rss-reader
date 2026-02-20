@@ -27,7 +27,7 @@ export async function add(data: Partial<Subscription>) {
 	let res = await api("POST", "/api/subscriptions/", data);
 	if (!res.ok) { return res; }
 	subscriptions.set((res.data as Subscription).id, res.data as Subscription);
-	dispatchEvent(new Event("subscriptions-changed"));
+	app.dispatchEvent(new Event("subscriptions-changed"));
 	return res;
 }
 
@@ -35,7 +35,7 @@ export async function edit(id: SubscriptionId, data: Partial<Subscription>) {
 	let res = await api("PATCH", `/api/subscriptions/${id}/`, data);
 	if (!res.ok) { return res; }
 	subscriptions.set((res.data as Subscription).id, res.data as Subscription);
-	dispatchEvent(new Event("subscriptions-changed"));
+	app.dispatchEvent(new Event("subscriptions-changed"));
 	return res;
 }
 
@@ -43,7 +43,7 @@ export async function remove(id: SubscriptionId) {
 	let res = await api("DELETE", `/api/subscriptions/${id}/`);
 	if (!res.ok) { return res; }
 	subscriptions.delete(id);
-	dispatchEvent(new Event("subscriptions-changed"));
+	app.dispatchEvent(new Event("subscriptions-changed"));
 	return res;
 }
 
