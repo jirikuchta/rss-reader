@@ -78,7 +78,8 @@ def update_subscription(
         ).filter(
             Article.subscription_id.is_(subscription.id),
             Article.bookmarked.is_(False),
-            Article.read.is_(True)
+            Article.read.is_(True),
+            Article.guid.not_in([item.guid for item in parser.items])
         ).limit(1000000).offset(len(parser.items)*3).all()
 
         result["deleted"] = Article.query.filter(
